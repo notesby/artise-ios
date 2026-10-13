@@ -22,14 +22,18 @@ public struct NotesFileOptions: Sendable {
     public let convertPhoto: @Sendable (Data, String) -> Data?
     /// Whether photos may download ahead of time: on Wi-Fi, never on mobile data.
     public let canPrefetch: @Sendable () -> Bool
+    /// How much the downloaded copies may take.
+    public let cacheLimit: Int64
     
     public init(cacheDirectory: URL, pendingDirectory: URL,
                 convertPhoto: @escaping @Sendable (Data, String) -> Data? = { _, _ in nil },
-                canPrefetch: @escaping @Sendable () -> Bool = { false }) {
+                canPrefetch: @escaping @Sendable () -> Bool = { false },
+                cacheLimit: Int64 = NotesFileOptions.maxCacheBytes) {
         self.cacheDirectory = cacheDirectory
         self.pendingDirectory = pendingDirectory
         self.convertPhoto = convertPhoto
         self.canPrefetch = canPrefetch
+        self.cacheLimit = cacheLimit
     }
     
     init(directory: URL) {
@@ -470,7 +474,7 @@ extension NotesSyncEngine {
         }
     }
     
-    /// Keeps the phone's copies under `maxCacheBytes`, removing the least recently used first.
+    /// Keeps the phone's copies under the cache limit (300 MB), removing the least recently used first.
     func trimCache() {
         let manager = FileManager.default
         let keys: [URLResourceKey] = [.contentModificationDateKey, .fileSizeKey]
@@ -481,7 +485,7 @@ extension NotesSyncEngine {
         }
         .sorted { $0.date < $1.date }
         var total = cached.reduce(0) { $0 + $1.size }
-        for file in cached where total > NotesFileOptions.maxCacheBytes {
+        for file in cached where total > files.cacheLimit {
             try? manager.removeItem(at: file.url)
             total -= file.size
         }
