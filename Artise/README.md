@@ -105,6 +105,7 @@ on this repository.
 | `ASC_KEY_P8` | The `.p8` file, base64-encoded: `base64 -w0 AuthKey_XXXX.p8` |
 | `DIST_CERT_P12` | The distribution certificate and its private key, as a base64-encoded `.p12` |
 | `DIST_CERT_PASSWORD` | The `.p12`'s password |
+| `GOOGLE_SERVICE_INFO_PLIST` | Firebase's `GoogleService-Info.plist` for `co.artise.app`, base64-encoded (analytics are off in TestFlight builds without it) |
 | `MAPLIBRE_API_KEY` | MapTiler key for maps (location sharing is off in TestFlight builds without it) |
 | `PROFILE_APP`, `PROFILE_NSE`, `PROFILE_SHARE`, `PROFILE_STICKER` | The App Store profiles (app, notification extension, share extension, "Artise sticker" extension), base64-encoded |
 
