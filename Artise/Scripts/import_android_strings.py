@@ -8,12 +8,13 @@
 Both apps then say the same thing. Run it again after the Android texts change.
 
 Usage:
-  import_android_strings.py <android res folder> <iOS Resources folder>
+  import_android_strings.py <android res folder> <iOS resources folder> <table>
 e.g.
-  import_android_strings.py ../artise-android/artise/notes/impl/src/main/res Artise/Sources/ArtiseNotesUI/Resources
+  import_android_strings.py ../artise-android/artise/notes/impl/src/main/res Artise/Resources/Notes ArtiseNotes
 
 values/ becomes en.lproj, values-es/ es.lproj, values-pt/ pt.lproj (any values-xx/ is xx.lproj).
-<string> goes to Localizable.strings and <plurals> to Localizable.stringsdict.
+<string> goes to <table>.strings and <plurals> to <table>.stringsdict. Each feature has its own table,
+so its keys never clash with upstream's Localizable table.
 """
 import pathlib
 import re
@@ -65,7 +66,7 @@ def escape_xml(text):
     return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
 
-def convert(values_dir, lproj_dir):
+def convert(values_dir, lproj_dir, table):
     root = ET.parse(values_dir / "strings.xml").getroot()
     strings, plurals = [], []
     for element in root:
@@ -80,7 +81,7 @@ def convert(values_dir, lproj_dir):
 
     lproj_dir.mkdir(parents=True, exist_ok=True)
     lines = [HEADER] + [f'"{name}" = "{escape_strings(value)}";' for name, value in strings]
-    (lproj_dir / "Localizable.strings").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    (lproj_dir / f"{table}.strings").write_text("\n".join(lines) + "\n", encoding="utf-8")
 
     if plurals:
         parts = [PLIST_HEADER]
@@ -97,18 +98,18 @@ def convert(values_dir, lproj_dir):
                 parts.append(f"            <key>{quantity}</key>\n            <string>{escape_xml(value)}</string>\n")
             parts.append("        </dict>\n    </dict>\n")
         parts.append("</dict>\n</plist>\n")
-        (lproj_dir / "Localizable.stringsdict").write_text("".join(parts), encoding="utf-8")
+        (lproj_dir / f"{table}.stringsdict").write_text("".join(parts), encoding="utf-8")
     return len(strings), len(plurals)
 
 
-def main(res_dir, out_dir):
+def main(res_dir, out_dir, table):
     for values_dir in sorted(res_dir.glob("values*")):
         if not (values_dir / "strings.xml").exists():
             continue
         language = "en" if values_dir.name == "values" else values_dir.name.split("-", 1)[1]
-        count = convert(values_dir, out_dir / f"{language}.lproj")
+        count = convert(values_dir, out_dir / f"{language}.lproj", table)
         print(f"{language}: {count[0]} strings, {count[1]} plurals")
 
 
 if __name__ == "__main__":
-    main(pathlib.Path(sys.argv[1]), pathlib.Path(sys.argv[2]))
+    main(pathlib.Path(sys.argv[1]), pathlib.Path(sys.argv[2]), sys.argv[3])

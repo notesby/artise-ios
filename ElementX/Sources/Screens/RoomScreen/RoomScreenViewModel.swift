@@ -72,6 +72,7 @@ class RoomScreenViewModel: RoomScreenViewModelType, RoomScreenViewModelProtocol 
                                             hasOngoingCall: roomProxy.infoPublisher.value.hasRoomCall,
                                             isDM: roomProxy.infoPublisher.value.isDM,
                                             hasSuccessor: roomProxy.infoPublisher.value.successor != nil,
+                                            artiseRoomID: roomProxy.id,
                                             roomHistorySharingState: roomProxy.infoPublisher.value.historySharingState)
         super.init(initialViewState: appHooks.roomScreenHook.update(viewState),
                    mediaProvider: userSession.mediaProvider)

@@ -15,7 +15,8 @@ import OrderedCollections
 
 // swiftlint:disable:next type_body_length
 class ClientProxy: ClientProxyProtocol {
-    private let client: ClientProtocol
+    // Artise: read by ElementX/Sources/Artise (OpenID tokens for notes).
+    let client: ClientProtocol
     private let networkMonitor: NetworkMonitorProtocol
     private let appSettings: AppSettings
     private let analyticsService: AnalyticsServiceProtocol

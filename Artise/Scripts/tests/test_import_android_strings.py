@@ -38,9 +38,9 @@ class ImportTests(unittest.TestCase):
             (root / "res" / "values").mkdir(parents=True)
             (root / "res" / "values" / "strings.xml").write_text(ANDROID_EN, encoding="utf-8")
 
-            importer.main(root / "res", root / "out")
+            importer.main(root / "res", root / "out", "ArtiseNotes")
 
-            strings = strings_reader.load_strings(root / "out" / "en.lproj" / "Localizable.strings")
+            strings = strings_reader.load_strings(root / "out" / "en.lproj" / "ArtiseNotes.strings")
             self.assertEqual(strings, {
                 "title": "Notes",
                 "quoted": "It's here",
@@ -48,15 +48,15 @@ class ImportTests(unittest.TestCase):
                 "lines": "Used in:\n%1$@",
                 "amp": "Photos & files",
             })
-            plurals = plistlib.loads((root / "out" / "en.lproj" / "Localizable.stringsdict").read_bytes())
+            plurals = plistlib.loads((root / "out" / "en.lproj" / "ArtiseNotes.stringsdict").read_bytes())
             self.assertEqual(plurals["count"]["count"]["one"], "%d note")
             self.assertEqual(plurals["count"]["NSStringLocalizedFormatKey"], "%#@count@")
 
     def test_imported_notes_strings_cover_spanish(self):
         """Scenario: the notes texts imported into the app. Expected: every English text has a Spanish one."""
-        resources = pathlib.Path(__file__).resolve().parents[2] / "Sources" / "ArtiseNotesUI" / "Resources"
-        english = strings_reader.load_strings(resources / "en.lproj" / "Localizable.strings")
-        spanish = strings_reader.load_strings(resources / "es.lproj" / "Localizable.strings")
+        resources = pathlib.Path(__file__).resolve().parents[2] / "Resources" / "Notes"
+        english = strings_reader.load_strings(resources / "en.lproj" / "ArtiseNotes.strings")
+        spanish = strings_reader.load_strings(resources / "es.lproj" / "ArtiseNotes.strings")
         missing = set(english) - set(spanish)
         # Android keeps one English-only text (not translatable); nothing else may be missing.
         self.assertLessEqual(len(missing), 1, missing)
