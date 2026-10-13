@@ -72,7 +72,7 @@ public enum NoteLinkResolver {
             }
     }
     
-    static func hasExtension(_ name: String) -> Bool {
+    public static func hasExtension(_ name: String) -> Bool {
         name.range(of: #"\.[A-Za-z0-9]{1,5}$"#, options: .regularExpression) != nil
     }
     

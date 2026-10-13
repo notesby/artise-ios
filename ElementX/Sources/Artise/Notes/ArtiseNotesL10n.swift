@@ -34,7 +34,7 @@ enum ArtiseNotesL10n {
         String.localizedStringWithFormat(text("screen_notes_folder_file_count"), files)
     }
     
-    private static func text(_ key: String) -> String {
+    static func text(_ key: String) -> String {
         NSLocalizedString(key, tableName: "ArtiseNotes", bundle: .main, comment: "")
     }
 }
