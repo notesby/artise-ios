@@ -69,6 +69,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 | `AppCoordinator.swift` (`handleDeepLink`) | Opens pictures shared with the "Artise sticker" extension (`ArtiseStickerShare/`, a target of `Artise/override.yml`). |
 | `ComposerToolbar*.swift` (link preview), `TimelineProxy.swift` (`sendMessage`), `RoomTimelineItemFactory.swift`, `TextRoomTimelineItemContent.swift`, `TextRoomTimelineView.swift` | Link previews made on the sender's phone travel inside the message (MSC4095) and show under its text (`ArtiseLinkPreviews`). |
 | `NSE/Sources/NotificationContentBuilder.swift`, `NSE/Sources/NotificationHandler.swift` | Ari's important and critical posts (`co.artise.automation`) are Time Sensitive, critical ones always make a sound, and they show even when quiet notifications are hidden (`ArtiseAutomationLevel`). |
+| `ElementX/Resources/Assets.xcassets/images/app-logo.imageset/app-logo.pdf`, `ElementCallService.swift` | The welcome screen shows Artise's round logo; CallKit uses Artise's mark as its icon (`ArtiseCallKitIcon`). Both drawn by `Artise/Resources/AppIcon/make_app_icon.py`. |
 | `NSE/SupportingFiles/target.yml` | Notification filtering entitlement off until Apple grants it to our team. |
 
 ## Branches

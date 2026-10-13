@@ -102,7 +102,8 @@ class ElementCallService: NSObject, ElementCallServiceProtocol, PKPushRegistryDe
             configuration.supportsVideo = true
             configuration.includesCallsInRecents = true
             
-            if let callKitIcon = UIImage(named: "images/app-logo") {
+            // Artise: a template of Artise's mark (the welcome logo is a full-colour circle).
+            if let callKitIcon = UIImage(named: "ArtiseCallKitIcon") {
                 configuration.iconTemplateImageData = callKitIcon.pngData()
             }
             
