@@ -171,7 +171,7 @@ struct RoomDetailsScreen: View {
                     .accessibilityIdentifier(A11yIdentifiers.roomDetailsScreen.pollsHistory)
             
             // Artise: the chat's notes.
-            ArtiseNotesListRow(roomID: context.viewState.roomID)
+            ArtiseNotesListRow(roomID: context.viewState.details.id)
         }
     }
     
