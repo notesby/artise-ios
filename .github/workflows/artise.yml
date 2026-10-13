@@ -162,6 +162,8 @@ jobs:
 
       # Signing is manual: Artise's distribution certificate and App Store profiles, made with the
       # App Store Connect API (Xcode's automatic provisioning fails with API keys for this team).
+      # The identity is also given on the command line: XcodeGen's preset sets one on the app target,
+      # which outranks Artise/CI/ReleaseSigning.xcconfig.
       - name: Install the signing certificate and profiles
         run: |
           set -euo pipefail
@@ -210,6 +212,7 @@ jobs:
             -destination "generic/platform=iOS" \
             -archivePath "$RUNNER_TEMP/Artise.xcarchive" \
             CURRENT_PROJECT_VERSION="$GITHUB_RUN_NUMBER" \
+            CODE_SIGN_IDENTITY="Apple Distribution" \
             OTHER_CODE_SIGN_FLAGS="--keychain $ARTISE_KEYCHAIN" \
             | tee "$RUNNER_TEMP/archive.log" | grep -E "error:|warning: .*[Ss]ign|ARCHIVE (SUCCEEDED|FAILED)"
 
