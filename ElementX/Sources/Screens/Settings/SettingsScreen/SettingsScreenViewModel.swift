@@ -6,6 +6,7 @@
 // Please see LICENSE files in the repository root for full details.
 //
 
+import ArtiseCore
 import Combine
 import SwiftUI
 
@@ -30,7 +31,8 @@ class SettingsScreenViewModel: SettingsScreenViewModelType, SettingsScreenViewMo
         super.init(initialViewState: .init(deviceID: userSession.clientProxy.deviceID,
                                            userProfile: userSession.clientProxy.userProfilePublisher.value,
                                            showLinkNewDeviceButton: appSettings.linkNewDeviceEnabled,
-                                           showAccountDeactivation: userSession.clientProxy.canDeactivateAccount,
+                                           // Artise: always shown; it opens Artise's deletion page (App Store requirement).
+                                           showAccountDeactivation: true,
                                            showDeveloperOptions: appSettings.developerOptionsEnabled,
                                            showAnalyticsSettings: appSettings.canPromptForAnalytics,
                                            isBugReportServiceEnabled: isBugReportServiceEnabled,
@@ -142,7 +144,9 @@ class SettingsScreenViewModel: SettingsScreenViewModelType, SettingsScreenViewMo
         case .developerOptions:
             actionsSubject.send(.developerOptions)
         case .deactivateAccount:
-            actionsSubject.send(.deactivateAccount)
+            // Artise: the account is deleted on Artise's page, which also ends this session.
+            ArtiseAccountDeletion().markStarted()
+            UIApplication.shared.open(ArtiseAccountDeletion.pageURL(language: Bundle.main.preferredLocalizations.first))
         }
     }
     
