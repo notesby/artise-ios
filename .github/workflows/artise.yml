@@ -165,9 +165,16 @@ jobs:
       - name: Install the App Store Connect key
         if: steps.secrets.outputs.available == 'true'
         run: |
+          set -euo pipefail
           key_path="$RUNNER_TEMP/AuthKey_$ASC_KEY_ID.p8"
-          printf '%s' "$ASC_KEY_P8" | base64 --decode > "$key_path"
+          python3 -c 'import base64, os, sys; sys.stdout.buffer.write(base64.b64decode(os.environ["ASC_KEY_P8"].strip()))' > "$key_path"
           chmod 600 "$key_path"
+          if ! grep -q "BEGIN PRIVATE KEY" "$key_path"; then
+            echo "::error title=App Store Connect key::ASC_KEY_P8 isn't a base64-encoded .p8 key."
+            exit 1
+          fi
+          # The fingerprint of the key (not the key) to compare with a local copy.
+          echo "Key fingerprint: $(shasum -a 256 "$key_path" | cut -c1-16)"
           echo "ASC_KEY_PATH=$key_path" >> "$GITHUB_ENV"
 
       - name: Archive
