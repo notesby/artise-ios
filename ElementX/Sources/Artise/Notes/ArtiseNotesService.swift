@@ -13,11 +13,11 @@ import MatrixRustSDK
 final class ArtiseNotesService {
     /// The room state event the Ari bot sets whenever a chat's notes change: `{"tree": "9f1c…"}`.
     static let stateEventType = "co.artise.notes"
-
+    
     let repository: NotesRepository
     private let clientProxy: ClientProxyProtocol
     private var followed: [String: TaskHandle] = [:]
-
+    
     /// `nil` when the account's notes can't be opened on this phone (no key in the Keychain).
     init?(clientProxy: ClientProxyProtocol) {
         guard let sdkClient = (clientProxy as? ClientProxy)?.client else {
@@ -41,7 +41,7 @@ final class ArtiseNotesService {
                                      cipher: AESGCMNotesCipher(keyData: keyData))
         self.clientProxy = clientProxy
     }
-
+    
     /// Where an account's notes live on the phone.
     nonisolated static func directory(for userID: String) -> URL {
         let folder = Data(userID.utf8).base64EncodedString()
@@ -49,15 +49,15 @@ final class ArtiseNotesService {
             .replacingOccurrences(of: "+", with: "-")
         return URL.applicationSupportDirectory.appending(path: "ArtiseNotes").appending(path: folder)
     }
-
+    
     /// Forgets an account's notes on this phone: the files, then the key that could read them.
     nonisolated static func removeData(forUserID userID: String) {
         try? FileManager.default.removeItem(at: directory(for: userID))
         KeychainNotesKeyStore().deleteKey(account: userID)
     }
-
+    
     // MARK: - Live updates
-
+    
     /// Keeps these chats' notes current while a notes screen shows them, as the Notes API contract asks:
     /// when a chat's `co.artise.notes` tree differs from ours, it syncs; a chat without that state gets one
     /// ETag check instead, which costs a `304` when nothing changed.
@@ -81,7 +81,7 @@ final class ArtiseNotesService {
         }
         followed[roomID] = room.subscribeToStateEvents(eventType: stateEventTypeFromString(s: Self.stateEventType), listener: listener)
     }
-
+    
     func unfollowAll() {
         followed.values.forEach { $0.cancel() }
         followed = [:]
@@ -91,16 +91,16 @@ final class ArtiseNotesService {
 /// Hears a chat's `co.artise.notes` state: the tree hash, or `nil` when the chat has none yet.
 final nonisolated class NotesTreeListener: RoomStateEventsListener {
     private let onTree: @Sendable (String?) -> Void
-
+    
     init(onTree: @escaping @Sendable (String?) -> Void) {
         self.onTree = onTree
     }
-
+    
     func onUpdate(events: [RoomStateEvent]) {
         let content = events.first { $0.stateKey.isEmpty }?.contentJson
         onTree(content.flatMap(Self.tree))
     }
-
+    
     /// The tree hash from `{"tree": "9f1c…"}`, or `nil` if it's missing or unreadable.
     static func tree(from content: String) -> String? {
         guard let object = try? JSONSerialization.jsonObject(with: Data(content.utf8)) as? [String: Any],
