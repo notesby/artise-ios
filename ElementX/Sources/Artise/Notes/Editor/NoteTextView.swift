@@ -178,7 +178,7 @@ nonisolated enum NotePreviewStyle {
     }
 }
 
-nonisolated private extension PreviewRun {
+private nonisolated extension PreviewRun {
     var isMarker: Bool {
         switch style {
         case .hidden, .glyph: true
@@ -188,7 +188,7 @@ nonisolated private extension PreviewRun {
 }
 
 /// A glyph to draw, stored in the text's attributes.
-nonisolated final class NotePreviewGlyph: NSObject {
+final nonisolated class NotePreviewGlyph: NSObject {
     let glyph: PreviewGlyph
     
     init(_ glyph: PreviewGlyph) {
@@ -198,7 +198,7 @@ nonisolated final class NotePreviewGlyph: NSObject {
 
 /// Draws the preview's glyphs (checkboxes, bullets, quote bars, rules, the embed icon) over the invisible
 /// Markdown marks they stand for. Taps there still land on those marks, which is how ticking works.
-nonisolated final class NotePreviewLayoutManager: NSLayoutManager {
+final nonisolated class NotePreviewLayoutManager: NSLayoutManager {
     override func drawGlyphs(forGlyphRange glyphsToShow: NSRange, at origin: CGPoint) {
         super.drawGlyphs(forGlyphRange: glyphsToShow, at: origin)
         guard let storage = textStorage, let container = textContainers.first else { return }
