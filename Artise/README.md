@@ -63,6 +63,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 | `HomeScreen.swift`, `RoomScreen.swift` (+ `RoomScreenModels`/`ViewModel`: `artiseRoomID`), `RoomDetailsScreen.swift` | The notes entry points: a top-bar button, a button next to the call button, and a "Notes" row. |
 | `ElementX/Sources/Screens/Timeline/View/Style/LongPressWithFeedback.swift` | Holding a message opens its actions after 250 ms, as on Android (`ArtiseTimeline`). |
 | `SettingsScreenViewModel.swift`, `AppCoordinator.swift` | Settings → Delete account opens Artise's page (`?lang=es` in Spanish); a sign-out within an hour of that goes straight to sign-in (`ArtiseAccountDeletion`). |
+| `AppCoordinator.swift`, `AppSettings.swift` (analytics) | Usage statistics go to Google Analytics for Firebase (`ArtiseAnalyticsClient`) behind Element's consent screen, when the app has its `GoogleService-Info.plist`. |
 | `NSE/SupportingFiles/target.yml` | Notification filtering entitlement off until Apple grants it to our team. |
 
 ## Branches

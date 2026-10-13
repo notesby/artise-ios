@@ -52,6 +52,7 @@ struct NoteScreen: View {
             .padding(16)
         }
         .background(.compound.bgCanvasDefault)
+        .onAppear { ArtiseAnalyticsClient.shared.screen(.note) }
         .navigationTitle(NotesFolderEntries.noteName(path))
         .navigationBarTitleDisplayMode(.inline)
         .refreshable { _ = try? await service.repository.sync(roomID: roomID) }
