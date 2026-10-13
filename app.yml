@@ -19,3 +19,11 @@ settings:
 # Artise: Release device builds sign with Artise's distribution certificate and App Store profiles.
 configFiles:
   Release: Artise/CI/ReleaseSigning.xcconfig
+
+# Artise: XcodeGen's preset gives the app target a development identity, which outranks the xcconfig above.
+targets:
+  ElementX:
+    settings:
+      configs:
+        Release:
+          "CODE_SIGN_IDENTITY[sdk=iphoneos*]": Apple Distribution
