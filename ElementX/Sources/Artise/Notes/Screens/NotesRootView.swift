@@ -19,6 +19,8 @@ enum NotesRoute: Hashable {
     case choices(roomID: String)
     /// The chat's photos and files.
     case media(roomID: String)
+    /// The chat's notes as a map.
+    case map(roomID: String)
 }
 
 /// The notes screens, presented over the app: the chats with notes, or one chat's notes.
@@ -86,6 +88,8 @@ struct NotesDestination: View {
             NotesChoicesScreen(service: service, roomID: roomID)
         case .media(let roomID):
             NotesMediaScreen(service: service, roomID: roomID)
+        case .map(let roomID):
+            NotesMapScreen(service: service, roomID: roomID)
         }
     }
 }
