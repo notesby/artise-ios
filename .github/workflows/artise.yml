@@ -1,0 +1,183 @@
+#
+# Copyright 2026 Artise.
+#
+# SPDX-License-Identifier: AGPL-3.0-only
+#
+# Artise's CI. There is no Mac in the team, so this workflow is the Mac:
+# - checks: Artise file headers (Linux, fast).
+# - tests: upstream SwiftFormat lint and unit tests, plus the Artise package tests.
+# - testflight: archives, signs with cloud-managed signing and uploads to TestFlight.
+# Upstream's own workflows are disabled on this repository.
+
+name: Artise
+
+on:
+  push:
+    branches: [development, "feature/**", "fix/**", "ci/**"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  # One run per branch; a newer push cancels the older run.
+  group: artise-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: Headers
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Check Artise file headers
+        run: Artise/Scripts/check-headers.sh
+
+  tests:
+    name: Tests
+    runs-on: macos-26
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup environment
+        run: source ci_scripts/ci_common.sh && setup_github_actions_environment
+
+      # Our repository holds only LFS pointers. The unit test snapshots are fetched from upstream.
+      - name: Fetch upstream unit test snapshots
+        run: |
+          git lfs install --local
+          git config lfs.url https://github.com/element-hq/element-x-ios.git/info/lfs
+          git lfs pull --include "UnitTests/__Snapshots__/**"
+
+      - name: Generate the Xcode project
+        run: xcodegen
+
+      # The committed project must match project.yml/app.yml. When it doesn't, the regenerated
+      # project is uploaded so it can be committed from a machine without Xcode.
+      - name: Check the committed Xcode project
+        id: project
+        run: |
+          if git diff --quiet -- ElementX.xcodeproj; then
+            echo "stale=false" >> "$GITHUB_OUTPUT"
+          else
+            git diff --stat -- ElementX.xcodeproj
+            echo "::warning title=Stale Xcode project::Commit the regenerated ElementX.xcodeproj from this run's artifact."
+            echo "stale=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Upload the regenerated Xcode project
+        if: steps.project.outputs.stale == 'true'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ElementX.xcodeproj
+          path: ElementX.xcodeproj
+          retention-days: 3
+          if-no-files-found: ignore
+
+      - name: Artise package tests
+        run: swift test --package-path Artise
+
+      - name: Upstream lint and unit tests
+        # Preview snapshots are skipped: Artise's branding changes them on purpose.
+        run: swift run -q tools ci unit-tests --skip-previews
+
+      - name: Archive test results
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: Results
+          path: test_output/UnitTests.zip
+          retention-days: 3
+          if-no-files-found: ignore
+
+  testflight:
+    name: TestFlight
+    # Builds for the phone from every pushed feature or fix branch, or on demand.
+    if: github.ref != 'refs/heads/development'
+    runs-on: macos-26
+    timeout-minutes: 90
+    env:
+      ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+      ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+      ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+    steps:
+      - name: Check signing secrets
+        id: secrets
+        run: |
+          if [ -n "$ASC_KEY_ID" ] && [ -n "$ASC_ISSUER_ID" ] && [ -n "$ASC_KEY_P8" ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice title=TestFlight skipped::Add ASC_KEY_ID, ASC_ISSUER_ID and ASC_KEY_P8 to the repository secrets."
+            echo "available=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: steps.secrets.outputs.available == 'true'
+        with:
+          persist-credentials: false
+
+      - name: Setup environment
+        if: steps.secrets.outputs.available == 'true'
+        run: source ci_scripts/ci_common.sh && setup_github_actions_environment
+
+      - name: Generate the Xcode project
+        if: steps.secrets.outputs.available == 'true'
+        run: xcodegen
+
+      - name: Install the App Store Connect key
+        if: steps.secrets.outputs.available == 'true'
+        run: |
+          key_path="$RUNNER_TEMP/AuthKey_$ASC_KEY_ID.p8"
+          printf '%s' "$ASC_KEY_P8" | base64 --decode > "$key_path"
+          chmod 600 "$key_path"
+          echo "ASC_KEY_PATH=$key_path" >> "$GITHUB_ENV"
+
+      - name: Archive
+        if: steps.secrets.outputs.available == 'true'
+        run: |
+          set -o pipefail
+          xcodebuild archive \
+            -project ElementX.xcodeproj \
+            -scheme ElementX \
+            -configuration Release \
+            -destination "generic/platform=iOS" \
+            -archivePath "$RUNNER_TEMP/Artise.xcarchive" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$ASC_KEY_PATH" \
+            -authenticationKeyID "$ASC_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
+            CURRENT_PROJECT_VERSION="$GITHUB_RUN_NUMBER" \
+            | tee "$RUNNER_TEMP/archive.log" | grep -E "error:|warning: .*[Ss]ign|ARCHIVE (SUCCEEDED|FAILED)"
+
+      - name: Upload to TestFlight
+        if: steps.secrets.outputs.available == 'true'
+        run: |
+          xcodebuild -exportArchive \
+            -archivePath "$RUNNER_TEMP/Artise.xcarchive" \
+            -exportOptionsPlist Artise/CI/ExportOptions.plist \
+            -exportPath "$RUNNER_TEMP/export" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$ASC_KEY_PATH" \
+            -authenticationKeyID "$ASC_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_ISSUER_ID"
+          echo "::notice title=TestFlight::Build $GITHUB_RUN_NUMBER from ${GITHUB_REF_NAME} was uploaded. It shows in TestFlight after Apple finishes processing it."
+
+      - name: Upload the archive log
+        if: failure() && steps.secrets.outputs.available == 'true'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: archive-log
+          path: ${{ runner.temp }}/archive.log
+          retention-days: 3
+          if-no-files-found: ignore
+
+      - name: Remove the App Store Connect key
+        if: always()
+        run: rm -f "$RUNNER_TEMP"/AuthKey_*.p8
