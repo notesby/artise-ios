@@ -42,6 +42,11 @@ targets:
     - package: Firebase
       product: FirebaseAnalytics
 
+    # Ari's important and critical reminders break through Focus (ArtiseAutomationLevel).
+    entitlements:
+      properties:
+        com.apple.developer.usernotifications.time-sensitive: true
+
     # Nothing is collected before consent; no ads, no ad signals, no automatic screen reports.
     info:
       properties:

@@ -68,6 +68,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 | `TimelineItemMenuAction.swift`, `TimelineItemMenuActionProvider.swift`, `TimelineInteractionHandler.swift` | "Save to my stickers" in a received sticker's menu. |
 | `AppCoordinator.swift` (`handleDeepLink`) | Opens pictures shared with the "Artise sticker" extension (`ArtiseStickerShare/`, a target of `Artise/override.yml`). |
 | `ComposerToolbar*.swift` (link preview), `TimelineProxy.swift` (`sendMessage`), `RoomTimelineItemFactory.swift`, `TextRoomTimelineItemContent.swift`, `TextRoomTimelineView.swift` | Link previews made on the sender's phone travel inside the message (MSC4095) and show under its text (`ArtiseLinkPreviews`). |
+| `NSE/Sources/NotificationContentBuilder.swift`, `NSE/Sources/NotificationHandler.swift` | Ari's important and critical posts (`co.artise.automation`) are Time Sensitive, critical ones always make a sound, and they show even when quiet notifications are hidden (`ArtiseAutomationLevel`). |
 | `NSE/SupportingFiles/target.yml` | Notification filtering entitlement off until Apple grants it to our team. |
 
 ## Branches
