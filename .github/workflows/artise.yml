@@ -160,6 +160,20 @@ jobs:
       - name: Setup environment
         run: source ci_scripts/ci_common.sh && setup_github_actions_environment
 
+      # Firebase's file for usage statistics goes into the build here and never into git (as on Android).
+      # Without it, analytics stay off and consent isn't asked.
+      - name: Add the Firebase file
+        env:
+          GOOGLE_SERVICE_INFO_PLIST: ${{ secrets.GOOGLE_SERVICE_INFO_PLIST }}
+        run: |
+          if [ -n "$GOOGLE_SERVICE_INFO_PLIST" ]; then
+            mkdir -p Artise/Resources/Firebase
+            python3 -c 'import base64, os, sys; sys.stdout.buffer.write(base64.b64decode(os.environ["GOOGLE_SERVICE_INFO_PLIST"].strip()))' > Artise/Resources/Firebase/GoogleService-Info.plist
+            echo "Firebase file added."
+          else
+            echo "::warning title=Analytics::No GOOGLE_SERVICE_INFO_PLIST secret: analytics are off in this build."
+          fi
+
       - name: Generate the Xcode project
         run: xcodegen
 

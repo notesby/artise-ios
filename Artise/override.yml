@@ -26,6 +26,10 @@ targets:
     - path: Artise/Resources/Assets.xcassets
     # Each feature's texts are their own string table (ArtiseNotes.strings…), imported from the Android app.
     - path: Artise/Resources/Notes
+    # Firebase's file, written by the TestFlight job from a secret (never committed).
+    - path: Artise/Resources/Firebase/GoogleService-Info.plist
+      optional: true
+      buildPhase: resources
 
     dependencies:
     - package: Artise

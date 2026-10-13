@@ -101,6 +101,7 @@ on this repository.
 | `ASC_KEY_P8` | The `.p8` file, base64-encoded: `base64 -w0 AuthKey_XXXX.p8` |
 | `DIST_CERT_P12` | The distribution certificate and its private key, as a base64-encoded `.p12` |
 | `DIST_CERT_PASSWORD` | The `.p12`'s password |
+| `GOOGLE_SERVICE_INFO_PLIST` | Firebase's `GoogleService-Info.plist` for `co.artise.app`, base64-encoded (analytics are off in TestFlight builds without it) |
 | `PROFILE_APP`, `PROFILE_NSE`, `PROFILE_SHARE` | The three App Store profiles, base64-encoded |
 
 Local copies of the keys and the certificate live in `~/.artise-keys/` on the maintainer's machine.
