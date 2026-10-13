@@ -13,7 +13,8 @@ import UIKit
 
 class JoinedRoomProxy: JoinedRoomProxyProtocol {
     private let roomListService: RoomListServiceProtocol
-    private let room: RoomProtocol
+    // Artise: read by ElementX/Sources/Artise (the co.artise.notes room state).
+    let room: RoomProtocol
     private let appSettings: AppSettings
     private let analyticsService: AnalyticsServiceProtocol
     private let eventStringBuilder: RoomEventStringBuilder

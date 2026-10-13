@@ -26,7 +26,9 @@ Artise plugs into upstream's own extension points:
 - `Artise/override.yml` is an XcodeGen include. It adds our package, the app icon and the
   string override build step to the ElementX target.
 - `ElementX/Sources/Artise/ArtiseAppHooks.swift` registers our `AppHooks` (`AppSettingsHook`:
-  server lock, links, push gateway).
+  server lock, links, push gateway; `UserSessionHook`: starts notes for the signed-in account).
+- Features keep their logic in the `Artise` package (tested with `swift test`, on Linux too) and their
+  screens in `ElementX/Sources/Artise/<Feature>`, built with Compound so they look like the rest of the app.
 - Rules that touch upstream screens live in `ArtiseCore`, so the upstream edit stays a one-line
   call and the rule has its own tests.
 
@@ -56,6 +58,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 | `app.yml` | App name, bundle ID `co.artise.app`, app group, team. Element Classic import pointed at our own group. |
 | `project.yml` | Includes `Artise/override.yml` (our package, app icon and build steps). |
 | `ElementX/Sources/Application/Settings/AppSettings.swift` | Pusher app IDs `co.artise.app.ios` / `.debug`, the ones registered in Artise's Sygnal. |
+| `ElementX/Sources/Services/Client/ClientProxy.swift`, `…/Room/JoinedRoomProxy.swift` | The SDK client and room are readable (not `private`): notes ask for OpenID tokens and follow `co.artise.notes`. |
+| `ElementX/Sources/Services/UserSession/UserSessionStore.swift` | Signing out forgets the account's notes on the phone. |
+| `HomeScreen.swift`, `RoomScreen.swift` (+ `RoomScreenModels`/`ViewModel`: `artiseRoomID`), `RoomDetailsScreen.swift` | The notes entry points: a top-bar button, a button next to the call button, and a "Notes" row. |
 | `NSE/SupportingFiles/target.yml` | Notification filtering entitlement off until Apple grants it to our team. |
 
 ## Branches

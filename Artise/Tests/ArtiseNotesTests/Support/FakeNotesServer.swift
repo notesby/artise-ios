@@ -1,0 +1,275 @@
+//
+// Copyright 2026 Artise.
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+//
+
+@testable import ArtiseNotes
+import Foundation
+import Synchronization
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
+
+/// An in-memory Notes API that follows the contract closely enough to test syncing against it.
+final class FakeNotesServer: NotesHTTPTransport {
+    struct Recorded: Sendable {
+        let method: String
+        let url: URL
+        let headers: [String: String]
+        let body: Data?
+        
+        var path: String {
+            url.path
+        }
+        
+        var query: [String: String] {
+            Dictionary(URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems?.map { ($0.name, $0.value ?? "") } ?? [],
+                       uniquingKeysWith: { $1 })
+        }
+        
+        var json: [String: Any]? {
+            body.flatMap { try? JSONSerialization.jsonObject(with: $0) as? [String: Any] }
+        }
+    }
+    
+    struct StoredFile {
+        var version: String
+        var content: String
+        var isNote: Bool
+    }
+    
+    struct State {
+        var files: [String: StoredFile] = [:]
+        var folders: [String] = []
+        var versionCounter = 0
+        var treeCounter = 0
+        var requests: [Recorded] = []
+        /// Tokens the server accepts; any other gets a `401`.
+        var validTokens: Set = ["token-1"]
+        /// Answers the next requests to these endpoints (`note`, `tree`…) with a status and a JSON error, once each.
+        var failNext: [String: [(status: Int, body: String)]] = [:]
+        /// When set, every request fails as if offline.
+        var isOffline = false
+        /// Merges a save whose base is outdated when it returns text; otherwise the save answers `409 conflict`.
+        var merge: (@Sendable (_ server: String, _ mine: String) -> String?)?
+    }
+    
+    static let roomID = "!abc:artise.co"
+    static let encodedRoom = "%21abc%3Aartise.co"
+    
+    let state = Mutex(State())
+    
+    // MARK: - Setting up and checking
+    
+    var tree: String {
+        state.withLock { "tree-\($0.treeCounter)" }
+    }
+    
+    var requests: [Recorded] {
+        state.withLock { $0.requests }
+    }
+    
+    func requests(to endpoint: String, method: String? = nil) -> [Recorded] {
+        requests.filter { $0.path.hasSuffix("/" + endpoint) && (method == nil || $0.method == method) }
+    }
+    
+    func setOffline(_ isOffline: Bool) {
+        state.withLock { $0.isOffline = isOffline }
+    }
+    
+    func setValidTokens(_ tokens: Set<String>) {
+        state.withLock { $0.validTokens = tokens }
+    }
+    
+    func setMerge(_ merge: (@Sendable (_ server: String, _ mine: String) -> String?)?) {
+        state.withLock { $0.merge = merge }
+    }
+    
+    /// The next request to `endpoint` fails with `status` and this error code; the one after works again.
+    func failNext(_ endpoint: String, status: Int, error: String) {
+        let body = #"{"error": "\#(error)", "message": "Failed on purpose"}"#
+        state.withLock { $0.failNext[endpoint, default: []].append((status, body)) }
+    }
+    
+    @discardableResult
+    func put(_ path: String, _ content: String, isNote: Bool = true) -> String {
+        state.withLock { Self.store(&$0, path, content, isNote: isNote) }
+    }
+    
+    func remove(_ path: String) {
+        state.withLock {
+            $0.files[path] = nil
+            $0.treeCounter += 1
+        }
+    }
+    
+    func setFolders(_ folders: [String]) {
+        state.withLock {
+            $0.folders = folders
+            $0.treeCounter += 1
+        }
+    }
+    
+    func content(_ path: String) -> String? {
+        state.withLock { $0.files[path]?.content }
+    }
+    
+    func version(_ path: String) -> String? {
+        state.withLock { $0.files[path]?.version }
+    }
+    
+    // MARK: - Transport
+    
+    func send(_ request: URLRequest) async throws -> (Data, HTTPURLResponse) {
+        let url = request.url ?? URL(fileURLWithPath: "/")
+        let recorded = Recorded(method: request.httpMethod ?? "GET", url: url, headers: request.allHTTPHeaderFields ?? [:], body: request.httpBody)
+        let answer = state.withLock { state -> (Int, Data, [String: String])? in
+            state.requests.append(recorded)
+            if state.isOffline {
+                return nil
+            }
+            return Self.answer(recorded, &state)
+        }
+        guard let (status, data, headers) = answer else {
+            throw URLError(.notConnectedToInternet)
+        }
+        guard let response = HTTPURLResponse(url: url, statusCode: status, httpVersion: "HTTP/1.1", headerFields: headers) else {
+            throw URLError(.badServerResponse)
+        }
+        return (data, response)
+    }
+    
+    private static func json(_ object: Any) -> Data {
+        (try? JSONSerialization.data(withJSONObject: object)) ?? Data()
+    }
+    
+    private static func answer(_ request: Recorded, _ state: inout State) -> (Int, Data, [String: String]) {
+        let token = request.headers["Authorization"]?.replacingOccurrences(of: "Bearer ", with: "") ?? ""
+        guard state.validTokens.contains(token) else {
+            return (401, json(["error": "unauthorized", "message": "Sign in again"]), [:])
+        }
+        let endpoint = request.path.split(separator: "/").last.map(String.init) ?? ""
+        if var failures = state.failNext[endpoint], !failures.isEmpty {
+            let failure = failures.removeFirst()
+            state.failNext[endpoint] = failures
+            return (failure.status, Data(failure.body.utf8), [:])
+        }
+        let (status, body, headers) = route(request, endpoint: endpoint, &state)
+        return (status, (body as? Data) ?? json(body), headers)
+    }
+    
+    private static func route(_ request: Recorded, endpoint: String, _ state: inout State) -> (Int, Any, [String: String]) {
+        let path = request.query["path"] ?? ""
+        switch (request.method, endpoint) {
+        case ("GET", "chats"):
+            return (200, ["user": "@ana:artise.co", "chats": [["id": roomID, "name": "Familia", "tree": "tree-\(state.treeCounter)"]]], [:])
+        case ("GET", "tree"):
+            let etag = "\"tree-\(state.treeCounter)\""
+            if request.headers["If-None-Match"] == etag {
+                return (304, Data(), ["ETag": etag])
+            }
+            let list = state.files.sorted { $0.key < $1.key }.map { path, file in
+                ["path": path, "version": file.version, "size": file.content.utf8.count, "modified": 1_790_000_000, "note": file.isNote] as [String: Any]
+            }
+            return (200, ["tree": "tree-\(state.treeCounter)", "files": list, "folders": state.folders], ["ETag": etag])
+        case ("GET", "note"):
+            guard let file = state.files[path] else {
+                return (404, ["error": "not_found", "message": "No such file"], [:])
+            }
+            return (200, ["path": path, "version": file.version, "content": file.content], [:])
+        case ("PUT", "note"):
+            return save(request.json ?? [:], &state)
+        case ("DELETE", "file"):
+            guard let file = state.files[path] else {
+                return (404, ["error": "not_found", "message": "No such file"], [:])
+            }
+            guard file.version == request.query["base"] else {
+                return (409, ["error": "conflict", "message": "Changed", "current": ["path": path, "version": file.version]], [:])
+            }
+            state.files[path] = nil
+            state.treeCounter += 1
+            return (200, ["path": path, "deleted": true, "trash": !file.isNote], [:])
+        default:
+            return (404, ["error": "not_found", "message": "Unknown endpoint"], [:])
+        }
+    }
+    
+    private static func save(_ body: [String: Any], _ state: inout State) -> (Int, Any, [String: String]) {
+        guard let path = body["path"] as? String, let content = body["content"] as? String, body.keys.contains("base_version") else {
+            return (400, ["error": "bad_path", "message": "Missing fields"], [:])
+        }
+        let base = body["base_version"] as? String
+        switch (state.files[path], base) {
+        case (nil, nil):
+            return saved(&state, path, content, status: 201, merged: nil)
+        case (nil, .some):
+            return (409, ["error": "deleted", "message": "Deleted meanwhile"], [:])
+        case (.some(let file), nil):
+            return (409, ["error": "exists", "message": "Already there", "current": ["path": path, "version": file.version, "content": file.content]], [:])
+        case (.some(let file), .some(let base)) where file.version == base:
+            return saved(&state, path, content, status: 200, merged: nil)
+        case (.some(let file), .some):
+            if let merged = state.merge?(file.content, content) {
+                return saved(&state, path, merged, status: 200, merged: merged)
+            }
+            return (409, ["error": "conflict", "message": "Same lines edited", "current": ["path": path, "version": file.version, "content": file.content]], [:])
+        }
+    }
+    
+    private static func store(_ state: inout State, _ path: String, _ content: String, isNote: Bool) -> String {
+        state.versionCounter += 1
+        state.treeCounter += 1
+        let counter = String(state.versionCounter)
+        let version = String(repeating: "0", count: 40 - counter.count) + counter
+        state.files[path] = StoredFile(version: version, content: content, isNote: isNote)
+        return version
+    }
+    
+    private static func saved(_ state: inout State, _ path: String, _ content: String, status: Int, merged: String?) -> (Int, Any, [String: String]) {
+        let version = store(&state, path, content, isNote: true)
+        var answer: [String: Any] = ["path": path, "version": version, "merged": merged != nil]
+        if let merged {
+            answer["content"] = merged
+        }
+        return (status, answer, [:])
+    }
+}
+
+/// Hands out "token-1", "token-2"… and counts the requests.
+actor CountingTokenProvider {
+    private(set) var issued = 0
+    
+    func next() -> NotesOpenIDToken {
+        issued += 1
+        return NotesOpenIDToken(accessToken: "token-\(issued)", expiresIn: 3600)
+    }
+}
+
+/// Reverses the bytes: enough to prove the store never writes plain text, on any platform.
+struct ReversingCipher: NotesCipher {
+    func seal(_ plaintext: Data) throws -> Data {
+        Data(plaintext.reversed())
+    }
+    
+    func open(_ sealed: Data) throws -> Data {
+        Data(sealed.reversed())
+    }
+}
+
+func makeTemporaryDirectory() -> URL {
+    FileManager.default.temporaryDirectory.appendingPathComponent("artise-notes-tests-\(UUID().uuidString)")
+}
+
+/// A clock the test moves by hand.
+final class TestClock: Sendable {
+    private let date = Mutex(Date(timeIntervalSince1970: 1_790_000_000))
+    
+    var now: Date {
+        date.withLock { $0 }
+    }
+    
+    func advance(by seconds: TimeInterval) {
+        date.withLock { $0 = $0.addingTimeInterval(seconds) }
+    }
+}

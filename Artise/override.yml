@@ -19,10 +19,14 @@ targets:
 
     sources:
     - path: Artise/Resources/Assets.xcassets
+    # Each feature's texts are their own string table (ArtiseNotes.strings…), imported from the Android app.
+    - path: Artise/Resources/Notes
 
     dependencies:
     - package: Artise
       product: ArtiseCore
+    - package: Artise
+      product: ArtiseNotes
 
     postBuildScripts:
     - name: Artise string overrides
