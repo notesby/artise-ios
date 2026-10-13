@@ -27,10 +27,6 @@ targets:
     # Each feature's texts are their own string table (ArtiseNotes.strings…), imported from the Android app.
     - path: Artise/Resources/Notes
     - path: Artise/Resources/Stickers
-    # Firebase's file, written by the TestFlight job from a secret (never committed).
-    - path: Artise/Resources/Firebase/GoogleService-Info.plist
-      optional: true
-      buildPhase: resources
 
     dependencies:
     - package: Artise
@@ -60,6 +56,17 @@ targets:
       shell: /bin/sh
       script: |
         "$SRCROOT/Artise/Scripts/apply-string-overrides.sh"
+    # Firebase's file, written by the TestFlight job from a secret (never committed); other builds have none and
+    # keep analytics off.
+    - name: Artise Firebase file
+      runOnlyWhenInstalling: false
+      basedOnDependencyAnalysis: false
+      shell: /bin/sh
+      script: |
+        source="$SRCROOT/Artise/Resources/Firebase/GoogleService-Info.plist"
+        if [ -f "$source" ]; then
+          cp "$source" "$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH/GoogleService-Info.plist"
+        fi
 
   # AppSettings, compiled into both extensions, reads Artise's configuration.
   NSE:
