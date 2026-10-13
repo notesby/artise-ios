@@ -43,7 +43,8 @@ jobs:
   tests:
     name: Tests
     runs-on: macos-26
-    timeout-minutes: 90
+    # A run without the compilation cache builds everything from scratch.
+    timeout-minutes: 150
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -52,12 +53,23 @@ jobs:
       - name: Setup environment
         run: source ci_scripts/ci_common.sh && setup_github_actions_environment
 
-      # Our repository holds only LFS pointers. The unit test snapshots are fetched from upstream.
-      - name: Fetch upstream unit test snapshots
+      # Our repository holds only LFS pointers. The sample media the unit tests load comes from upstream's LFS.
+      - name: Fetch upstream test media
         run: |
           git lfs install --local
           git config lfs.url https://github.com/element-hq/element-x-ios.git/info/lfs
-          git lfs pull --include "UnitTests/__Snapshots__/**"
+          git lfs pull --include "Components/DevelopmentAssets/Media/**"
+          if grep -rl "git-lfs.github.com/spec" Components/DevelopmentAssets/Media; then
+            echo "::error title=Test media::Some files are still LFS pointers."
+            exit 1
+          fi
+
+      - name: Restore compilation cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/Library/Developer/Xcode/CompilationCache.noindex
+          key: compilation-cache-unit-tests-${{ github.sha }}
+          restore-keys: compilation-cache-unit-tests-
 
       - name: Generate the Xcode project
         run: xcodegen
@@ -98,6 +110,14 @@ jobs:
       - name: Upstream lint and unit tests
         # Preview snapshots are skipped: Artise's branding changes them on purpose.
         run: swift run -q tools ci unit-tests --skip-previews
+
+      - name: Save compilation cache
+        # Like upstream: one branch fills the cache and every run reads it.
+        if: ${{ !cancelled() && github.ref == 'refs/heads/development' }}
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/Library/Developer/Xcode/CompilationCache.noindex
+          key: compilation-cache-unit-tests-${{ github.sha }}
 
       - name: Archive test results
         if: failure()
