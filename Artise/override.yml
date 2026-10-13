@@ -31,3 +31,14 @@ targets:
       shell: /bin/sh
       script: |
         "$SRCROOT/Artise/Scripts/apply-string-overrides.sh"
+
+  # AppSettings, compiled into both extensions, reads Artise's configuration.
+  NSE:
+    dependencies:
+    - package: Artise
+      product: ArtiseCore
+
+  ShareExtension:
+    dependencies:
+    - package: Artise
+      product: ArtiseCore

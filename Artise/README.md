@@ -55,6 +55,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 |---|---|
 | `app.yml` | App name, bundle ID `co.artise.app`, app group, team. Element Classic import pointed at our own group. |
 | `project.yml` | Includes `Artise/override.yml` (our package, app icon and build steps). |
+| `ElementX/Sources/Application/Settings/AppSettings.swift` | Pusher app IDs `co.artise.app.ios` / `.debug`, the ones registered in Artise's Sygnal. |
 | `NSE/SupportingFiles/target.yml` | Notification filtering entitlement off until Apple grants it to our team. |
 
 ## Branches
@@ -89,6 +90,11 @@ on this repository.
 | `ASC_KEY_P8` | The `.p8` file, base64-encoded: `base64 -w0 AuthKey_XXXX.p8` |
 
 Never commit keys, the APNs key or certificates. Local copies stay in git-ignored files.
+
+## Server requirements
+
+Changes on the server go through the project owner. What each feature needs is written down in
+`Artise/docs/`, starting with `server-push.md` (APNs in Sygnal).
 
 ## Apple entitlements to request
 
