@@ -81,7 +81,8 @@ on this repository.
 - **Signing** is manual: Artise's distribution certificate and an App Store profile per target
   (`Artise App Store`, `Artise NSE App Store`, `Artise Share App Store`), all made with the App Store
   Connect API. Xcode's automatic provisioning fails with API keys for this team, so it isn't used.
-  Release device builds pick them in `app.yml`; the upload uses `altool` with the API key.
+  Release device builds pick them through `Artise/CI/ReleaseSigning.xcconfig` (attached in `app.yml`);
+  the upload uses `altool` with the API key.
 - **Generated files:** XcodeGen writes `ElementX.xcodeproj`, the Info.plists and the entitlements
   from `project.yml` and `app.yml`. When those are out of date, the Tests job warns and uploads
   the regenerated files as the `xcodegen` artifact, to be committed.
