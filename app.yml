@@ -1,17 +1,29 @@
 settings:
-  # Artise: identity for the Artise fork (see Artise/README.md).
-  APP_DISPLAY_NAME: Artise
-  PRODUCTION_APP_NAME: Artise
-  APP_GROUP_IDENTIFIER: group.co.artise.app
-  BASE_BUNDLE_IDENTIFIER: co.artise.app
-  ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: "colors/accent-color"
-  DEVELOPMENT_TEAM: 85ANUGJ7V2
-  IS_NIGHTLY_BUILD: false
+  base:
+    # Artise: identity for the Artise fork (see Artise/README.md).
+    APP_DISPLAY_NAME: Artise
+    PRODUCTION_APP_NAME: Artise
+    APP_GROUP_IDENTIFIER: group.co.artise.app
+    BASE_BUNDLE_IDENTIFIER: co.artise.app
+    ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: "colors/accent-color"
+    DEVELOPMENT_TEAM: 85ANUGJ7V2
+    IS_NIGHTLY_BUILD: false
 
-  # Optional configuration to load accounts from Element Classic.
-  # Artise: there is no Classic app, so these point at Artise's own group and keychain.
-  # Signing can't claim Element's identifiers, and the import finds no accounts here.
-  CLASSIC_APP_GROUP_IDENTIFIER: $(APP_GROUP_IDENTIFIER)
-  CLASSIC_APP_KEYCHAIN_SERVICE_IDENTIFIER: co.artise.app.no-classic-app
-  CLASSIC_APP_KEYCHAIN_ACCESS_GROUP_IDENTIFIER: "$(KEYCHAIN_ACCESS_GROUP_IDENTIFIER)"
-  CLASSIC_APP_DEEP_LINK_URL: "artise://open"
+    # Optional configuration to load accounts from Element Classic.
+    # Artise: there is no Classic app, so these point at Artise's own group and keychain.
+    # Signing can't claim Element's identifiers, and the import finds no accounts here.
+    CLASSIC_APP_GROUP_IDENTIFIER: $(APP_GROUP_IDENTIFIER)
+    CLASSIC_APP_KEYCHAIN_SERVICE_IDENTIFIER: co.artise.app.no-classic-app
+    CLASSIC_APP_KEYCHAIN_ACCESS_GROUP_IDENTIFIER: "$(KEYCHAIN_ACCESS_GROUP_IDENTIFIER)"
+    CLASSIC_APP_DEEP_LINK_URL: "artise://open"
+
+  configs:
+    # Artise: Release builds for devices sign with Artise's distribution certificate and the App Store
+    # profiles made for each target (see Artise/README.md, "Building without a Mac").
+    Release:
+      CODE_SIGN_STYLE: Manual
+      "CODE_SIGN_IDENTITY[sdk=iphoneos*]": Apple Distribution
+      "PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]": $(ARTISE_PROFILE_$(PRODUCT_NAME))
+      ARTISE_PROFILE_ElementX: Artise App Store
+      ARTISE_PROFILE_NSE: Artise NSE App Store
+      ARTISE_PROFILE_ShareExtension: Artise Share App Store

@@ -6,7 +6,7 @@
 # Artise's CI. There is no Mac in the team, so this workflow is the Mac:
 # - checks: Artise file headers (Linux, fast).
 # - tests: upstream SwiftFormat lint and unit tests, plus the Artise package tests.
-# - testflight: archives, signs with cloud-managed signing and uploads to TestFlight.
+# - testflight (on demand): archives, signs with Artise's distribution certificate and uploads to TestFlight.
 # Upstream's own workflows are disabled on this repository.
 
 name: Artise
@@ -127,55 +127,80 @@ jobs:
 
   testflight:
     name: TestFlight
-    # Builds for the phone from every pushed feature or fix branch, or on demand.
-    if: github.ref != 'refs/heads/development'
+    # On demand, for the branch to try on a phone: gh workflow run artise.yml --ref <branch>
+    if: github.event_name == 'workflow_dispatch'
     runs-on: macos-26
     timeout-minutes: 90
     env:
       ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
       ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
       ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+      DIST_CERT_P12: ${{ secrets.DIST_CERT_P12 }}
+      DIST_CERT_PASSWORD: ${{ secrets.DIST_CERT_PASSWORD }}
+      PROFILE_APP: ${{ secrets.PROFILE_APP }}
+      PROFILE_NSE: ${{ secrets.PROFILE_NSE }}
+      PROFILE_SHARE: ${{ secrets.PROFILE_SHARE }}
     steps:
       - name: Check signing secrets
-        id: secrets
         run: |
-          if [ -n "$ASC_KEY_ID" ] && [ -n "$ASC_ISSUER_ID" ] && [ -n "$ASC_KEY_P8" ]; then
-            echo "available=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "::notice title=TestFlight skipped::Add ASC_KEY_ID, ASC_ISSUER_ID and ASC_KEY_P8 to the repository secrets."
-            echo "available=false" >> "$GITHUB_OUTPUT"
-          fi
+          for name in ASC_KEY_ID ASC_ISSUER_ID ASC_KEY_P8 DIST_CERT_P12 DIST_CERT_PASSWORD PROFILE_APP PROFILE_NSE PROFILE_SHARE; do
+            if [ -z "${!name}" ]; then
+              echo "::error title=TestFlight::The repository secret $name is missing (see Artise/README.md)."
+              exit 1
+            fi
+          done
 
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        if: steps.secrets.outputs.available == 'true'
         with:
           persist-credentials: false
 
       - name: Setup environment
-        if: steps.secrets.outputs.available == 'true'
         run: source ci_scripts/ci_common.sh && setup_github_actions_environment
 
       - name: Generate the Xcode project
-        if: steps.secrets.outputs.available == 'true'
         run: xcodegen
 
-      - name: Install the App Store Connect key
-        if: steps.secrets.outputs.available == 'true'
+      # Signing is manual: Artise's distribution certificate and App Store profiles, made with the
+      # App Store Connect API (Xcode's automatic provisioning fails with API keys for this team).
+      - name: Install the signing certificate and profiles
         run: |
           set -euo pipefail
-          key_path="$RUNNER_TEMP/AuthKey_$ASC_KEY_ID.p8"
-          python3 -c 'import base64, os, sys; sys.stdout.buffer.write(base64.b64decode(os.environ["ASC_KEY_P8"].strip()))' > "$key_path"
+          decode() { python3 -c 'import base64, os, sys; sys.stdout.buffer.write(base64.b64decode(os.environ[sys.argv[1]].strip()))' "$1"; }
+
+          keychain="$RUNNER_TEMP/artise.keychain-db"
+          keychain_password="$(uuidgen)"
+          security create-keychain -p "$keychain_password" "$keychain"
+          security set-keychain-settings -lut 21600 "$keychain"
+          security unlock-keychain -p "$keychain_password" "$keychain"
+          decode DIST_CERT_P12 > "$RUNNER_TEMP/distribution.p12"
+          security import "$RUNNER_TEMP/distribution.p12" -P "$DIST_CERT_PASSWORD" -A -t cert -f pkcs12 -k "$keychain"
+          rm -f "$RUNNER_TEMP/distribution.p12"
+          security set-key-partition-list -S apple-tool:,apple: -k "$keychain_password" "$keychain" > /dev/null
+          security list-keychains -d user -s "$keychain" $(security list-keychains -d user | tr -d '"')
+          echo "ARTISE_KEYCHAIN=$keychain" >> "$GITHUB_ENV"
+
+          for folder in "$HOME/Library/MobileDevice/Provisioning Profiles" "$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles"; do
+            mkdir -p "$folder"
+            for profile in PROFILE_APP PROFILE_NSE PROFILE_SHARE; do
+              decode "$profile" > "$folder/$profile.mobileprovision"
+            done
+          done
+
+          key_path="$RUNNER_TEMP/private_keys/AuthKey_$ASC_KEY_ID.p8"
+          mkdir -p "$(dirname "$key_path")"
+          decode ASC_KEY_P8 > "$key_path"
           chmod 600 "$key_path"
           if ! grep -q "BEGIN PRIVATE KEY" "$key_path"; then
             echo "::error title=App Store Connect key::ASC_KEY_P8 isn't a base64-encoded .p8 key."
             exit 1
           fi
-          # The fingerprint of the key (not the key) to compare with a local copy.
-          echo "Key fingerprint: $(shasum -a 256 "$key_path" | cut -c1-16)"
           echo "ASC_KEY_PATH=$key_path" >> "$GITHUB_ENV"
 
+      # App Store builds use production push; the committed entitlements say development for local builds.
+      - name: Use production push for this build
+        run: plutil -replace aps-environment -string production ElementX/SupportingFiles/ElementX.entitlements
+
       - name: Archive
-        if: steps.secrets.outputs.available == 'true'
         run: |
           set -o pipefail
           xcodebuild archive \
@@ -184,35 +209,41 @@ jobs:
             -configuration Release \
             -destination "generic/platform=iOS" \
             -archivePath "$RUNNER_TEMP/Artise.xcarchive" \
-            -allowProvisioningUpdates \
-            -authenticationKeyPath "$ASC_KEY_PATH" \
-            -authenticationKeyID "$ASC_KEY_ID" \
-            -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
             CURRENT_PROJECT_VERSION="$GITHUB_RUN_NUMBER" \
+            OTHER_CODE_SIGN_FLAGS="--keychain $ARTISE_KEYCHAIN" \
             | tee "$RUNNER_TEMP/archive.log" | grep -E "error:|warning: .*[Ss]ign|ARCHIVE (SUCCEEDED|FAILED)"
 
-      - name: Upload to TestFlight
-        if: steps.secrets.outputs.available == 'true'
+      - name: Export the app
         run: |
+          set -o pipefail
           xcodebuild -exportArchive \
             -archivePath "$RUNNER_TEMP/Artise.xcarchive" \
             -exportOptionsPlist Artise/CI/ExportOptions.plist \
             -exportPath "$RUNNER_TEMP/export" \
-            -allowProvisioningUpdates \
-            -authenticationKeyPath "$ASC_KEY_PATH" \
-            -authenticationKeyID "$ASC_KEY_ID" \
-            -authenticationKeyIssuerID "$ASC_ISSUER_ID"
+            | tee "$RUNNER_TEMP/export.log" | grep -E "error:|EXPORT (SUCCEEDED|FAILED)"
+
+      - name: Upload to TestFlight
+        run: |
+          set -o pipefail
+          ipa="$(ls "$RUNNER_TEMP"/export/*.ipa)"
+          # altool finds the key in a private_keys folder next to where it runs.
+          cd "$RUNNER_TEMP"
+          xcrun altool --upload-app --type ios --file "$ipa" --apiKey "$ASC_KEY_ID" --apiIssuer "$ASC_ISSUER_ID"
           echo "::notice title=TestFlight::Build $GITHUB_RUN_NUMBER from ${GITHUB_REF_NAME} was uploaded. It shows in TestFlight after Apple finishes processing it."
 
-      - name: Upload the archive log
-        if: failure() && steps.secrets.outputs.available == 'true'
+      - name: Upload the logs
+        if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: archive-log
-          path: ${{ runner.temp }}/archive.log
+          name: signing-logs
+          path: |
+            ${{ runner.temp }}/archive.log
+            ${{ runner.temp }}/export.log
           retention-days: 3
           if-no-files-found: ignore
 
-      - name: Remove the App Store Connect key
+      - name: Remove the signing material
         if: always()
-        run: rm -f "$RUNNER_TEMP"/AuthKey_*.p8
+        run: |
+          rm -rf "$RUNNER_TEMP/private_keys"
+          [ -n "${ARTISE_KEYCHAIN:-}" ] && security delete-keychain "$ARTISE_KEYCHAIN" || true

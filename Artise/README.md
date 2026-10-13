@@ -50,10 +50,12 @@ on this repository.
 
 - **Tests** run on every push: upstream's SwiftFormat lint and unit tests, plus `swift test` for
   the Artise package. Preview snapshot tests are skipped because Artise's branding changes them.
-- **TestFlight** builds every pushed `feature/*`, `fix/*` or `ci/*` branch. The build number is
-  the workflow run number. Builds are for internal testers only until the store release.
-- **Signing** uses Xcode's cloud-managed signing with an App Store Connect API key, so there are
-  no certificates or provisioning profiles in the repository.
+- **TestFlight** runs on demand, for the branch to try on a phone:
+  `gh workflow run artise.yml --ref <branch>`. The build number is the workflow run number.
+- **Signing** is manual: Artise's distribution certificate and an App Store profile per target
+  (`Artise App Store`, `Artise NSE App Store`, `Artise Share App Store`), all made with the App Store
+  Connect API. Xcode's automatic provisioning fails with API keys for this team, so it isn't used.
+  Release device builds pick them in `app.yml`; the upload uses `altool` with the API key.
 - **Generated files:** XcodeGen writes `ElementX.xcodeproj`, the Info.plists and the entitlements
   from `project.yml` and `app.yml`. When those are out of date, the Tests job warns and uploads
   the regenerated files as the `xcodegen` artifact, to be committed.
@@ -67,6 +69,12 @@ on this repository.
 | `ASC_KEY_ID` | App Store Connect API key ID (Admin role) |
 | `ASC_ISSUER_ID` | The key's issuer ID |
 | `ASC_KEY_P8` | The `.p8` file, base64-encoded: `base64 -w0 AuthKey_XXXX.p8` |
+| `DIST_CERT_P12` | The distribution certificate and its private key, as a base64-encoded `.p12` |
+| `DIST_CERT_PASSWORD` | The `.p12`'s password |
+| `PROFILE_APP`, `PROFILE_NSE`, `PROFILE_SHARE` | The three App Store profiles, base64-encoded |
+
+Local copies of the keys and the certificate live in `~/.artise-keys/` on the maintainer's machine.
+When an App ID's capabilities change, the profiles must be made again (they copy the App ID).
 
 Never commit keys, the APNs key or certificates. Local copies stay in git-ignored files.
 
