@@ -10,9 +10,12 @@ import PackageDescription
 let package = Package(name: "Artise",
                       platforms: [.iOS(.v18), .macOS(.v15)],
                       products: [
-                          .library(name: "ArtiseCore", targets: ["ArtiseCore"])
+                          .library(name: "ArtiseCore", targets: ["ArtiseCore"]),
+                          .library(name: "ArtiseNotes", targets: ["ArtiseNotes"])
                       ],
                       targets: [
                           .target(name: "ArtiseCore"),
-                          .testTarget(name: "ArtiseCoreTests", dependencies: ["ArtiseCore"])
+                          .target(name: "ArtiseNotes", dependencies: ["ArtiseCore"]),
+                          .testTarget(name: "ArtiseCoreTests", dependencies: ["ArtiseCore"]),
+                          .testTarget(name: "ArtiseNotesTests", dependencies: ["ArtiseNotes"])
                       ])
