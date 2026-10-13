@@ -51,4 +51,57 @@ public enum NoteNames {
         }
         return nil
     }
+    
+    /// `path` renamed to `newName` in the same folder. A note named "Mole" stays "Mole.md"; a file keeps its extension
+    /// when the new name leaves it out ("factura.pdf" renamed "recibo" → "recibo.pdf").
+    public static func renamedPath(_ path: String, to newName: String) -> String {
+        let folder = NotesFolderEntries.parentFolder(of: path)
+        let name = newName.trimmingCharacters(in: .whitespaces)
+        let fileName = NotesFolderEntries.fileName(path)
+        let ext = fileName.contains(".") ? String(fileName.split(separator: ".").last ?? "") : ""
+        let file = if ext.isEmpty || name.lowercased().hasSuffix("." + ext.lowercased()) {
+            name
+        } else {
+            name + "." + ext
+        }
+        return folder.isEmpty ? file : folder + "/" + file
+    }
+    
+    /// The problem with renaming `path` to `newName`, or `nil`; `existingPaths` are the chat's files and folders.
+    public static func renameProblem(_ path: String, to newName: String, existingPaths: [String]) -> NoteNameProblem? {
+        let trimmed = newName.trimmingCharacters(in: .whitespaces)
+        if trimmed.isEmpty || trimmed.contains("/") || trimmed.hasPrefix(".") {
+            return .invalid
+        }
+        let target = renamedPath(path, to: trimmed)
+        let isTaken = target.caseInsensitiveCompare(path) != .orderedSame
+            && existingPaths.contains { $0.caseInsensitiveCompare(target) == .orderedSame }
+        return isTaken ? .exists : nil
+    }
+    
+    /// `path` moved into `folder` ("" for the top level), keeping its name.
+    public static func movedPath(_ path: String, to folder: String) -> String {
+        let name = NotesFolderEntries.fileName(path)
+        return folder.isEmpty ? name : folder + "/" + name
+    }
+    
+    /// The folder `path` renamed to `newName` in the same parent.
+    public static func renamedFolder(_ path: String, to newName: String) -> String {
+        movedPath(newName.trimmingCharacters(in: .whitespaces), to: NotesFolderEntries.parentFolder(of: path))
+    }
+    
+    /// "  Recetas / Postres/ " → "Recetas/Postres".
+    public static func folderPath(_ name: String) -> String {
+        name.trimmingCharacters(in: .whitespaces)
+            .trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+            .split(separator: "/", omittingEmptySubsequences: false)
+            .map { $0.trimmingCharacters(in: .whitespaces) }
+            .joined(separator: "/")
+    }
+    
+    /// The problem with a folder called `name` ("Postres", or "Recetas/Postres" for one inside another), or `nil`.
+    public static func folderProblem(_ name: String) -> NoteNameProblem? {
+        let parts = folderPath(name).split(separator: "/", omittingEmptySubsequences: false)
+        return parts.contains { $0.isEmpty || $0.hasPrefix(".") } ? .invalid : nil
+    }
 }

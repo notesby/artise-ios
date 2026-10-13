@@ -44,7 +44,12 @@ struct NoteEditorScreen: View {
             .safeAreaInset(edge: .bottom, spacing: 0) {
                 VStack(spacing: 0) {
                     suggestions
-                    NoteFormatBar(model: $model)
+                    HStack(spacing: 0) {
+                        NoteAttachMenu(service: service, roomID: roomID, model: $model)
+                            .padding(.leading, 8)
+                        NoteFormatBar(model: $model)
+                    }
+                    .background(.compound.bgSubtleSecondary)
                 }
             }
             .background(.compound.bgCanvasDefault)

@@ -17,18 +17,23 @@ import Foundation
 public final class NotesSyncEngine: NotesRepository {
     static let privacyNoticeFlag = "privacy_notice_seen"
     
-    private let api: NotesAPIClient
-    private let store: NotesStore
-    private let locks = RoomLocks()
-    private let changeCenter = NotesChangeCenter()
-    private let now: @Sendable () -> Date
+    let api: NotesAPIClient
+    let store: NotesStore
+    let locks = RoomLocks()
+    let changeCenter = NotesChangeCenter()
+    let now: @Sendable () -> Date
+    let files: NotesFileOptions
+    let uploads = UploadTracker()
     
     /// - Parameters:
     ///   - directory: where this account's encrypted notes live.
     ///   - cipher: encrypts everything written there.
-    public init(api: NotesAPIClient, directory: URL, cipher: NotesCipher, now: @escaping @Sendable () -> Date = Date.init) {
+    ///   - files: where photos and files live on the phone, and how they're prepared.
+    public init(api: NotesAPIClient, directory: URL, cipher: NotesCipher, files: NotesFileOptions? = nil,
+                now: @escaping @Sendable () -> Date = Date.init) {
         self.api = api
         store = NotesStore(directory: directory, cipher: cipher)
+        self.files = files ?? NotesFileOptions(directory: directory.appendingPathComponent("files"))
         self.now = now
     }
     
@@ -106,6 +111,9 @@ public final class NotesSyncEngine: NotesRepository {
             if report.changedAnything {
                 await changeCenter.notify(roomID)
             }
+            if files.canPrefetch() {
+                Task { await prefetchPhotos(roomID) }
+            }
             return report
         }
     }
@@ -159,7 +167,12 @@ public final class NotesSyncEngine: NotesRepository {
         let millis = nowMillis
         try await store.updateChat(roomID) { record in
             guard let file = record.files[path] else { return }
-            // Unsent edits of this file no longer matter.
+            // Unsent edits of this file (and a waiting upload) no longer matter.
+            for edit in record.edits where edit.path == path && edit.kind == .upload {
+                if let waiting = edit.content {
+                    try? FileManager.default.removeItem(at: files.pendingDirectory.appendingPathComponent(waiting))
+                }
+            }
             record.edits.removeAll { $0.path == path }
             record.files[path] = nil
             // A note created offline never reached the server: there's nothing to delete there.
@@ -222,11 +235,17 @@ public final class NotesSyncEngine: NotesRepository {
         try await store.updateChat(roomID) { record in
             guard let index = record.edits.firstIndex(where: { $0.id == editID }) else { return }
             let edit = record.edits.remove(at: index)
-            if let serverContent = edit.serverContent, let serverVersion = edit.serverVersion {
+            if edit.kind == .upload {
+                // A refused upload: the waiting file and the attachment it would have become go.
+                if let waiting = edit.content {
+                    try? FileManager.default.removeItem(at: files.pendingDirectory.appendingPathComponent(waiting))
+                }
+                record.files[edit.path] = nil
+            } else if let serverContent = edit.serverContent, let serverVersion = edit.serverVersion {
                 // The server's copy is known: show it.
                 Self.setContent(&record, path: edit.path, content: serverContent, modified: seconds)
                 record.files[edit.path]?.version = serverVersion
-            } else if edit.state == .deleted || (edit.kind == .save && edit.baseVersion == nil) || edit.kind == .upload {
+            } else if edit.state == .deleted || (edit.kind == .save && edit.baseVersion == nil) {
                 // Deleted on the server, or never sent: it's gone.
                 record.files[edit.path] = nil
             } else {
@@ -246,7 +265,7 @@ public final class NotesSyncEngine: NotesRepository {
         var failed = 0
     }
     
-    private enum PushOutcome {
+    enum PushOutcome {
         case sent
         case needsChoice
         /// Failed this time for a reason on the server's side: it stays queued and the push goes on.
@@ -268,8 +287,7 @@ public final class NotesSyncEngine: NotesRepository {
             let outcome = switch edit.kind {
             case .save: try await pushSave(roomID, editID: edit.id)
             case .delete: try await pushDelete(roomID, edit: edit)
-            // Attachments come with the notes files feature; until then nothing queues an upload.
-            case .upload: PushOutcome.retry
+            case .upload: try await pushUpload(roomID, editID: edit.id)
             }
             switch outcome {
             case .sent:
@@ -320,7 +338,7 @@ public final class NotesSyncEngine: NotesRepository {
         return .sent
     }
     
-    private func handleFailure(_ roomID: String, editID: Int64, error: NotesError) async throws -> PushOutcome {
+    func handleFailure(_ roomID: String, editID: Int64, error: NotesError) async throws -> PushOutcome {
         func mark(_ state: EditState, current: ServerCopy? = nil, message: String? = nil) async throws {
             try await store.updateChat(roomID) { record in
                 guard let index = record.edits.firstIndex(where: { $0.id == editID }) else { return }
@@ -356,13 +374,14 @@ public final class NotesSyncEngine: NotesRepository {
     
     // MARK: - Pulling (step 3)
     
-    private struct PullResult {
+    struct PullResult {
         var updated = 0
         var removed = 0
     }
     
     /// Pulls the tree with the cached ETag and updates what changed, never touching files with local edits.
-    private func pullTree(_ roomID: String) async throws -> PullResult {
+    @discardableResult
+    func pullTree(_ roomID: String) async throws -> PullResult {
         let response = try await api.tree(roomID: roomID, etag: store.chat(roomID)?.etag)
         guard case let .changed(tree, etag) = response else { return PullResult() }
         
@@ -425,15 +444,15 @@ public final class NotesSyncEngine: NotesRepository {
     
     // MARK: - Helpers
     
-    private var nowSeconds: Int64 {
+    var nowSeconds: Int64 {
         Int64(now().timeIntervalSince1970)
     }
     
-    private var nowMillis: Int64 {
+    var nowMillis: Int64 {
         Int64(now().timeIntervalSince1970 * 1000)
     }
     
-    private static func addEdit(_ record: inout ChatRecord, kind: EditKind, path: String, content: String?, baseVersion: String?, now: Int64) {
+    static func addEdit(_ record: inout ChatRecord, kind: EditKind, path: String, content: String?, baseVersion: String?, now: Int64) {
         record.edits.append(EditRecord(id: record.nextEditID, kind: kind, path: path, content: content, baseVersion: baseVersion,
                                        state: .pending, createdAt: now))
         record.nextEditID += 1
@@ -449,7 +468,7 @@ public final class NotesSyncEngine: NotesRepository {
         edit.error = nil
     }
     
-    private static func setContent(_ record: inout ChatRecord, path: String, content: String, modified: Int64) {
+    static func setContent(_ record: inout ChatRecord, path: String, content: String, modified: Int64) {
         record.files[path]?.content = content
         record.files[path]?.size = content.byteSize
         record.files[path]?.modified = modified

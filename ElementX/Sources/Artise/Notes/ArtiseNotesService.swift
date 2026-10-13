@@ -36,9 +36,14 @@ final class ArtiseNotesService {
             let token = try await sdkClient.requestOpenidToken()
             return NotesOpenIDToken(accessToken: token.accessToken, expiresIn: TimeInterval(token.expiresInSeconds))
         }
+        let files = NotesFileOptions(cacheDirectory: Self.cacheDirectory(for: userID),
+                                     pendingDirectory: Self.directory(for: userID).appending(path: "pending"),
+                                     convertPhoto: { NotesPhotoConverter.toJPEG($0, contentType: $1) },
+                                     canPrefetch: { NotesPrefetchPolicy.shared.canPrefetch })
         repository = NotesSyncEngine(api: NotesAPIClient(tokenSource: tokenSource),
                                      directory: Self.directory(for: userID),
-                                     cipher: AESGCMNotesCipher(keyData: keyData))
+                                     cipher: AESGCMNotesCipher(keyData: keyData),
+                                     files: files)
         self.clientProxy = clientProxy
     }
     
@@ -50,9 +55,15 @@ final class ArtiseNotesService {
         return URL.applicationSupportDirectory.appending(path: "ArtiseNotes").appending(path: folder)
     }
     
-    /// Forgets an account's notes on this phone: the files, then the key that could read them.
+    /// Where an account's downloaded photos and files are kept; iOS may clear it when space runs low.
+    nonisolated static func cacheDirectory(for userID: String) -> URL {
+        URL.cachesDirectory.appending(path: "ArtiseNotes").appending(path: directory(for: userID).lastPathComponent)
+    }
+    
+    /// Forgets an account's notes on this phone: the files, the downloads, then the key that could read them.
     nonisolated static func removeData(forUserID userID: String) {
         try? FileManager.default.removeItem(at: directory(for: userID))
+        try? FileManager.default.removeItem(at: cacheDirectory(for: userID))
         KeychainNotesKeyStore().deleteKey(account: userID)
     }
     
@@ -85,13 +96,6 @@ final class ArtiseNotesService {
     func unfollowAll() {
         followed.values.forEach { $0.cancel() }
         followed = [:]
-    }
-}
-
-extension NotesRepository {
-    /// Starts a sync that goes on if the screen that asked for it closes. Failures are silent: the queue stays for next time.
-    func syncInBackground(roomID: String) {
-        Task { _ = try? await sync(roomID: roomID) }
     }
 }
 

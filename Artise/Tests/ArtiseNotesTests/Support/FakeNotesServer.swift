@@ -180,6 +180,63 @@ final class FakeNotesServer: NotesHTTPTransport {
             return (200, ["path": path, "version": file.version, "content": file.content], [:])
         case ("PUT", "note"):
             return save(request.json ?? [:], &state)
+        case ("GET", "raw"):
+            guard let file = state.files[path] else {
+                return (404, ["error": "not_found", "message": "No such file"], [:])
+            }
+            return (200, Data(file.content.utf8), ["ETag": file.version])
+        case ("PUT", "raw"):
+            if let existing = state.files[path], request.query["base"] == nil {
+                return (409, ["error": "exists", "message": "Already there", "current": ["path": path, "version": existing.version]], [:])
+            }
+            let version = store(&state, path, String(decoding: request.body ?? Data(), as: UTF8.self), isNote: false)
+            return (201, ["path": path, "version": version], [:])
+        case ("POST", "move"):
+            let body = request.json ?? [:]
+            guard let from = body["from"] as? String, let to = body["to"] as? String else {
+                return (400, ["error": "bad_path", "message": "Missing fields"], [:])
+            }
+            if body["folder"] as? Bool == true {
+                var moved: [[String: Any]] = []
+                for (file, stored) in state.files where file.hasPrefix(from + "/") {
+                    let target = to + file.dropFirst(from.count)
+                    state.files[file] = nil
+                    state.files[target] = stored
+                    moved.append(["from": file, "to": target, "version": stored.version])
+                }
+                state.folders = state.folders.map { $0 == from || $0.hasPrefix(from + "/") ? to + $0.dropFirst(from.count) : $0 }
+                state.treeCounter += 1
+                return (200, ["from": from, "to": to, "moved": moved, "links_updated": []], [:])
+            }
+            guard let stored = state.files[from] else {
+                return (404, ["error": "not_found", "message": "No such file"], [:])
+            }
+            guard state.files[to] == nil else {
+                return (409, ["error": "exists", "message": "Taken"], [:])
+            }
+            state.files[from] = nil
+            state.files[to] = stored
+            state.treeCounter += 1
+            return (200, ["from": from, "to": to, "version": stored.version, "links_updated": []], [:])
+        case ("POST", "folder"):
+            let folder = request.json?["path"] as? String ?? ""
+            state.folders.append(folder)
+            state.treeCounter += 1
+            return (201, ["path": folder], [:])
+        case ("DELETE", "folder"):
+            let inside = state.files.keys.filter { $0.hasPrefix(path + "/") }
+            if !inside.isEmpty, request.query["recursive"] != "true" {
+                return (409, ["error": "not_empty", "message": "Not empty", "files": inside.count, "folders": 0], [:])
+            }
+            inside.forEach { state.files[$0] = nil }
+            state.folders.removeAll { $0 == path || $0.hasPrefix(path + "/") }
+            state.treeCounter += 1
+            return (200, ["path": path, "deleted": true, "notes": inside.count, "files": 0], [:])
+        case ("GET", "links"):
+            let name = path.split(separator: "/").last.map(String.init) ?? path
+            let backlinks = state.files.filter { $0.value.isNote && $0.value.content.contains(name) }.keys.sorted()
+                .map { ["path": $0, "line": ""] }
+            return (200, ["path": path, "outgoing": [], "backlinks": backlinks], [:])
         case ("DELETE", "file"):
             guard let file = state.files[path] else {
                 return (404, ["error": "not_found", "message": "No such file"], [:])
