@@ -1,0 +1,249 @@
+#
+# Copyright 2026 Artise.
+#
+# SPDX-License-Identifier: AGPL-3.0-only
+#
+# Artise's CI. There is no Mac in the team, so this workflow is the Mac:
+# - checks: Artise file headers (Linux, fast).
+# - tests: upstream SwiftFormat lint and unit tests, plus the Artise package tests.
+# - testflight (on demand): archives, signs with Artise's distribution certificate and uploads to TestFlight.
+# Upstream's own workflows are disabled on this repository.
+
+name: Artise
+
+on:
+  push:
+    branches: [development, "feature/**", "fix/**", "ci/**"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  # One run per branch and trigger: a newer push cancels the older push run, but never a TestFlight build.
+  group: artise-${{ github.ref }}-${{ github.event_name }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: Headers
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Check Artise file headers
+        run: Artise/Scripts/check-headers.sh
+
+  tests:
+    name: Tests
+    runs-on: macos-26
+    # A run without the compilation cache builds everything from scratch.
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup environment
+        run: source ci_scripts/ci_common.sh && setup_github_actions_environment
+
+      # Our repository holds only LFS pointers. The sample media the unit tests load comes from upstream's LFS.
+      - name: Fetch upstream test media
+        run: |
+          git lfs install --local
+          git config lfs.url https://github.com/element-hq/element-x-ios.git/info/lfs
+          git lfs pull --include "Components/DevelopmentAssets/Media/**"
+          if grep -rl "git-lfs.github.com/spec" Components/DevelopmentAssets/Media; then
+            echo "::error title=Test media::Some files are still LFS pointers."
+            exit 1
+          fi
+
+      - name: Restore compilation cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/Library/Developer/Xcode/CompilationCache.noindex
+          key: compilation-cache-unit-tests-${{ github.sha }}
+          restore-keys: compilation-cache-unit-tests-
+
+      - name: Generate the Xcode project
+        run: xcodegen
+
+      # The committed project, Info.plists and entitlements must match project.yml/app.yml. When they
+      # don't, the regenerated files are uploaded so they can be committed from a machine without Xcode.
+      - name: Check the committed generated files
+        id: project
+        run: |
+          changed="$(git status --porcelain --untracked-files=no | cut -c4-)"
+          if [ -z "$changed" ]; then
+            echo "stale=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "$changed"
+            echo "::warning title=Stale generated files::Commit the regenerated files from this run's xcodegen artifact."
+            echo "$changed" > "$RUNNER_TEMP/xcodegen-files.txt"
+            echo "stale=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Collect the regenerated files
+        if: steps.project.outputs.stale == 'true'
+        run: |
+          mkdir -p "$RUNNER_TEMP/xcodegen"
+          tar -cf - -T "$RUNNER_TEMP/xcodegen-files.txt" | tar -xf - -C "$RUNNER_TEMP/xcodegen"
+
+      - name: Upload the regenerated files
+        if: steps.project.outputs.stale == 'true'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: xcodegen
+          path: ${{ runner.temp }}/xcodegen
+          retention-days: 3
+          if-no-files-found: ignore
+
+      - name: Artise package tests
+        run: swift test --package-path Artise
+
+      - name: Upstream lint and unit tests
+        # Preview snapshots are skipped: Artise's branding changes them on purpose.
+        run: swift run -q tools ci unit-tests --skip-previews
+
+      - name: Save compilation cache
+        # Like upstream: one branch fills the cache and every run reads it.
+        if: ${{ !cancelled() && github.ref == 'refs/heads/development' }}
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/Library/Developer/Xcode/CompilationCache.noindex
+          key: compilation-cache-unit-tests-${{ github.sha }}
+
+      - name: Archive test results
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: Results
+          path: test_output/UnitTests.zip
+          retention-days: 3
+          if-no-files-found: ignore
+
+  testflight:
+    name: TestFlight
+    # On demand, for the branch to try on a phone: gh workflow run artise.yml --ref <branch>
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: macos-26
+    timeout-minutes: 90
+    env:
+      ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+      ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+      ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+      DIST_CERT_P12: ${{ secrets.DIST_CERT_P12 }}
+      DIST_CERT_PASSWORD: ${{ secrets.DIST_CERT_PASSWORD }}
+      PROFILE_APP: ${{ secrets.PROFILE_APP }}
+      PROFILE_NSE: ${{ secrets.PROFILE_NSE }}
+      PROFILE_SHARE: ${{ secrets.PROFILE_SHARE }}
+    steps:
+      - name: Check signing secrets
+        run: |
+          for name in ASC_KEY_ID ASC_ISSUER_ID ASC_KEY_P8 DIST_CERT_P12 DIST_CERT_PASSWORD PROFILE_APP PROFILE_NSE PROFILE_SHARE; do
+            if [ -z "${!name}" ]; then
+              echo "::error title=TestFlight::The repository secret $name is missing (see Artise/README.md)."
+              exit 1
+            fi
+          done
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup environment
+        run: source ci_scripts/ci_common.sh && setup_github_actions_environment
+
+      - name: Generate the Xcode project
+        run: xcodegen
+
+      # Signing is manual: Artise's distribution certificate and App Store profiles, made with the
+      # App Store Connect API (Xcode's automatic provisioning fails with API keys for this team).
+      - name: Install the signing certificate and profiles
+        run: |
+          set -euo pipefail
+          decode() { python3 -c 'import base64, os, sys; sys.stdout.buffer.write(base64.b64decode(os.environ[sys.argv[1]].strip()))' "$1"; }
+
+          keychain="$RUNNER_TEMP/artise.keychain-db"
+          keychain_password="$(uuidgen)"
+          security create-keychain -p "$keychain_password" "$keychain"
+          security set-keychain-settings -lut 21600 "$keychain"
+          security unlock-keychain -p "$keychain_password" "$keychain"
+          decode DIST_CERT_P12 > "$RUNNER_TEMP/distribution.p12"
+          security import "$RUNNER_TEMP/distribution.p12" -P "$DIST_CERT_PASSWORD" -A -t cert -f pkcs12 -k "$keychain"
+          rm -f "$RUNNER_TEMP/distribution.p12"
+          security set-key-partition-list -S apple-tool:,apple: -k "$keychain_password" "$keychain" > /dev/null
+          security list-keychains -d user -s "$keychain" $(security list-keychains -d user | tr -d '"')
+          echo "ARTISE_KEYCHAIN=$keychain" >> "$GITHUB_ENV"
+
+          for folder in "$HOME/Library/MobileDevice/Provisioning Profiles" "$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles"; do
+            mkdir -p "$folder"
+            for profile in PROFILE_APP PROFILE_NSE PROFILE_SHARE; do
+              decode "$profile" > "$folder/$profile.mobileprovision"
+            done
+          done
+
+          key_path="$RUNNER_TEMP/private_keys/AuthKey_$ASC_KEY_ID.p8"
+          mkdir -p "$(dirname "$key_path")"
+          decode ASC_KEY_P8 > "$key_path"
+          chmod 600 "$key_path"
+          if ! grep -q "BEGIN PRIVATE KEY" "$key_path"; then
+            echo "::error title=App Store Connect key::ASC_KEY_P8 isn't a base64-encoded .p8 key."
+            exit 1
+          fi
+          echo "ASC_KEY_PATH=$key_path" >> "$GITHUB_ENV"
+
+      # App Store builds use production push; the committed entitlements say development for local builds.
+      - name: Use production push for this build
+        run: plutil -replace aps-environment -string production ElementX/SupportingFiles/ElementX.entitlements
+
+      - name: Archive
+        run: |
+          set -o pipefail
+          xcodebuild archive \
+            -project ElementX.xcodeproj \
+            -scheme ElementX \
+            -configuration Release \
+            -destination "generic/platform=iOS" \
+            -archivePath "$RUNNER_TEMP/Artise.xcarchive" \
+            CURRENT_PROJECT_VERSION="$GITHUB_RUN_NUMBER" \
+            OTHER_CODE_SIGN_FLAGS="--keychain $ARTISE_KEYCHAIN" \
+            | tee "$RUNNER_TEMP/archive.log" | grep -E "error:|warning: .*[Ss]ign|ARCHIVE (SUCCEEDED|FAILED)"
+
+      - name: Export the app
+        run: |
+          set -o pipefail
+          xcodebuild -exportArchive \
+            -archivePath "$RUNNER_TEMP/Artise.xcarchive" \
+            -exportOptionsPlist Artise/CI/ExportOptions.plist \
+            -exportPath "$RUNNER_TEMP/export" \
+            | tee "$RUNNER_TEMP/export.log" | grep -E "error:|EXPORT (SUCCEEDED|FAILED)"
+
+      - name: Upload to TestFlight
+        run: |
+          set -o pipefail
+          ipa="$(ls "$RUNNER_TEMP"/export/*.ipa)"
+          # altool finds the key in a private_keys folder next to where it runs.
+          cd "$RUNNER_TEMP"
+          xcrun altool --upload-app --type ios --file "$ipa" --apiKey "$ASC_KEY_ID" --apiIssuer "$ASC_ISSUER_ID"
+          echo "::notice title=TestFlight::Build $GITHUB_RUN_NUMBER from ${GITHUB_REF_NAME} was uploaded. It shows in TestFlight after Apple finishes processing it."
+
+      - name: Upload the logs
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: signing-logs
+          path: |
+            ${{ runner.temp }}/archive.log
+            ${{ runner.temp }}/export.log
+          retention-days: 3
+          if-no-files-found: ignore
+
+      - name: Remove the signing material
+        if: always()
+        run: |
+          rm -rf "$RUNNER_TEMP/private_keys"
+          [ -n "${ARTISE_KEYCHAIN:-}" ] && security delete-keychain "$ARTISE_KEYCHAIN" || true
