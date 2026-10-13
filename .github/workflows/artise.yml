@@ -164,6 +164,22 @@ jobs:
       - name: Generate the Xcode project
         run: xcodegen
 
+      # MapTiler's key goes into the build here and never into git. Without it, location sharing stays off.
+      - name: Add the MapTiler key
+        env:
+          MAPLIBRE_API_KEY: ${{ secrets.MAPLIBRE_API_KEY }}
+        run: |
+          python3 - <<'PY'
+          import json, os, pathlib
+          path = pathlib.Path("Components/Secrets/Secrets.swift")
+          key = os.environ.get("MAPLIBRE_API_KEY", "").strip()
+          value = json.dumps(key) if key else "nil"
+          lines = [f"    static let mapLibreAPIKey: String? = {value}" if "static let mapLibreAPIKey" in line else line
+                   for line in path.read_text().splitlines()]
+          path.write_text("\n".join(lines) + "\n")
+          print("MapTiler key added." if key else "::warning title=Maps::No MAPLIBRE_API_KEY secret: location sharing is off in this build.")
+          PY
+
       # Signing is manual: Artise's distribution certificate and App Store profiles, made with the
       # App Store Connect API (Xcode's automatic provisioning fails with API keys for this team).
       - name: Install the signing certificate and profiles

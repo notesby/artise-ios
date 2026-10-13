@@ -7,7 +7,7 @@
 import ArtiseCore
 import Foundation
 
-/// Locks the app to artise.co and points every link at Artise instead of Element.
+/// Locks the app to artise.co, points every link at Artise instead of Element, and uses Artise's MapTiler key.
 struct ArtiseAppSettingsHook: AppSettingsHookProtocol {
     func configure(_ appSettings: AppSettings) -> AppSettings {
         appSettings.override(accountProviders: [.managed(serverName: ArtiseConfiguration.serverName,
@@ -32,7 +32,10 @@ struct ArtiseAppSettingsHook: AppSettingsHookProtocol {
                              accountProvisioningHost: appSettings.accountProvisioningHost,
                              bugReportApplicationID: "artise-ios",
                              analyticsTermsURL: ArtiseConfiguration.privacyURL,
-                             mapTilerConfiguration: AppSettings.bundledMapTilerConfiguration)
+                             mapTilerConfiguration: MapTilerConfiguration(baseURL: ArtiseConfiguration.Maps.baseURL,
+                                                                          apiKey: Secrets.mapLibreAPIKey,
+                                                                          lightStyleID: ArtiseConfiguration.Maps.lightStyleID,
+                                                                          darkStyleID: ArtiseConfiguration.Maps.darkStyleID))
         return appSettings
     }
 }
