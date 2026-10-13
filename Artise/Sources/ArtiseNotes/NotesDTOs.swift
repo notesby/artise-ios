@@ -166,6 +166,28 @@ struct HistoryDTO: Decodable {
     let versions: [Version]
 }
 
+struct ChangesDTO: Decodable {
+    struct Change: Decodable {
+        struct File: Decodable {
+            let path: String
+            let change: String
+            let from: String?
+        }
+        
+        let commit: String
+        let at: String
+        let message: String
+        let by: String
+        let who: String?
+        let how: String?
+        let detail: String?
+        let files: [File]
+    }
+    
+    let changes: [Change]
+    let more: Bool?
+}
+
 struct ErrorDTO: Decodable {
     struct Current: Decodable {
         let path: String
