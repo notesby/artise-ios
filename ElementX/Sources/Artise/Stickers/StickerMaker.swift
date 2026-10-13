@@ -44,7 +44,7 @@ nonisolated enum StickerMaker {
         for type in [UTType.png, .webP, .gif] where provider.hasItemConformingToTypeIdentifier(type.identifier) {
             guard let mimeType = type.preferredMIMEType,
                   KeyboardStickers.isStickerType(mimeType),
-                  let data = try? await provider.loadDataRepresentation(for: type),
+                  let data = try? await provider.loadDataRepresentation(forTypeIdentifier: type.identifier),
                   KeyboardStickers.isStickerSize(data.count),
                   let source = CGImageSourceCreateWithData(data as CFData, nil),
                   let size = pixelSize(source) else {
