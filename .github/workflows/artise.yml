@@ -59,25 +59,33 @@ jobs:
       - name: Generate the Xcode project
         run: xcodegen
 
-      # The committed project must match project.yml/app.yml. When it doesn't, the regenerated
-      # project is uploaded so it can be committed from a machine without Xcode.
-      - name: Check the committed Xcode project
+      # The committed project, Info.plists and entitlements must match project.yml/app.yml. When they
+      # don't, the regenerated files are uploaded so they can be committed from a machine without Xcode.
+      - name: Check the committed generated files
         id: project
         run: |
-          if git diff --quiet -- ElementX.xcodeproj; then
+          changed="$(git status --porcelain --untracked-files=no | cut -c4-)"
+          if [ -z "$changed" ]; then
             echo "stale=false" >> "$GITHUB_OUTPUT"
           else
-            git diff --stat -- ElementX.xcodeproj
-            echo "::warning title=Stale Xcode project::Commit the regenerated ElementX.xcodeproj from this run's artifact."
+            echo "$changed"
+            echo "::warning title=Stale generated files::Commit the regenerated files from this run's xcodegen artifact."
+            echo "$changed" > "$RUNNER_TEMP/xcodegen-files.txt"
             echo "stale=true" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Upload the regenerated Xcode project
+      - name: Collect the regenerated files
+        if: steps.project.outputs.stale == 'true'
+        run: |
+          mkdir -p "$RUNNER_TEMP/xcodegen"
+          tar -cf - -T "$RUNNER_TEMP/xcodegen-files.txt" | tar -xf - -C "$RUNNER_TEMP/xcodegen"
+
+      - name: Upload the regenerated files
         if: steps.project.outputs.stale == 'true'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: ElementX.xcodeproj
-          path: ElementX.xcodeproj
+          name: xcodegen
+          path: ${{ runner.temp }}/xcodegen
           retention-days: 3
           if-no-files-found: ignore
 
