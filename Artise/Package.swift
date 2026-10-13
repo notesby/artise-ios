@@ -13,7 +13,8 @@ let package = Package(name: "Artise",
                       products: [
                           .library(name: "ArtiseCore", targets: ["ArtiseCore"]),
                           .library(name: "ArtiseNotes", targets: ["ArtiseNotes"]),
-                          .library(name: "ArtiseStickers", targets: ["ArtiseStickers"])
+                          .library(name: "ArtiseStickers", targets: ["ArtiseStickers"]),
+                          .library(name: "ArtiseLinkPreview", targets: ["ArtiseLinkPreview"])
                       ],
                       dependencies: [
                           .package(url: "https://github.com/swiftlang/swift-markdown", exact: "0.9.0")
@@ -25,7 +26,9 @@ let package = Package(name: "Artise",
                           .target(name: "ArtiseStickers",
                                   dependencies: ["ArtiseCore"],
                                   resources: [.copy("Resources/Starter")]),
+                          .target(name: "ArtiseLinkPreview"),
                           .testTarget(name: "ArtiseCoreTests", dependencies: ["ArtiseCore"]),
                           .testTarget(name: "ArtiseNotesTests", dependencies: ["ArtiseNotes"]),
-                          .testTarget(name: "ArtiseStickersTests", dependencies: ["ArtiseStickers"])
+                          .testTarget(name: "ArtiseStickersTests", dependencies: ["ArtiseStickers"]),
+                          .testTarget(name: "ArtiseLinkPreviewTests", dependencies: ["ArtiseLinkPreview"])
                       ])

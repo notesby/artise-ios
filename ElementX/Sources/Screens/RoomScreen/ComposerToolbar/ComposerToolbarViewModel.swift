@@ -85,6 +85,7 @@ final class ComposerToolbarViewModel: ComposerToolbarViewModelType, ComposerTool
                    mediaProvider: mediaProvider)
         
         state.artiseRoomID = roomProxy.id // Artise: for the sticker button.
+        state.artiseLinkPreview = ArtiseComposerLinkPreview(roomProxy: roomProxy) // Artise: link previews.
         
         state.keyCommands = [
             .enter { [weak self] in
@@ -135,6 +136,13 @@ final class ComposerToolbarViewModel: ComposerToolbarViewModelType, ComposerTool
             .sink { [weak self] plainComposerText in
                 self?.actionsSubject.send(.contentChanged(isEmpty: plainComposerText.string.isEmpty))
             }
+            .store(in: &cancellables)
+        
+        // Artise: link previews follow the link being typed, in plain messages only.
+        context.$viewState
+            .map { $0.composerMode == .default && !$0.bindings.composerFormattingEnabled ? $0.bindings.plainComposerText.string : "" }
+            .removeDuplicates()
+            .sink { [weak self] text in self?.state.artiseLinkPreview?.update(text: text) }
             .store(in: &cancellables)
         
         wysiwygViewModel.$actionStates

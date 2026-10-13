@@ -67,6 +67,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 | `ComposerToolbar.swift`, `ComposerToolbarModels.swift`, `ComposerToolbarViewModel.swift` | The sticker button at the end of an empty message field, and pictures from sticker keyboards sent as stickers (`ArtiseStickers`). |
 | `TimelineItemMenuAction.swift`, `TimelineItemMenuActionProvider.swift`, `TimelineInteractionHandler.swift` | "Save to my stickers" in a received sticker's menu. |
 | `AppCoordinator.swift` (`handleDeepLink`) | Opens pictures shared with the "Artise sticker" extension (`ArtiseStickerShare/`, a target of `Artise/override.yml`). |
+| `ComposerToolbar*.swift` (link preview), `TimelineProxy.swift` (`sendMessage`), `RoomTimelineItemFactory.swift`, `TextRoomTimelineItemContent.swift`, `TextRoomTimelineView.swift` | Link previews made on the sender's phone travel inside the message (MSC4095) and show under its text (`ArtiseLinkPreviews`). |
 | `NSE/SupportingFiles/target.yml` | Notification filtering entitlement off until Apple grants it to our team. |
 
 ## Branches

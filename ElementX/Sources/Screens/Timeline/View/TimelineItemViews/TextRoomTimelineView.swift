@@ -36,6 +36,12 @@ struct TextRoomTimelineView: View, TextBasedRoomTimelineViewProtocol {
                                       boostFontSize: timelineItem.shouldBoost)
                 }
                 
+                // Artise: the link preview the sender's phone made (MSC4095).
+                if let linkPreview = timelineItem.content.artiseLinkPreview {
+                    ArtiseLinkPreviewCard(linkPreview: linkPreview)
+                        .padding(.bottom, 16)
+                }
+                
                 if context?.viewState.linkPreviewsEnabled ?? false, !linkMetadata.keys.isEmpty {
                     VStack(spacing: 8) {
                         ForEach(linkMetadata.keys, id: \.absoluteString) { url in
