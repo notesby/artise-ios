@@ -23,9 +23,19 @@ struct NotesFolderScreen: View {
     @State private var status = NotesSyncStatus.upToDate
     @State private var chatName: String?
     @State private var route: NotesRoute?
+    @State private var choicesCount = 0
+    @State private var paths: [String] = []
+    @State private var isNamingNote = false
+    @State private var newNoteName = ""
     
     var body: some View {
         Form {
+            if choicesCount > 0 {
+                Section {
+                    NotesChoicesBanner(count: choicesCount) { route = .choices(roomID: roomID) }
+                }
+            }
+            
             if status != .upToDate {
                 Section {
                     NotesStatusLine(status: status)
@@ -52,6 +62,25 @@ struct NotesFolderScreen: View {
         .refreshable { await sync() }
         .navigationDestination(item: $route) { route in
             NotesDestination(service: service, route: route)
+        }
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button {
+                    newNoteName = ""
+                    isNamingNote = true
+                } label: {
+                    CompoundIcon(\.plus)
+                }
+                .accessibilityLabel(ArtiseNotesL10n.text("screen_notes_new_note"))
+            }
+        }
+        .alert(ArtiseNotesL10n.text("screen_notes_new_note"), isPresented: $isNamingNote) {
+            TextField(ArtiseNotesL10n.text("screen_notes_new_note_placeholder"), text: $newNoteName)
+            Button(ArtiseNotesL10n.text("screen_notes_create")) { createNote() }
+                .disabled(NoteNames.problem(with: newNoteName, in: folder, existingPaths: paths) != nil)
+            Button(L10n.actionCancel, role: .cancel) { }
+        } message: {
+            Text(newNoteProblem ?? "")
         }
         .task { await load() }
         .task { await followChanges() }
@@ -108,10 +137,35 @@ struct NotesFolderScreen: View {
         let files = await (try? repository.files(roomID: roomID)) ?? []
         let folders = await (try? repository.folders(roomID: roomID)) ?? []
         entries = NotesFolderEntries.entries(files: files, folder: folder, allFolders: folders)
+        paths = files.map(\.path)
+        choicesCount = await ((try? repository.edits(roomID: roomID)) ?? []).filter { $0.state != .pending }.count
         if title == nil, folder.isEmpty {
             chatName = try? await repository.cachedChats().first { $0.roomID == roomID }?.name
         }
         hasLoaded = hasLoaded || !entries.isEmpty
+    }
+    
+    /// Why the typed name can't be used yet, said under the field.
+    private var newNoteProblem: String? {
+        switch NoteNames.problem(with: newNoteName, in: folder, existingPaths: paths) {
+        case .invalid where !newNoteName.isEmpty: ArtiseNotesL10n.text("screen_notes_name_invalid")
+        case .exists: ArtiseNotesL10n.text("screen_notes_name_exists")
+        default: nil
+        }
+    }
+    
+    /// Creates the note on the phone (it's sent with the next sync) and opens it in the editor.
+    private func createNote() {
+        let path = NoteNames.path(for: newNoteName, in: folder)
+        let repository = service.repository
+        Task {
+            do {
+                try await repository.createNote(roomID: roomID, path: path, content: "")
+                route = .newNote(roomID: roomID, path: path)
+            } catch {
+                MXLog.error("Couldn't create a note: \(error)")
+            }
+        }
     }
     
     private func followChanges() async {
