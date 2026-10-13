@@ -27,6 +27,10 @@ targets:
     # Each feature's texts are their own string table (ArtiseNotes.strings…), imported from the Android app.
     - path: Artise/Resources/Notes
     - path: Artise/Resources/Stickers
+    # Firebase's file, written by the TestFlight job from a secret (never committed).
+    - path: Artise/Resources/Firebase/GoogleService-Info.plist
+      optional: true
+      buildPhase: resources
 
     dependencies:
     # "Artise sticker" in other apps' share menus.
