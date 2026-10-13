@@ -328,6 +328,18 @@ public extension NotesSyncEngine {
         }
     }
     
+    func history(roomID: String, path: String) async throws -> [NoteVersion] {
+        try await api.history(roomID: roomID, path: path)
+    }
+    
+    func changeHistory(roomID: String, before: String?) async throws -> NotesChangesPage {
+        try await api.changes(roomID: roomID, before: before)
+    }
+    
+    func noteAt(roomID: String, path: String, commit: String) async throws -> Note {
+        try await api.note(roomID: roomID, path: path, atCommit: commit)
+    }
+    
     /// Starts a sync that goes on if the screen that asked for it closes. Failures are silent: the queue stays.
     func syncInBackground(roomID: String) {
         Task { _ = try? await sync(roomID: roomID) }
