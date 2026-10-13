@@ -43,7 +43,8 @@ final class ArtiseNotesService {
         repository = NotesSyncEngine(api: NotesAPIClient(tokenSource: tokenSource),
                                      directory: Self.directory(for: userID),
                                      cipher: AESGCMNotesCipher(keyData: keyData),
-                                     files: files)
+                                     files: files,
+                                     track: { event in Task { @MainActor in ArtiseAnalyticsClient.shared.track(event) } })
         self.clientProxy = clientProxy
     }
     

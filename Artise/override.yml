@@ -10,6 +10,11 @@
 packages:
   Artise:
     path: Artise
+  # Google Analytics for Firebase, for usage statistics people opt in to. Not FirebaseAnalyticsIdentitySupport:
+  # without it there's no advertising ID.
+  Firebase:
+    url: https://github.com/firebase/firebase-ios-sdk
+    exactVersion: 13.0.1
 
 targets:
   ElementX:
@@ -27,6 +32,19 @@ targets:
       product: ArtiseCore
     - package: Artise
       product: ArtiseNotes
+    - package: Firebase
+      product: FirebaseAnalytics
+
+    # Nothing is collected before consent; no ads, no ad signals, no automatic screen reports.
+    info:
+      properties:
+        FIREBASE_ANALYTICS_COLLECTION_ENABLED: false
+        FirebaseAutomaticScreenReportingEnabled: false
+        GOOGLE_ANALYTICS_DEFAULT_ALLOW_ANALYTICS_STORAGE: false
+        GOOGLE_ANALYTICS_DEFAULT_ALLOW_AD_STORAGE: false
+        GOOGLE_ANALYTICS_DEFAULT_ALLOW_AD_USER_DATA: false
+        GOOGLE_ANALYTICS_DEFAULT_ALLOW_AD_PERSONALIZATION_SIGNALS: false
+        GOOGLE_ANALYTICS_REGISTRATION_WITH_AD_NETWORK_ENABLED: false
 
     postBuildScripts:
     - name: Artise string overrides
@@ -35,6 +53,17 @@ targets:
       shell: /bin/sh
       script: |
         "$SRCROOT/Artise/Scripts/apply-string-overrides.sh"
+    # Firebase's file, written by the TestFlight job from a secret (never committed); other builds have none and
+    # keep analytics off.
+    - name: Artise Firebase file
+      runOnlyWhenInstalling: false
+      basedOnDependencyAnalysis: false
+      shell: /bin/sh
+      script: |
+        source="$SRCROOT/Artise/Resources/Firebase/GoogleService-Info.plist"
+        if [ -f "$source" ]; then
+          cp "$source" "$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH/GoogleService-Info.plist"
+        fi
 
   # AppSettings, compiled into both extensions, reads Artise's configuration.
   NSE:

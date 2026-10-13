@@ -59,6 +59,7 @@ struct NotesMediaScreen: View {
             }
         }
         .compoundList()
+        .onAppear { ArtiseAnalyticsClient.shared.screen(.notesMedia) }
         .navigationTitle(ArtiseNotesL10n.text("screen_notes_media_title"))
         .navigationBarTitleDisplayMode(.inline)
         .quickLookPreview($previewURL)
