@@ -1,0 +1,33 @@
+#
+# Copyright 2026 Artise.
+#
+# SPDX-License-Identifier: AGPL-3.0-only
+#
+# Artise's additions to the XcodeGen project, included last from project.yml.
+# XcodeGen merges includes additively: lists are appended and settings replace upstream's.
+# Paths are relative to the repository root (the include uses relativePaths: false).
+
+packages:
+  Artise:
+    path: Artise
+
+targets:
+  ElementX:
+    settings:
+      base:
+        ASSETCATALOG_COMPILER_APPICON_NAME: ArtiseAppIcon
+
+    sources:
+    - path: Artise/Resources/Assets.xcassets
+
+    dependencies:
+    - package: Artise
+      product: ArtiseCore
+
+    postBuildScripts:
+    - name: Artise string overrides
+      runOnlyWhenInstalling: false
+      basedOnDependencyAnalysis: false
+      shell: /bin/sh
+      script: |
+        "$SRCROOT/Artise/Scripts/apply-string-overrides.sh"

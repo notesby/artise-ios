@@ -18,16 +18,29 @@ struct ArtiseConfigurationTests {
     /// The links shown in the app must point at Artise's public pages over HTTPS.
     @Test
     func publicLinksUseArtiseOverHTTPS() {
-        for url in [ArtiseConfiguration.websiteURL, ArtiseConfiguration.termsURL, ArtiseConfiguration.privacyURL] {
+        let links = [ArtiseConfiguration.websiteURL, ArtiseConfiguration.logoURL,
+                     ArtiseConfiguration.termsURL, ArtiseConfiguration.privacyURL,
+                     ArtiseConfiguration.Help.encryptionURL, ArtiseConfiguration.Help.deviceVerificationURL,
+                     ArtiseConfiguration.Help.recoveryURL, ArtiseConfiguration.Help.identityChangeURL,
+                     ArtiseConfiguration.Help.historySharingURL]
+        for url in links {
             #expect(url.scheme == "https")
             #expect(url.host() == "artise.co")
         }
     }
     
-    /// Push notifications must reach Artise's own gateway, never a third-party one.
+    /// The source link must point at this app's public repository, as the AGPL requires.
     @Test
-    func pushGatewayIsArtiseSygnal() {
-        #expect(ArtiseConfiguration.pushGatewayURL.host() == "matrix.artise.co")
-        #expect(ArtiseConfiguration.pushGatewayURL.path() == "/_matrix/push/v1/notify")
+    func sourceCodeLinkIsThePublicRepository() {
+        #expect(ArtiseConfiguration.sourceCodeURL.absoluteString == "https://github.com/notesby/artise-ios")
+    }
+    
+    /// Sign-in and push notifications must reach Artise's own server, never a third-party one.
+    @Test
+    func homeserverAndPushGatewayAreArtise() {
+        #expect(ArtiseConfiguration.homeserverURL.host() == "matrix.artise.co")
+        #expect(ArtiseConfiguration.pushGatewayBaseURL.host() == "matrix.artise.co")
+        #expect(ArtiseConfiguration.pushGatewayBaseURL.appending(path: "_matrix/push/v1/notify").absoluteString
+            == "https://matrix.artise.co/_matrix/push/v1/notify")
     }
 }
