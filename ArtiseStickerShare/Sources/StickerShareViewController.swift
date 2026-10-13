@@ -37,7 +37,7 @@ final class StickerShareViewController: UIViewController {
             return nil
         }
         let type = provider.registeredContentTypes.first { $0.conforms(to: .image) } ?? .image
-        guard let data = try? await provider.loadDataRepresentation(for: type) else { return nil }
+        guard let data = try? await provider.loadDataRepresentation(forTypeIdentifier: type.identifier) else { return nil }
         let name = UUID().uuidString + "." + (type.preferredFilenameExtension ?? "img")
         let folder = container.appending(path: Self.folder)
         do {
