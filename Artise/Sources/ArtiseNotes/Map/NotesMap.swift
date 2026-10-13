@@ -20,11 +20,21 @@ public struct NotesMapModel: Equatable, Sendable {
     public let nodes: [MapNode]
     /// Pairs of indexes into `nodes`; each link once, whichever note it's written in.
     public let edges: [MapEdge]
+    
+    public init(nodes: [MapNode], edges: [MapEdge]) {
+        self.nodes = nodes
+        self.edges = edges
+    }
 }
 
 public struct MapEdge: Equatable, Hashable, Sendable {
     public let from: Int
     public let to: Int
+    
+    public init(from: Int, to: Int) {
+        self.from = from
+        self.to = to
+    }
 }
 
 /// Builds the map from the notes on the phone, so it works offline and includes edits not sent yet, as the Android
