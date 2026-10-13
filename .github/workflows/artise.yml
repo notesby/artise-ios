@@ -20,8 +20,8 @@ permissions:
   contents: read
 
 concurrency:
-  # One run per branch; a newer push cancels the older run.
-  group: artise-${{ github.ref }}
+  # One run per branch and trigger: a newer push cancels the older push run, but never a TestFlight build.
+  group: artise-${{ github.ref }}-${{ github.event_name }}
   cancel-in-progress: true
 
 jobs:
