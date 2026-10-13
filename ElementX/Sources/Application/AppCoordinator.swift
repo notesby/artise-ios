@@ -282,6 +282,11 @@ class AppCoordinator: AppCoordinatorProtocol, AuthenticationFlowCoordinatorDeleg
     }
     
     func handleDeepLink(_ url: URL, isExternalURL: Bool, windowType: SecondaryWindowType?) -> Bool {
+        // Artise: pictures shared with "Artise sticker" (ArtiseStickers).
+        if isExternalURL, ArtiseStickers.shared.handleURL(url) {
+            return true
+        }
+        
         // Parse into an AppRoute to redirect these in a type safe way.
         
         if let route = appRouteURLParser.route(from: url) {

@@ -226,6 +226,9 @@ class TimelineInteractionHandler {
             actionsSubject.send(.viewInRoomTimeline(eventID: eventID))
         case .downloadMedia, .selectMessages:
             break // Handled by the media preview screen and the TimelineViewModel respectively.
+        case .artiseSaveSticker:
+            guard let sticker = timelineItem as? StickerRoomTimelineItem else { return }
+            Task { await userIndicatorController.submitIndicator(UserIndicator(title: ArtiseStickers.shared.save(sticker))) }
         case .translate:
             guard let messageTimelineItem = timelineItem as? EventBasedMessageTimelineItemProtocol else { return }
             actionsSubject.send(.showTranslation(text: messageTimelineItem.body))
