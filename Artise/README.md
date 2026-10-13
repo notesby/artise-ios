@@ -64,6 +64,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 | `ElementX/Sources/Screens/Timeline/View/Style/LongPressWithFeedback.swift` | Holding a message opens its actions after 250 ms, as on Android (`ArtiseTimeline`). |
 | `SettingsScreenViewModel.swift`, `AppCoordinator.swift` | Settings → Delete account opens Artise's page (`?lang=es` in Spanish); a sign-out within an hour of that goes straight to sign-in (`ArtiseAccountDeletion`). |
 | `AppCoordinator.swift`, `AppSettings.swift` (analytics) | Usage statistics go to Google Analytics for Firebase (`ArtiseAnalyticsClient`) behind Element's consent screen, when the app has its `GoogleService-Info.plist`. |
+| `ComposerToolbar.swift`, `ComposerToolbarModels.swift`, `ComposerToolbarViewModel.swift` | The sticker button at the end of an empty message field, and pictures from sticker keyboards sent as stickers (`ArtiseStickers`). |
 | `NSE/SupportingFiles/target.yml` | Notification filtering entitlement off until Apple grants it to our team. |
 
 ## Branches

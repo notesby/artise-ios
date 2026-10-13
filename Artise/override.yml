@@ -26,12 +26,15 @@ targets:
     - path: Artise/Resources/Assets.xcassets
     # Each feature's texts are their own string table (ArtiseNotes.strings…), imported from the Android app.
     - path: Artise/Resources/Notes
+    - path: Artise/Resources/Stickers
 
     dependencies:
     - package: Artise
       product: ArtiseCore
     - package: Artise
       product: ArtiseNotes
+    - package: Artise
+      product: ArtiseStickers
     - package: Firebase
       product: FirebaseAnalytics
 
