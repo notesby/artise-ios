@@ -44,7 +44,7 @@ nonisolated enum StickerMaker {
         for type in [UTType.png, .webP, .gif] where provider.hasItemConformingToTypeIdentifier(type.identifier) {
             guard let mimeType = type.preferredMIMEType,
                   KeyboardStickers.isStickerType(mimeType),
-                  let data = try? await provider.loadDataRepresentation(forTypeIdentifier: type.identifier),
+                  let data = await loadData(provider, type: type),
                   KeyboardStickers.isStickerSize(data.count),
                   let source = CGImageSourceCreateWithData(data as CFData, nil),
                   let size = pixelSize(source) else {
@@ -56,6 +56,15 @@ nonisolated enum StickerMaker {
             return StickerPicture(data: data, width: size.width, height: size.height, mimeType: mimeType)
         }
         return nil
+    }
+    
+    /// The provider's data for `type`; `NSItemProvider` has no async variant of this call.
+    private static func loadData(_ provider: NSItemProvider, type: UTType) async -> Data? {
+        await withCheckedContinuation { continuation in
+            _ = provider.loadDataRepresentation(forTypeIdentifier: type.identifier) { data, _ in
+                continuation.resume(returning: data)
+            }
+        }
     }
     
     // MARK: - Making
