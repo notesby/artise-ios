@@ -12,13 +12,16 @@ struct ArtiseNotesToolbarItem: ToolbarContent {
     let roomID: String?
     
     var body: some ToolbarContent {
-        ToolbarItem(placement: .primaryAction) {
-            Button {
-                ArtiseNotes.shared.open(roomID: roomID)
-            } label: {
-                CompoundIcon(\.document)
+        // Hidden when the workspace has no notes API.
+        if ArtiseWorkspaces.shared.notesAPIURL != nil {
+            ToolbarItem(placement: .primaryAction) {
+                Button {
+                    ArtiseNotes.shared.open(roomID: roomID)
+                } label: {
+                    CompoundIcon(\.document)
+                }
+                .accessibilityLabel(ArtiseNotesL10n.title)
             }
-            .accessibilityLabel(ArtiseNotesL10n.title)
         }
     }
 }
@@ -28,9 +31,12 @@ struct ArtiseNotesListRow: View {
     let roomID: String
     
     var body: some View {
-        ListRow(label: .default(title: ArtiseNotesL10n.title, icon: \.document),
-                kind: .navigationLink {
-                    ArtiseNotes.shared.open(roomID: roomID)
-                })
+        // Hidden when the workspace has no notes API.
+        if ArtiseWorkspaces.shared.notesAPIURL != nil {
+            ListRow(label: .default(title: ArtiseNotesL10n.title, icon: \.document),
+                    kind: .navigationLink {
+                        ArtiseNotes.shared.open(roomID: roomID)
+                    })
+        }
     }
 }

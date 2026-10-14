@@ -13,11 +13,6 @@ public enum ArtiseConfiguration {
     public static let serverName = "artise.co"
     public static let homeserverURL = URL(staticString: "https://matrix.artise.co")
     
-    /// A workspace's web app (`chat.<server name>`): its notes API, join and account pages.
-    public static func chatURL(serverName: String) -> URL {
-        URL(string: "https://chat.\(serverName)") ?? URL(staticString: "https://chat.artise.co")
-    }
-    
     public static let websiteURL = URL(staticString: "https://artise.co")
     public static let logoURL = URL(staticString: "https://artise.co/icon.png")
     public static let termsURL = URL(staticString: "https://artise.co/terms.html")

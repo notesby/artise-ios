@@ -45,9 +45,12 @@ public struct WorkspaceBranding: Codable, Equatable, Sendable {
     /// The features switched on; `nil` when the server doesn't say, so nothing is hidden.
     public var features: Set<String>?
     public var pushGatewayURL: URL?
+    /// The workspace's web app; `nil` when its server has none.
+    public var links: WorkspaceLinks?
     
     public init(name: String? = nil, logoURL: URL? = nil, accentHex: String? = nil, assistantName: String? = nil,
-                welcome: [String: String] = [:], language: String? = nil, features: Set<String>? = nil, pushGatewayURL: URL? = nil) {
+                welcome: [String: String] = [:], language: String? = nil, features: Set<String>? = nil, pushGatewayURL: URL? = nil,
+                links: WorkspaceLinks? = nil) {
         self.name = name
         self.logoURL = logoURL
         self.accentHex = accentHex
@@ -56,6 +59,7 @@ public struct WorkspaceBranding: Codable, Equatable, Sendable {
         self.language = language
         self.features = features
         self.pushGatewayURL = pushGatewayURL
+        self.links = links
     }
     
     /// Reads the section field by field, so one bad value doesn't lose the others. Any `version` is read:
@@ -72,7 +76,8 @@ public struct WorkspaceBranding: Codable, Equatable, Sendable {
                   },
                   language: Self.text(section["language"], limit: 10)?.lowercased(),
                   features: (section["features"] as? [Any]).map { Set($0.compactMap { $0 as? String }) },
-                  pushGatewayURL: (section["push_gateway"] as? String).flatMap(WorkspaceURL.https))
+                  pushGatewayURL: (section["push_gateway"] as? String).flatMap(WorkspaceURL.https),
+                  links: (section["links"] as? [String: Any]).flatMap(WorkspaceLinks.init(section:)))
     }
     
     /// Where the pusher is registered: the workspace's gateway, else Artise's shared one.
@@ -118,5 +123,45 @@ public extension WorkspaceBranding {
     func naming(_ text: String) -> String {
         guard let assistantName, assistantName != "Ari" else { return text }
         return text.replacing(/\bAri\b/, with: assistantName)
+    }
+}
+
+/// A workspace's web app (`links`): full URLs from the server, never built from its server name, as each server
+/// sets its own web host.
+public struct WorkspaceLinks: Codable, Equatable, Sendable {
+    public var web: URL?
+    /// The notes API base; the API's paths are relative to it.
+    public var notesAPI: URL?
+    /// Settings → Delete account.
+    public var deleteAccount: URL?
+    
+    public init(web: URL? = nil, notesAPI: URL? = nil, deleteAccount: URL? = nil) {
+        self.web = web
+        self.notesAPI = notesAPI
+        self.deleteAccount = deleteAccount
+    }
+    
+    init?(section: [String: Any]) {
+        self.init(web: (section["web"] as? String).flatMap(WorkspaceURL.https),
+                  notesAPI: (section["notes_api"] as? String).flatMap(WorkspaceURL.https),
+                  deleteAccount: (section["delete_account"] as? String).flatMap(WorkspaceURL.https))
+        if self == WorkspaceLinks() {
+            return nil
+        }
+    }
+    
+    /// artise.co's web app, until its workspace file has `links`. Remove once the server deploy that adds them is live.
+    static let artiseFallback = WorkspaceLinks(web: URL(staticString: "https://chat.artise.co"),
+                                               notesAPI: URL(staticString: "https://chat.artise.co/api/notes/v1"),
+                                               deleteAccount: URL(staticString: "https://chat.artise.co/account/delete"))
+    
+    /// The workspace's links. Without them its notes and the delete page are hidden, except for artise.co, whose
+    /// file doesn't have them yet.
+    public static func links(for workspace: ResolvedWorkspace?) -> WorkspaceLinks? {
+        guard let workspace else { return nil }
+        if let links = workspace.branding?.links {
+            return links
+        }
+        return workspace.serverName == ArtiseConfiguration.serverName ? artiseFallback : nil
     }
 }

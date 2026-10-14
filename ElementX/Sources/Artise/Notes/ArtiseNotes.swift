@@ -20,10 +20,15 @@ final class ArtiseNotes {
         service != nil
     }
     
-    /// Called when an account's session is ready, and with `nil` when it's gone.
+    /// Called when an account's session is ready, with `nil` when it's gone, and again when its workspace's notes
+    /// API changes. A workspace without one has no notes.
     func configure(with userSession: UserSessionProtocol?) {
         service?.unfollowAll()
-        service = userSession.flatMap { ArtiseNotesService(clientProxy: $0.clientProxy) }
+        guard let userSession, let notesAPIURL = ArtiseWorkspaces.shared.notesAPIURL else {
+            service = nil
+            return
+        }
+        service = ArtiseNotesService(clientProxy: userSession.clientProxy, notesAPIURL: notesAPIURL)
     }
     
     /// The account signed out: stops its notes and forgets them on this phone (files and key).

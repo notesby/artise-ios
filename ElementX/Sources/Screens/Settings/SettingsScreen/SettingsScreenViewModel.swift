@@ -31,8 +31,8 @@ class SettingsScreenViewModel: SettingsScreenViewModelType, SettingsScreenViewMo
         super.init(initialViewState: .init(deviceID: userSession.clientProxy.deviceID,
                                            userProfile: userSession.clientProxy.userProfilePublisher.value,
                                            showLinkNewDeviceButton: appSettings.linkNewDeviceEnabled,
-                                           // Artise: always shown; it opens Artise's deletion page (App Store requirement).
-                                           showAccountDeactivation: true,
+                                           // Artise: opens the workspace's deletion page (App Store requirement); hidden without one.
+                                           showAccountDeactivation: ArtiseWorkspaces.shared.accountDeletionURL(language: nil) != nil,
                                            showDeveloperOptions: appSettings.developerOptionsEnabled,
                                            showAnalyticsSettings: appSettings.canPromptForAnalytics,
                                            isBugReportServiceEnabled: isBugReportServiceEnabled,
@@ -144,9 +144,10 @@ class SettingsScreenViewModel: SettingsScreenViewModelType, SettingsScreenViewMo
         case .developerOptions:
             actionsSubject.send(.developerOptions)
         case .deactivateAccount:
-            // Artise: the account is deleted on Artise's page, which also ends this session.
+            // Artise: the account is deleted on the workspace's page, which also ends this session.
+            guard let pageURL = ArtiseWorkspaces.shared.accountDeletionURL(language: Bundle.main.preferredLocalizations.first) else { return }
             ArtiseAccountDeletion().markStarted()
-            UIApplication.shared.open(ArtiseWorkspaces.shared.accountDeletionURL(language: Bundle.main.preferredLocalizations.first))
+            UIApplication.shared.open(pageURL)
         }
     }
     

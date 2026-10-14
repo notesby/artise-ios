@@ -75,7 +75,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 | `AuthenticationFlowCoordinator.swift`, `AppSettings.swift` (`showCreateAccountButton`) | "Your workspace" replaces the server picker (`ArtiseWorkspaceScreenCoordinator`) and opens after an invite link's join page; no "Create account", as accounts come from invite links. |
 | `LoginScreen.swift`, `HomeScreen.swift` | The workspace's logo and name on the sign-in screen and in the home top bar (`ArtiseWorkspaces`). |
 | `NotificationManager.swift`, `ClientProxy.swift` (`setPusher`) | The pusher goes to the workspace's push gateway (default `push.artise.co`), with `append: true` so other accounts' pushers on the phone stay. |
-| `AppCoordinator.swift` (`handleDeepLink`), `UserSessionStore.swift`, `SettingsScreenViewModel.swift` | Invite links (`join.artise.co`), forgetting the workspace's look on sign-out, and Delete account on the account's own workspace. |
+| `AppCoordinator.swift` (`handleDeepLink`), `UserSessionStore.swift`, `SettingsScreenViewModel.swift` | Invite links (`join.artise.co`), forgetting the workspace's look on sign-out, and Delete account on the workspace's `links.delete_account` page (hidden without one). |
 
 ## Branches
 

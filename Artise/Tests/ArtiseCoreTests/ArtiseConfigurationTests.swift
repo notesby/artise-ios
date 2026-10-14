@@ -50,11 +50,4 @@ struct ArtiseConfigurationTests {
         #expect(ArtiseConfiguration.pushGatewayBaseURL.appending(path: "_matrix/push/v1/notify").absoluteString
             == "https://push.artise.co/_matrix/push/v1/notify")
     }
-    
-    /// Each workspace's web app is `chat.` before its server name, artise.co's too.
-    @Test
-    func chatURLFollowsTheServerName() {
-        #expect(ArtiseConfiguration.chatURL(serverName: "artise.co").absoluteString == "https://chat.artise.co")
-        #expect(ArtiseConfiguration.chatURL(serverName: "acme.artise.co").absoluteString == "https://chat.acme.artise.co")
-    }
 }

@@ -22,9 +22,8 @@ public struct ArtiseAccountDeletion {
         self.defaults = defaults
     }
     
-    /// The page on the account's workspace, in Spanish when the app is.
-    public static func pageURL(serverName: String, language: String?) -> URL {
-        let pageURL = ArtiseConfiguration.chatURL(serverName: serverName).appending(path: "account/delete")
+    /// The workspace's page (its `links.delete_account`), in Spanish when the app is.
+    public static func pageURL(_ pageURL: URL, language: String?) -> URL {
         guard language?.hasPrefix("es") == true else { return pageURL }
         return pageURL.appending(queryItems: [URLQueryItem(name: "lang", value: "es")])
     }

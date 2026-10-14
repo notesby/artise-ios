@@ -61,7 +61,15 @@ workspace file, the app registers again.
   browser opens "Your workspace", which goes straight on to that workspace's sign-in.
 - **Signed in:** the app shows "You're already in …", or "To join …, sign out first".
 
-## Derived hosts
+## The workspace's web app
 
-The notes API and the account deletion page are on the workspace's web app,
-`https://chat.<server_name>` (`ArtiseConfiguration.chatURL`), which is the case for artise.co.
+The notes API and the account deletion page come from the workspace file's `links`:
+- `links.notes_api` is the notes API base.
+- `links.delete_account` is the Settings → Delete account page, with `?lang=es` added in Spanish.
+
+Each server sets its own web host, so the app never builds these URLs from the server name. Without
+`links`, the notes buttons and the Delete account row are hidden.
+
+The one exception is temporary. Until the server deploy that adds `links` is live, artise.co (and only
+artise.co) falls back to `https://chat.artise.co` (`WorkspaceLinks.artiseFallback`). Remove the fallback
+once that deploy is live.

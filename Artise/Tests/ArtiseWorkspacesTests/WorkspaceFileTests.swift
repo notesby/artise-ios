@@ -113,4 +113,36 @@ struct WorkspaceFileTests {
         #expect(WorkspaceBranding.pushGatewayURL(for: WorkspaceBranding(pushGatewayURL: custom)) == custom)
         #expect(WorkspaceBranding.pushGatewayURL(for: nil).absoluteString == "https://push.artise.co/_matrix/push/v1/notify")
     }
+    
+    /// `links` gives the web app's full URLs; a link that isn't https is dropped, and no usable link means none.
+    @Test
+    func links() throws {
+        let file = try #require(WorkspaceFile.parse(Data("""
+        {"co.artise.workspace":{"links":{"web":"https://chat.acme.example","notes_api":"https://chat.acme.example/api/notes/v1",
+         "delete_account":"http://chat.acme.example/account/delete","calendar":"https://cal.acme.example"}}}
+        """.utf8)))
+        #expect(file.branding?.links == WorkspaceLinks(web: URL(string: "https://chat.acme.example"),
+                                                       notesAPI: URL(string: "https://chat.acme.example/api/notes/v1")))
+        #expect(WorkspaceFile.parse(Data(#"{"co.artise.workspace":{"links":{"web":"ftp://x"}}}"#.utf8))?.branding?.links == nil)
+        #expect(WorkspaceFile.parse(Data(#"{"co.artise.workspace":{"links":"https://chat.acme.example"}}"#.utf8))?.branding?.links == nil)
+    }
+    
+    /// Without `links` a workspace has no notes or delete page, and nothing is guessed from its server name;
+    /// only artise.co falls back to chat.artise.co until its file has them.
+    @Test
+    func linksFallbackOnlyForArtise() {
+        let acme = ResolvedWorkspace(slug: "acme", serverName: "acme.artise.co", directoryName: "Acme",
+                                     file: WorkspaceFile(homeserverURL: nil, branding: WorkspaceBranding(name: "Acme")))
+        #expect(WorkspaceLinks.links(for: acme) == nil)
+        #expect(WorkspaceLinks.links(for: nil) == nil)
+        
+        let artise = ResolvedWorkspace(slug: "artise", serverName: "artise.co", directoryName: "Artise", file: nil)
+        #expect(WorkspaceLinks.links(for: artise)?.notesAPI?.absoluteString == "https://chat.artise.co/api/notes/v1")
+        #expect(WorkspaceLinks.links(for: artise)?.deleteAccount?.absoluteString == "https://chat.artise.co/account/delete")
+        
+        let published = WorkspaceLinks(notesAPI: URL(string: "https://web.acme.example/api/notes/v1"))
+        let acmeWithLinks = ResolvedWorkspace(slug: "acme", serverName: "acme.artise.co", directoryName: "Acme",
+                                              file: WorkspaceFile(homeserverURL: nil, branding: WorkspaceBranding(links: published)))
+        #expect(WorkspaceLinks.links(for: acmeWithLinks) == published)
+    }
 }

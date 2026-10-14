@@ -31,9 +31,16 @@ final class ArtiseWorkspaces {
     private(set) var signingIn: ResolvedWorkspace?
     /// A workspace to sign in to after an invite link's join page closed, until "Your workspace" takes it.
     @ObservationIgnored private var pendingInviteAddress: String?
+    /// The signed-in session, to restart notes when the workspace's notes API changes.
+    @ObservationIgnored private var userSession: UserSessionProtocol?
     
     var branding: WorkspaceBranding? {
         current?.branding
+    }
+    
+    /// The account's notes API; `nil` when its workspace has no web app, and notes are hidden.
+    var notesAPIURL: URL? {
+        WorkspaceLinks.links(for: current)?.notesAPI
     }
     
     /// The workspace's accent, or `nil` to keep Artise's look.
@@ -76,6 +83,7 @@ final class ArtiseWorkspaces {
     
     /// Called when an account's session is ready, and with `nil` when it's gone.
     func configure(with userSession: UserSessionProtocol?) {
+        self.userSession = userSession
         guard let userSession, let serverName = WorkspaceHosts.serverName(userID: userSession.clientProxy.userID) else {
             current = nil
             foregroundObserver = nil
@@ -102,6 +110,7 @@ final class ArtiseWorkspaces {
             store.remove(serverName: serverName)
         }
         current = nil
+        userSession = nil
         foregroundObserver = nil
     }
     
@@ -113,10 +122,14 @@ final class ArtiseWorkspaces {
         let updated = ResolvedWorkspace(slug: workspace.slug, serverName: workspace.serverName, directoryName: workspace.directoryName, file: file)
         guard updated != current else { return }
         let pushChanged = WorkspaceBranding.pushGatewayURL(for: updated.branding) != WorkspaceBranding.pushGatewayURL(for: workspace.branding)
+        let notesChanged = WorkspaceLinks.links(for: updated)?.notesAPI != WorkspaceLinks.links(for: workspace)?.notesAPI
         current = updated
         store.save(updated)
         if pushChanged {
             UIApplication.shared.registerForRemoteNotifications()
+        }
+        if notesChanged {
+            ArtiseNotes.shared.configure(with: userSession)
         }
     }
     
@@ -126,9 +139,9 @@ final class ArtiseWorkspaces {
         return WorkspaceBranding.pushGatewayURL(for: workspace?.branding)
     }
     
-    /// Settings → Delete account, on the account's own workspace.
-    func accountDeletionURL(language: String?) -> URL {
-        ArtiseAccountDeletion.pageURL(serverName: current?.serverName ?? ArtiseConfiguration.serverName, language: language)
+    /// Settings → Delete account, on the account's own workspace; `nil` when it has no web app, and the row is hidden.
+    func accountDeletionURL(language: String?) -> URL? {
+        WorkspaceLinks.links(for: current)?.deleteAccount.map { ArtiseAccountDeletion.pageURL($0, language: language) }
     }
     
     // MARK: - Invite links
