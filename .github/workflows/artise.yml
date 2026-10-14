@@ -178,6 +178,31 @@ jobs:
       - name: Generate the Xcode project
         run: xcodegen
 
+      # The build's service keys. MapTiler's key goes in here and never into git; without it, location sharing stays
+      # off. Element's crash reporting (Sentry), bug reports (rageshake) and PostHog analytics are turned off, as on
+      # Android: their committed values are placeholders.
+      - name: Set the build's service keys
+        env:
+          MAPLIBRE_API_KEY: ${{ secrets.MAPLIBRE_API_KEY }}
+        run: |
+          python3 - <<'PY'
+          import json, os, pathlib, re
+          path = pathlib.Path("Components/Secrets/Secrets.swift")
+          key = os.environ.get("MAPLIBRE_API_KEY", "").strip()
+          values = {"mapLibreAPIKey": json.dumps(key) if key else "nil",
+                    "sentryDSN": "nil", "sentryRustDSN": "nil", "rageshakeURL": "nil",
+                    "postHogHost": "nil", "postHogAPIKey": "nil"}
+          lines = []
+          for line in path.read_text().splitlines():
+              match = re.match(r"\s*static let (\w+): String\? = ", line)
+              if match and match.group(1) in values:
+                  line = f"    static let {match.group(1)}: String? = {values[match.group(1)]}"
+              lines.append(line)
+          path.write_text("\n".join(lines) + "\n")
+          print("MapTiler key added." if key else "::warning title=Maps::No MAPLIBRE_API_KEY secret: location sharing is off in this build.")
+          print("Crash reporting, bug reports and PostHog are off.")
+          PY
+
       # Signing is manual: Artise's distribution certificate and App Store profiles, made with the
       # App Store Connect API (Xcode's automatic provisioning fails with API keys for this team).
       - name: Install the signing certificate and profiles
