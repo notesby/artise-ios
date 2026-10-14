@@ -286,6 +286,12 @@ class AppCoordinator: AppCoordinatorProtocol, AuthenticationFlowCoordinatorDeleg
         if isExternalURL, ArtiseStickers.shared.handleURL(url) {
             return true
         }
+        // Artise: invite links (join.artise.co) open their join page, then sign-in to that workspace.
+        if ArtiseWorkspaces.shared.handleURL(url, isSignedIn: userSession != nil, showSignIn: { [weak self] in
+            self?.authenticationFlowCoordinator?.artiseShowWorkspaceSignIn()
+        }) {
+            return true
+        }
         
         // Parse into an AppRoute to redirect these in a type safe way.
         

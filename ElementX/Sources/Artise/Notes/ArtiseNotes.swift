@@ -44,16 +44,17 @@ final class ArtiseNotes {
             service?.unfollowAll()
             host?.dismiss(animated: true)
         }
-        let controller = UIHostingController(rootView: root)
+        let controller = UIHostingController(rootView: root.artiseWorkspaceAccent())
         controller.modalPresentationStyle = .fullScreen
         host = controller
         presenter.present(controller, animated: true)
     }
 }
 
-/// Starts and stops notes, stickers and link previews with the account's session.
+/// Starts and stops the workspace, notes, stickers and link previews with the account's session.
 nonisolated struct ArtiseUserSessionHook: UserSessionHookProtocol {
     func configure(with userSession: UserSessionProtocol?) async {
+        await ArtiseWorkspaces.shared.configure(with: userSession)
         await ArtiseNotes.shared.configure(with: userSession)
         await ArtiseStickers.shared.configure(with: userSession)
         await ArtiseLinkPreviews.shared.configure(with: userSession)

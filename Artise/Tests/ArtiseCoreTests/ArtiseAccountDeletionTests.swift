@@ -17,9 +17,9 @@ struct ArtiseAccountDeletionTests {
     /// The page is in Spanish when the app is, and in English otherwise.
     @Test
     func pageFollowsTheLanguage() {
-        #expect(ArtiseAccountDeletion.pageURL(language: "es-MX").absoluteString == "https://chat.artise.co/account/delete?lang=es")
-        #expect(ArtiseAccountDeletion.pageURL(language: "en").absoluteString == "https://chat.artise.co/account/delete")
-        #expect(ArtiseAccountDeletion.pageURL(language: nil) == ArtiseAccountDeletion.pageURL)
+        #expect(ArtiseAccountDeletion.pageURL(serverName: "artise.co", language: "es-MX").absoluteString == "https://chat.artise.co/account/delete?lang=es")
+        #expect(ArtiseAccountDeletion.pageURL(serverName: "artise.co", language: "en").absoluteString == "https://chat.artise.co/account/delete")
+        #expect(ArtiseAccountDeletion.pageURL(serverName: "acme.artise.co", language: nil).absoluteString == "https://chat.acme.artise.co/account/delete")
     }
     
     /// A sign-out soon after opening the page counts as the deletion, once.

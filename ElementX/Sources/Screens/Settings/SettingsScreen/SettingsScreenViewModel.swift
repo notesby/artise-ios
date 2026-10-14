@@ -146,7 +146,7 @@ class SettingsScreenViewModel: SettingsScreenViewModelType, SettingsScreenViewMo
         case .deactivateAccount:
             // Artise: the account is deleted on Artise's page, which also ends this session.
             ArtiseAccountDeletion().markStarted()
-            UIApplication.shared.open(ArtiseAccountDeletion.pageURL(language: Bundle.main.preferredLocalizations.first))
+            UIApplication.shared.open(ArtiseWorkspaces.shared.accountDeletionURL(language: Bundle.main.preferredLocalizations.first))
         }
     }
     

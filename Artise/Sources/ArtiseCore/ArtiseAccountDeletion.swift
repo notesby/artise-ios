@@ -10,7 +10,6 @@ import Foundation
 /// does everything and ends the app's session on the server; the app only opens it, and afterwards goes straight back
 /// to sign-in instead of explaining why it was signed out. The same as the Android app.
 public struct ArtiseAccountDeletion {
-    public static let pageURL = URL(staticString: "https://chat.artise.co/account/delete")
     /// Long enough to read the page and confirm; a later sign-out has another cause.
     public static let startedValidity: TimeInterval = 60 * 60
     
@@ -23,8 +22,9 @@ public struct ArtiseAccountDeletion {
         self.defaults = defaults
     }
     
-    /// The page, in Spanish when the app is.
-    public static func pageURL(language: String?) -> URL {
+    /// The page on the account's workspace, in Spanish when the app is.
+    public static func pageURL(serverName: String, language: String?) -> URL {
+        let pageURL = ArtiseConfiguration.chatURL(serverName: serverName).appending(path: "account/delete")
         guard language?.hasPrefix("es") == true else { return pageURL }
         return pageURL.appending(queryItems: [URLQueryItem(name: "lang", value: "es")])
     }

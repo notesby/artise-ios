@@ -1,0 +1,24 @@
+/*
+ Copyright 2026 Artise.
+
+ SPDX-License-Identifier: AGPL-3.0-only
+
+ Written for iOS first. The Android app uses the same keys and texts.
+*/
+
+"screen_workspace_title" = "Your workspace";
+"screen_workspace_subtitle" = "Type the name your company uses in Artise.";
+"screen_workspace_field_label" = "Workspace";
+"screen_workspace_placeholder" = "acme";
+"screen_workspace_field_footer" = "You can also type your server’s address, like artise.co.";
+"screen_workspace_error_invalid" = "That workspace name isn’t valid. Use 3 to 30 letters, numbers or hyphens.";
+"screen_workspace_error_not_found" = "No workspace called %1$@. Check the name and try again.";
+"screen_workspace_error_paused" = "This workspace is paused. Contact its admin.";
+"screen_workspace_error_rate_limited" = "Too many tries. Wait a minute and try again.";
+"screen_workspace_error_unreachable" = "Can’t reach Artise right now. Check your connection and try again.";
+"screen_workspace_error_sign_in_unavailable" = "Can’t connect to %1$@ right now. Try again in a moment.";
+"screen_workspace_welcome_action" = "Get started";
+"screen_workspace_invite_error_expired" = "This invite link doesn’t work anymore. Ask for a new one.";
+"screen_workspace_invite_error_unreachable" = "Can’t open the invite right now. Check your connection and try again.";
+"screen_workspace_invite_already_member" = "You’re already in %1$@.";
+"screen_workspace_invite_sign_out_first" = "You’re signed in to %1$@. To join %2$@, sign out first, then open the invite link again.";

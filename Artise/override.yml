@@ -27,6 +27,7 @@ targets:
     # Each feature's texts are their own string table (ArtiseNotes.strings…), imported from the Android app.
     - path: Artise/Resources/Notes
     - path: Artise/Resources/Stickers
+    - path: Artise/Resources/Workspaces
 
     dependencies:
     # "Artise sticker" in other apps' share menus.
@@ -39,13 +40,18 @@ targets:
       product: ArtiseStickers
     - package: Artise
       product: ArtiseLinkPreview
+    - package: Artise
+      product: ArtiseWorkspaces
     - package: Firebase
       product: FirebaseAnalytics
 
     # Ari's important and critical reminders break through Focus (ArtiseAutomationLevel).
+    # Invite links (join.artise.co) open in the app (ArtiseWorkspaces); the host serves the apple-app-site-association.
     entitlements:
       properties:
         com.apple.developer.usernotifications.time-sensitive: true
+        com.apple.developer.associated-domains:
+        - applinks:join.artise.co
 
     # Nothing is collected before consent; no ads, no ad signals, no automatic screen reports.
     info:

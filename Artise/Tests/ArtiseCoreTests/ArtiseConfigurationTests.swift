@@ -43,12 +43,18 @@ struct ArtiseConfigurationTests {
         #expect(ArtiseConfiguration.sourceCodeURL.absoluteString == "https://github.com/notesby/artise-ios")
     }
     
-    /// Sign-in and push notifications must reach Artise's own server, never a third-party one.
+    /// The default workspace and push notifications reach Artise's own servers, never a third-party one.
     @Test
     func homeserverAndPushGatewayAreArtise() {
         #expect(ArtiseConfiguration.homeserverURL.host() == "matrix.artise.co")
-        #expect(ArtiseConfiguration.pushGatewayBaseURL.host() == "matrix.artise.co")
         #expect(ArtiseConfiguration.pushGatewayBaseURL.appending(path: "_matrix/push/v1/notify").absoluteString
-            == "https://matrix.artise.co/_matrix/push/v1/notify")
+            == "https://push.artise.co/_matrix/push/v1/notify")
+    }
+    
+    /// Each workspace's web app is `chat.` before its server name, artise.co's too.
+    @Test
+    func chatURLFollowsTheServerName() {
+        #expect(ArtiseConfiguration.chatURL(serverName: "artise.co").absoluteString == "https://chat.artise.co")
+        #expect(ArtiseConfiguration.chatURL(serverName: "acme.artise.co").absoluteString == "https://chat.acme.artise.co")
     }
 }

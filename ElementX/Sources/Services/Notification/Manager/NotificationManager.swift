@@ -187,7 +187,8 @@ final class NotificationManager: NSObject, NotificationManagerProtocol {
             
             let configuration = try PusherConfiguration(identifiers: .init(pushkey: deviceToken.base64EncodedString(),
                                                                            appId: appSettings.pusherAppID),
-                                                        kind: .http(data: .init(url: appSettings.pushGatewayNotifyEndpoint.absoluteString,
+                                                        // Artise: the account's workspace gateway (ArtiseWorkspaces).
+                                                        kind: .http(data: .init(url: ArtiseWorkspaces.shared.pushGatewayURL(userID: clientProxy.userID).absoluteString,
                                                                                 format: .eventIdOnly,
                                                                                 defaultPayload: defaultPayload.toJsonString())),
                                                         appDisplayName: "\(InfoPlistReader.main.bundleDisplayName) (iOS)",

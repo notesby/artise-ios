@@ -1,0 +1,24 @@
+/*
+ Copyright 2026 Artise.
+
+ SPDX-License-Identifier: AGPL-3.0-only
+
+ Written for iOS first. The Android app uses the same keys and texts.
+*/
+
+"screen_workspace_title" = "Tu espacio de trabajo";
+"screen_workspace_subtitle" = "Escribe el nombre que usa tu empresa en Artise.";
+"screen_workspace_field_label" = "Espacio de trabajo";
+"screen_workspace_placeholder" = "acme";
+"screen_workspace_field_footer" = "También puedes escribir la dirección de tu servidor, como artise.co.";
+"screen_workspace_error_invalid" = "Ese nombre de espacio de trabajo no es válido. Usa de 3 a 30 letras, números o guiones.";
+"screen_workspace_error_not_found" = "No hay ningún espacio de trabajo llamado %1$@. Revisa el nombre e inténtalo de nuevo.";
+"screen_workspace_error_paused" = "Este espacio de trabajo está en pausa. Contacta a su administrador.";
+"screen_workspace_error_rate_limited" = "Demasiados intentos. Espera un minuto e inténtalo de nuevo.";
+"screen_workspace_error_unreachable" = "No podemos conectar con Artise ahora. Revisa tu conexión e inténtalo de nuevo.";
+"screen_workspace_error_sign_in_unavailable" = "No podemos conectar con %1$@ ahora. Inténtalo de nuevo en un momento.";
+"screen_workspace_welcome_action" = "Empezar";
+"screen_workspace_invite_error_expired" = "Este enlace de invitación ya no funciona. Pide uno nuevo.";
+"screen_workspace_invite_error_unreachable" = "No se puede abrir la invitación ahora. Revisa tu conexión e inténtalo de nuevo.";
+"screen_workspace_invite_already_member" = "Ya estás en %1$@.";
+"screen_workspace_invite_sign_out_first" = "Iniciaste sesión en %1$@. Para unirte a %2$@, primero cierra sesión y luego abre de nuevo el enlace de invitación.";

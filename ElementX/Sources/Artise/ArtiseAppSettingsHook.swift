@@ -7,12 +7,13 @@
 import ArtiseCore
 import Foundation
 
-/// Locks the app to artise.co, points every link at Artise instead of Element, and uses Artise's MapTiler key.
+/// Signs in to any Artise workspace (artise.co by default), points every link at Artise instead of Element, and uses
+/// Artise's MapTiler key. "Your workspace" (`ArtiseWorkspaceScreenCoordinator`) replaces Element's server picker.
 struct ArtiseAppSettingsHook: AppSettingsHookProtocol {
     func configure(_ appSettings: AppSettings) -> AppSettings {
         appSettings.override(accountProviders: [.managed(serverName: ArtiseConfiguration.serverName,
                                                          baseURL: ArtiseConfiguration.homeserverURL)],
-                             allowOtherAccountProviders: false,
+                             allowOtherAccountProviders: true,
                              hideBrandChrome: false,
                              pushGatewayBaseURL: ArtiseConfiguration.pushGatewayBaseURL,
                              // artise.co signs in with a password, so the OAuth values are never used.

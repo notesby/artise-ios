@@ -4,7 +4,9 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 //
 
+import ArtiseCore
 import ArtiseNotes
+import ArtiseWorkspaces
 import Foundation
 import MatrixRustSDK
 
@@ -40,7 +42,10 @@ final class ArtiseNotesService {
                                      pendingDirectory: Self.directory(for: userID).appending(path: "pending"),
                                      convertPhoto: { NotesPhotoConverter.toJPEG($0, contentType: $1) },
                                      canPrefetch: { NotesPrefetchPolicy.shared.canPrefetch })
-        repository = NotesSyncEngine(api: NotesAPIClient(tokenSource: tokenSource),
+        // Each workspace runs its own notes API, on its web app's host.
+        let notesURL = ArtiseConfiguration.chatURL(serverName: WorkspaceHosts.serverName(userID: userID) ?? ArtiseConfiguration.serverName)
+            .appending(path: "api/notes/v1")
+        repository = NotesSyncEngine(api: NotesAPIClient(baseURL: notesURL, tokenSource: tokenSource),
                                      directory: Self.directory(for: userID),
                                      cipher: AESGCMNotesCipher(keyData: keyData),
                                      files: files,

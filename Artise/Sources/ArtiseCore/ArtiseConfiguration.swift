@@ -8,9 +8,15 @@ import Foundation
 
 /// Fixed facts about the Artise service that every Artise feature shares.
 public enum ArtiseConfiguration {
-    /// The only server the app signs in to. Its `.well-known/matrix/client` points at `homeserverURL`.
+    /// Artise's own workspace ("artise"), the default before someone types theirs. Its `.well-known/matrix/client`
+    /// points at `homeserverURL`.
     public static let serverName = "artise.co"
     public static let homeserverURL = URL(staticString: "https://matrix.artise.co")
+    
+    /// A workspace's web app (`chat.<server name>`): its notes API, join and account pages.
+    public static func chatURL(serverName: String) -> URL {
+        URL(string: "https://chat.\(serverName)") ?? URL(staticString: "https://chat.artise.co")
+    }
     
     public static let websiteURL = URL(staticString: "https://artise.co")
     public static let logoURL = URL(staticString: "https://artise.co/icon.png")
@@ -31,8 +37,9 @@ public enum ArtiseConfiguration {
         public static let historySharingURL = URL(staticString: "https://artise.co/help.html#history")
     }
     
-    /// Artise's own Sygnal push gateway. The app adds `_matrix/push/v1/notify` to this base URL.
-    public static let pushGatewayBaseURL = URL(staticString: "https://matrix.artise.co")
+    /// Artise's shared push gateway, for workspaces whose file doesn't name one. The app adds
+    /// `_matrix/push/v1/notify` to this base URL.
+    public static let pushGatewayBaseURL = URL(staticString: "https://push.artise.co")
     
     /// The pusher app ID registered in Sygnal for APNs, with `.debug` for development builds.
     public static func pushAppID(isDebugBuild: Bool) -> String {

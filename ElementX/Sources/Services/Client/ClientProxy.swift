@@ -827,7 +827,8 @@ class ClientProxy: ClientProxyProtocol {
                                    deviceDisplayName: configuration.deviceDisplayName,
                                    profileTag: configuration.profileTag,
                                    lang: configuration.lang,
-                                   append: false)
+                                   // Artise: keep other accounts' pushers for this phone (false makes Synapse delete them).
+                                   append: true)
     }
     
     func searchUsers(searchTerm: String, limit: UInt) async -> Result<SearchUsersResults, ClientProxyError> {
