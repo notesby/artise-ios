@@ -133,10 +133,10 @@ final class ArtiseWorkspaces {
         }
     }
     
-    /// Where the account's pusher is registered: its workspace's gateway, else Artise's shared one.
-    func pushGatewayURL(userID: String) -> URL {
-        let workspace = WorkspaceHosts.serverName(userID: userID).flatMap(store.workspace(serverName:))
-        return WorkspaceBranding.pushGatewayURL(for: workspace?.branding)
+    /// The push gateway the account's workspace names; `nil` for the app's default, Artise's shared gateway
+    /// (`ArtiseConfiguration.pushGatewayBaseURL`, set by `ArtiseAppSettingsHook`).
+    func pushGatewayURL(userID: String) -> URL? {
+        WorkspaceHosts.serverName(userID: userID).flatMap(store.workspace(serverName:))?.branding?.pushGatewayURL
     }
     
     /// Settings → Delete account, on the account's own workspace; `nil` when it has no web app, and the row is hidden.
