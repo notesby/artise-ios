@@ -205,7 +205,7 @@ nonisolated struct RoomTimelineItemFactory: RoomTimelineItemFactoryProtocol {
                              canBeRepliedTo: eventItemProxy.canBeRepliedTo,
                              shouldBoost: eventItemProxy.shouldBoost,
                              sender: eventItemProxy.sender,
-                             content: buildTextTimelineItemContent(textMessageContent),
+                             content: buildTextTimelineItemContent(textMessageContent, artiseEventItemProxy: eventItemProxy),
                              properties: .init(replyDetails: buildTimelineItemReplyDetails(messageLikeContent.inReplyTo),
                                                isThreaded: messageLikeContent.threadRoot != nil,
                                                threadSummary: buildTimelineItemThreadSummary(messageLikeContent.threadSummary),
@@ -639,11 +639,15 @@ nonisolated struct RoomTimelineItemFactory: RoomTimelineItemFactoryProtocol {
     
     // MARK: - Message events content
     
-    private func buildTextTimelineItemContent(_ messageContent: TextMessageContent) -> TextRoomTimelineItemContent {
+    private func buildTextTimelineItemContent(_ messageContent: TextMessageContent, artiseEventItemProxy: EventTimelineItemProxy? = nil) -> TextRoomTimelineItemContent {
         let htmlBody = messageContent.formatted?.format == .html ? messageContent.formatted?.body : nil
         let formattedBody = (htmlBody != nil ? attributedStringBuilder.fromHTML(htmlBody) : attributedStringBuilder.fromPlain(messageContent.body))
+        // Artise: a link preview sent inside the message (MSC4095).
+        let artiseLinkPreview = artiseEventItemProxy.flatMap { item in
+            ArtiseMessageLinkPreview.read(body: messageContent.body) { item.debugInfo.originalJSON }
+        }
         
-        return .init(body: messageContent.body, formattedBody: formattedBody, formattedBodyHTMLString: htmlBody)
+        return .init(body: messageContent.body, formattedBody: formattedBody, formattedBodyHTMLString: htmlBody, artiseLinkPreview: artiseLinkPreview)
     }
     
     private func buildAudioTimelineItemContent(_ messageContent: AudioMessageContent) -> AudioRoomTimelineItemContent {

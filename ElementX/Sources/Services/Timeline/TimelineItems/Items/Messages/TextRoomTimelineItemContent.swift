@@ -13,4 +13,6 @@ nonisolated struct TextRoomTimelineItemContent: Hashable {
     var formattedBody: AttributedString?
     /// The original textual representation of the formatted body directly from the event (usually HTML code)
     var formattedBodyHTMLString: String?
+    /// Artise: the link preview that came inside the message (MSC4095).
+    var artiseLinkPreview: ArtiseMessageLinkPreview?
 }

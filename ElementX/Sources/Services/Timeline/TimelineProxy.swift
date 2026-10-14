@@ -443,6 +443,10 @@ final class TimelineProxy: TimelineProxyProtocol {
             if let inReplyToEventID {
                 _ = try await timeline.sendReply(msg: messageContent, eventId: inReplyToEventID)
                 MXLog.info("Finished sending reply to eventID: \(inReplyToEventID)")
+            } else if let extraContent = await ArtiseLinkPreviews.shared.takeExtraContent(message: message, timeline: self) {
+                // Artise: the link preview made on this phone goes inside the message (MSC4095).
+                _ = try await timeline.sendWithExtraContent(msg: messageContent, extraContentJson: extraContent)
+                MXLog.info("Finished sending message with a link preview")
             } else {
                 _ = try await timeline.send(msg: messageContent)
                 MXLog.info("Finished sending message")
