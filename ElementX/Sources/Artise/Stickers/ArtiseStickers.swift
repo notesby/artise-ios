@@ -89,7 +89,7 @@ final class ArtiseStickerService {
         try await room.sendRaw(eventType: StickerMessage.eventType, content: StickerMessage.content(sticker, mxcURL: url))
     }
     
-    private func room(_ roomID: String) async throws(ArtiseStickerServiceError) -> Room {
+    private func room(_ roomID: String) async throws(ArtiseStickerServiceError) -> any RoomProtocol {
         guard case let .joined(roomProxy) = await clientProxy.roomForIdentifier(roomID),
               let room = (roomProxy as? JoinedRoomProxy)?.room else {
             throw .roomNotFound
@@ -104,7 +104,7 @@ enum ArtiseStickerServiceError: Error {
 
 /// The account's data and media repository, through the Rust SDK.
 nonisolated struct SDKStickerAccount: StickerAccount {
-    let client: Client
+    let client: any ClientProtocol
     
     func accountData(type: String) async throws -> String? {
         try await client.accountData(eventType: type)
