@@ -3,7 +3,8 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-only
 #
-"""Generate Artise's iOS app icon: the default, dark and tinted 1024 px PNGs plus a preview.
+"""Generate Artise's iOS app icon (the default, dark and tinted 1024 px PNGs plus a preview), the round logo on
+the welcome screen, and the CallKit icon.
 
 The geometry and colours are the same as the Android launcher icon
 (artise-android: artise/appicon/icon-source/gen.py), so both apps show the same mark.
@@ -173,3 +174,42 @@ ImageDraw.Draw(mask).rounded_rectangle((0, 0, 255, 255), radius=57, fill=255)
 preview.putalpha(mask)
 preview.save(HERE / "preview.png")
 print("written to", OUT)
+
+# The welcome screen's logo, in place of Element's (same name and 110 pt size, so no code changes): the icon's
+# colours in a circle, which Element's brand card frames with round shadows.
+REPO = HERE.parents[2]
+LOGO_SVG = f"""<svg xmlns="http://www.w3.org/2000/svg" width="110pt" height="110pt" viewBox="9 9 90 90">
+  {GRADIENT}
+  <circle cx="54" cy="54" r="45" fill="url(#g)"/>
+  <path d="{HOUSE}" fill="{YELLOW}"/>
+  <path d="{SPARK_BIG}" fill="{BLUE}"/>
+  <path d="{SPARK_SMALL}" fill="{BLUE}"/>
+</svg>"""
+cairosvg.svg2pdf(bytestring=LOGO_SVG.encode(),
+                 write_to=str(REPO / "ElementX/Resources/Assets.xcassets/images/app-logo.imageset/app-logo.pdf"))
+
+# CallKit draws its icon as a template (only the shape counts): the mark with the sparkles cut out, 40 pt.
+CALLKIT = REPO / "Artise/Resources/Assets.xcassets/ArtiseCallKitIcon.imageset"
+CALLKIT.mkdir(parents=True, exist_ok=True)
+CALLKIT_SVG = f"""<svg xmlns="http://www.w3.org/2000/svg" width="40pt" height="40pt" viewBox="24 24 60 60">
+  <path d="{HOUSE} {SPARK_BIG} {SPARK_SMALL}" fill="#000" fill-rule="evenodd"/>
+</svg>"""
+cairosvg.svg2pdf(bytestring=CALLKIT_SVG.encode(), write_to=str(CALLKIT / "ArtiseCallKitIcon.pdf"))
+(CALLKIT / "Contents.json").write_text("""{
+  "images" : [
+    {
+      "filename" : "ArtiseCallKitIcon.pdf",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  },
+  "properties" : {
+    "preserves-vector-representation" : true,
+    "template-rendering-intent" : "template"
+  }
+}
+""")
+print("logo and CallKit icon written")
