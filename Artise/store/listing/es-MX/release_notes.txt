@@ -1,0 +1,1 @@
+Primera versión de Artise: chat familiar privado y cifrado con Ari, notas compartidas en cada chat (fotos, documentos, listas, sin conexión), stickers, vistas previas de enlaces, y llamadas de voz y video.

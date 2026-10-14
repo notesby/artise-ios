@@ -1,0 +1,1 @@
+First release of Artise: private, encrypted family chat with Ari, shared notes for every chat (photos, documents, checklists, offline), stickers, link previews, and voice and video calls.

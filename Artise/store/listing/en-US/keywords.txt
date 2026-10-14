@@ -1,0 +1,1 @@
+family,chat,private,encrypted,notes,assistant,AI,reminders,messenger,stickers,Matrix,home

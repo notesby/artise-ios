@@ -1,0 +1,33 @@
+Artise is a private chat for your family, on your own Artise server. It comes with Ari, an assistant who remembers what matters to you.
+
+Private by design
+• Chats are end-to-end encrypted between your devices.
+• Your messages live on your family's own server, not in a big tech platform.
+• No ads and no tracking. Usage statistics only if you say yes, and never your messages or notes.
+
+Ari, your family's assistant
+• Ask Ari in any chat it's part of: plans, reminders, shopping lists, what was decided last week.
+• Ari reminds you on time, right in the chat. Important reminders get through Focus.
+
+Shared notes for every chat
+• Each chat has its own notes: recipes, trips, school stuff, the family wiki.
+• Write with simple formatting, checklists you tick with one tap, links between notes, photos and documents.
+• Notes work offline and sync when you're back online.
+• A map shows how your notes connect, and each note keeps its history.
+• See every photo and file in a chat's notes, which notes use them, and clean up the ones nothing uses.
+
+Stickers
+• A starter pack to use from day one.
+• Make your own stickers from photos: the background is removed on your iPhone.
+• Save stickers others send you, or add them from other apps with the share button and from your keyboard.
+
+Everything a family chat needs
+• Voice and video calls.
+• Photos, videos, voice messages and files.
+• Link previews made on your phone: the people you send them to never contact the website.
+• Share your location, once or live while you're on your way.
+• Notifications for new messages, calls and reminders.
+
+Artise needs an account on an Artise server. Your family's organizer sends you an invitation.
+
+Artise is built on Element X, the open-source Matrix client, and is itself open source under the AGPL: https://github.com/notesby/artise-ios

@@ -1,0 +1,33 @@
+Artise es un chat privado para tu familia, en tu propio servidor Artise. Viene con Ari, un asistente que recuerda lo que te importa.
+
+Privado desde el diseño
+• Los chats están cifrados de extremo a extremo entre tus dispositivos.
+• Tus mensajes viven en el servidor de tu familia, no en una gran plataforma.
+• Sin anuncios ni rastreo. Estadísticas de uso solo si tú aceptas, y nunca tus mensajes ni tus notas.
+
+Ari, el asistente de tu familia
+• Pregúntale a Ari en cualquier chat donde esté: planes, recordatorios, listas del súper, lo que se decidió la semana pasada.
+• Ari te recuerda las cosas a tiempo, ahí mismo en el chat. Los recordatorios importantes llegan aunque tengas un modo de concentración activado.
+
+Notas compartidas en cada chat
+• Cada chat tiene sus propias notas: recetas, viajes, cosas de la escuela, la wiki de la familia.
+• Escribe con formato sencillo, listas que marcas con un toque, enlaces entre notas, fotos y documentos.
+• Las notas funcionan sin conexión y se sincronizan cuando vuelves a tener internet.
+• Un mapa muestra cómo se conectan tus notas, y cada nota guarda su historial.
+• Ve todas las fotos y archivos de las notas de un chat, qué notas los usan, y limpia los que nada usa.
+
+Stickers
+• Un paquete inicial para usar desde el primer día.
+• Crea tus propios stickers con tus fotos: el fondo se quita en tu iPhone.
+• Guarda los stickers que te mandan, o agrégalos desde otras apps con el botón de compartir y desde tu teclado.
+
+Todo lo que necesita un chat familiar
+• Llamadas de voz y video.
+• Fotos, videos, mensajes de voz y archivos.
+• Vistas previas de enlaces hechas en tu teléfono: quienes las reciben nunca contactan el sitio web.
+• Comparte tu ubicación, una vez o en tiempo real mientras vas en camino.
+• Notificaciones de mensajes nuevos, llamadas y recordatorios.
+
+Artise necesita una cuenta en un servidor Artise. Quien organiza tu familia te manda una invitación.
+
+Artise está hecho sobre Element X, el cliente de Matrix de código abierto, y también es código abierto bajo la licencia AGPL: https://github.com/notesby/artise-ios
