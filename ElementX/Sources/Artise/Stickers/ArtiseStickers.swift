@@ -68,6 +68,12 @@ final class ArtiseStickers {
         service != nil && !item.imageInfo.source.underlyingSource.toJson().contains("\"key\"")
     }
     
+    /// The sticker actions for a message's menu: Save to my stickers, for a sticker that can be saved.
+    func menuActions(for item: RoomTimelineItemProtocol) -> [TimelineItemMenuAction] {
+        guard let sticker = item as? StickerRoomTimelineItem, canSave(sticker) else { return [] }
+        return [.artiseSaveSticker]
+    }
+    
     /// Keeps a sticker someone sent in the person's own stickers, reusing its picture on the server. Returns what
     /// to tell the person.
     func save(_ item: StickerRoomTimelineItem) async -> String {

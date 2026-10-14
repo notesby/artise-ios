@@ -113,9 +113,7 @@ struct TimelineItemMenuActionProvider {
         }
         
         // Artise: Save to my stickers.
-        if let sticker = timelineItem as? StickerRoomTimelineItem, ArtiseStickers.shared.canSave(sticker) {
-            actions.append(.artiseSaveSticker)
-        }
+        actions += ArtiseStickers.shared.menuActions(for: timelineItem)
         
         if !item.isOutgoing {
             secondaryActions.append(.report)
