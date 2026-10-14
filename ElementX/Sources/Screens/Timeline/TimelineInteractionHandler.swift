@@ -122,7 +122,8 @@ class TimelineInteractionHandler {
         Task { await timelineController.redact(eventOrTransactionID, reason: reason) }
     }
     
-    // swiftlint:disable:next cyclomatic_complexity
+    // Artise: function_body_length, for one case more (Save to my stickers) than SwiftLint's 100 lines.
+    // swiftlint:disable:next cyclomatic_complexity function_body_length
     func handleTimelineItemMenuAction(_ action: TimelineItemMenuAction, itemID: TimelineItemIdentifier) {
         if case .redact = action {
             // An unsent message is only dropped from the send queue. No redaction event reaches
@@ -226,6 +227,9 @@ class TimelineInteractionHandler {
             actionsSubject.send(.viewInRoomTimeline(eventID: eventID))
         case .downloadMedia, .selectMessages:
             break // Handled by the media preview screen and the TimelineViewModel respectively.
+        case .artiseSaveSticker:
+            guard let sticker = timelineItem as? StickerRoomTimelineItem else { return }
+            Task { await userIndicatorController.submitIndicator(UserIndicator(title: ArtiseStickers.shared.save(sticker))) }
         case .translate:
             guard let messageTimelineItem = timelineItem as? EventBasedMessageTimelineItemProtocol else { return }
             actionsSubject.send(.showTranslation(text: messageTimelineItem.body))

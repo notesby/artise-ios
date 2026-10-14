@@ -29,6 +29,8 @@ targets:
     - path: Artise/Resources/Stickers
 
     dependencies:
+    # "Artise sticker" in other apps' share menus.
+    - target: ArtiseStickerShare
     - package: Artise
       product: ArtiseCore
     - package: Artise
@@ -78,3 +80,45 @@ targets:
     dependencies:
     - package: Artise
       product: ArtiseCore
+
+  # "Artise sticker" in other apps' share menus: hands one picture to the app, which saves it to the account's
+  # stickers (as on Android). It only copies the picture into the app group and opens the app.
+  ArtiseStickerShare:
+    type: app-extension
+    platform: iOS
+
+    sources:
+    - path: ArtiseStickerShare/Sources
+    - path: ArtiseStickerShare/SupportingFiles/en.lproj
+    - path: ArtiseStickerShare/SupportingFiles/es.lproj
+
+    info:
+      path: ArtiseStickerShare/SupportingFiles/Info.plist
+      properties:
+        CFBundleDisplayName: Artise sticker
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        appGroupIdentifier: $(APP_GROUP_IDENTIFIER)
+        baseBundleIdentifier: $(BASE_BUNDLE_IDENTIFIER)
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.share-services
+          NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).StickerShareViewController
+          NSExtensionAttributes:
+            NSExtensionActivationRule:
+              NSExtensionActivationSupportsImageWithMaxCount: 1
+
+    entitlements:
+      path: ArtiseStickerShare/SupportingFiles/ArtiseStickerShare.entitlements
+      properties:
+        com.apple.security.application-groups:
+        - $(APP_GROUP_IDENTIFIER)
+
+    settings:
+      base:
+        PRODUCT_NAME: ArtiseStickerShare
+        PRODUCT_BUNDLE_IDENTIFIER: ${BASE_BUNDLE_IDENTIFIER}.stickershare
+        MARKETING_VERSION: $(MARKETING_VERSION)
+        CURRENT_PROJECT_VERSION: $(CURRENT_PROJECT_VERSION)
+        DEVELOPMENT_TEAM: $(DEVELOPMENT_TEAM)
+        SWIFT_VERSION: 6.2
+        SWIFT_APPROACHABLE_CONCURRENCY: YES

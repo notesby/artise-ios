@@ -143,10 +143,11 @@ jobs:
       PROFILE_APP: ${{ secrets.PROFILE_APP }}
       PROFILE_NSE: ${{ secrets.PROFILE_NSE }}
       PROFILE_SHARE: ${{ secrets.PROFILE_SHARE }}
+      PROFILE_STICKER: ${{ secrets.PROFILE_STICKER }}
     steps:
       - name: Check signing secrets
         run: |
-          for name in ASC_KEY_ID ASC_ISSUER_ID ASC_KEY_P8 DIST_CERT_P12 DIST_CERT_PASSWORD PROFILE_APP PROFILE_NSE PROFILE_SHARE; do
+          for name in ASC_KEY_ID ASC_ISSUER_ID ASC_KEY_P8 DIST_CERT_P12 DIST_CERT_PASSWORD PROFILE_APP PROFILE_NSE PROFILE_SHARE PROFILE_STICKER; do
             if [ -z "${!name}" ]; then
               echo "::error title=TestFlight::The repository secret $name is missing (see Artise/README.md)."
               exit 1
@@ -198,7 +199,7 @@ jobs:
 
           for folder in "$HOME/Library/MobileDevice/Provisioning Profiles" "$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles"; do
             mkdir -p "$folder"
-            for profile in PROFILE_APP PROFILE_NSE PROFILE_SHARE; do
+            for profile in PROFILE_APP PROFILE_NSE PROFILE_SHARE PROFILE_STICKER; do
               decode "$profile" > "$folder/$profile.mobileprovision"
             done
           done

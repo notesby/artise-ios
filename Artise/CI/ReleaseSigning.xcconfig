@@ -13,3 +13,4 @@ PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*] = $(ARTISE_PROFILE_$(PRODUCT_NAME)
 ARTISE_PROFILE_ElementX = Artise App Store
 ARTISE_PROFILE_NSE = Artise NSE App Store
 ARTISE_PROFILE_ShareExtension = Artise Share App Store
+ARTISE_PROFILE_ArtiseStickerShare = Artise Sticker App Store
