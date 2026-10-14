@@ -105,7 +105,7 @@ on this repository.
 | `DIST_CERT_P12` | The distribution certificate and its private key, as a base64-encoded `.p12` |
 | `DIST_CERT_PASSWORD` | The `.p12`'s password |
 | `GOOGLE_SERVICE_INFO_PLIST` | Firebase's `GoogleService-Info.plist` for `co.artise.app`, base64-encoded (analytics are off in TestFlight builds without it) |
-| `MAPLIBRE_API_KEY` | MapTiler key for maps (location sharing is off in TestFlight builds without it) |
+| `MAPLIBRE_API_KEY` | MapTiler key for maps (location sharing is off in TestFlight builds without it). The same step sets Element's Sentry, rageshake and PostHog values to `nil`: no crash reporting or bug reports, as on Android |
 | `PROFILE_APP`, `PROFILE_NSE`, `PROFILE_SHARE`, `PROFILE_STICKER` | The App Store profiles (app, notification extension, share extension, "Artise sticker" extension), base64-encoded |
 
 Local copies of the keys and the certificate live in `~/.artise-keys/` on the maintainer's machine.
