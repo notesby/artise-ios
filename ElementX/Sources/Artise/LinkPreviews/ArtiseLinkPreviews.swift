@@ -20,13 +20,13 @@ final class ArtiseLinkPreviews {
     // Enough for any page's <head>; the rest isn't needed.
     private static let maxPageBytes = 1024 * 1024
     private static let maxImageBytes = 8 * 1024 * 1024
-    private static let maxImageSide = 800
-    private static let minImageSide = 48
-    private static let jpegQuality = 0.8
+    private nonisolated static let maxImageSide = 800
+    private nonisolated static let minImageSide = 48
+    private nonisolated static let jpegQuality = 0.8
     // A browser's, so pages answer as they would to the person; "Artise" says who's asking.
     private static let userAgent = "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1 Artise"
     
-    private var client: Client?
+    private var client: (any ClientProtocol)?
     private var pending: Pending?
     
     // No cookies, no cache: reading a page for a preview leaves nothing behind.
@@ -153,7 +153,7 @@ final class ArtiseLinkPreviews {
         return LinkPreviewContent.build(pending.preview, image: uploaded)
     }
     
-    private func upload(_ image: DraftLinkPreviewImage, encrypted: Bool, client: Client) async throws -> UploadedImage {
+    private func upload(_ image: DraftLinkPreviewImage, encrypted: Bool, client: any ClientProtocol) async throws -> UploadedImage {
         if encrypted {
             let encryption = try AttachmentEncryption.encrypt(image.data)
             let url = try await client.uploadMedia(mimeType: "application/octet-stream", data: encryption.data, progressWatcher: nil)
