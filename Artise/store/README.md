@@ -54,7 +54,7 @@ them in git:
 | Secret | What |
 |---|---|
 | `BETA_CONTACT_FIRST_NAME`, `BETA_CONTACT_LAST_NAME`, `BETA_CONTACT_PHONE`, `BETA_CONTACT_EMAIL` | Who Apple contacts about the review. The email is also the testers' feedback email. |
-| `BETA_REVIEW_USERNAME`, `BETA_REVIEW_PASSWORD` | The reviewer account on artise.co (section 4) |
+| `BETA_REVIEW_USERNAME`, `BETA_REVIEW_PASSWORD` | The reviewer account on artise.co: `demo`, the same as Google's (section 4) |
 | `BETA_REVIEW_RECOVERY_KEY` | That account's recovery key, for "Confirm this device" |
 
 **Every ~60 days:** builds expire after 90 days. Upload a fresh build with `-f beta=true` from the current branch.
@@ -89,15 +89,17 @@ Export compliance needs nothing per build: `ITSAppUsesNonExemptEncryption` is `N
 
 ## 4. App Review information
 
-- **Sign-in required:** yes. Give Apple the same kind of reviewer account as Google gets (made by the server agent:
-  a "Demo" chat with Ari and a few notes, no family chats, recovery set up).
+- **Sign-in required:** yes. Apple gets the same account as Google: `demo` ("Ana") on artise.co, from the Play Store
+  demo (family-wiki README, "The Play Store demo"). Its chats are "Demo Family", "Familia Demo" and a private chat
+  with Ari. It's in no real chat and has recovery set up. Its password and recovery key are on the server (root
+  only), never in git.
 - **Notes for the reviewer** (English):
 
   > Artise is a private chat for families on their own Artise server (artise.co). Accounts are created by invitation,
   > so please use this account: tap "Sign in manually", type `artise.co` as the workspace and tap Continue. Username:
   > `<reviewer account>`, password: `<password>`. If asked to verify this device, choose "Use recovery key" and enter:
   > `<key>`.
-  > The "Demo" chat includes Ari, the assistant: ask it something, e.g. "remind me in 5 minutes to check the oven".
+  > The chats "Demo Family" and "Familia Demo" include Ari, the assistant: ask it something, e.g. "remind me in 5 minutes to check the oven".
   > The notes icon at the top of the chat opens its shared notes. The sticker button is at the end of the empty
   > message field. Settings → Delete account deletes the account (on artise.co's page).
   > Other people in a chat can be reported (long press a message → Report) and blocked (their profile → Block).
