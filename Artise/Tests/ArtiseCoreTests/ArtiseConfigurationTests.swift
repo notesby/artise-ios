@@ -23,11 +23,11 @@ struct ArtiseConfigurationTests {
         #expect(ArtiseConfiguration.pushAppID(isDebugBuild: true) == "co.artise.app.ios.debug")
     }
     
-    /// The links shown in the app must point at Artise's public pages over HTTPS.
+    /// A workspace's sign-in page (MAS) returns to the app's own scheme, which MAS accepts: a native app's custom
+    /// scheme must begin with the client URI's host reversed. The client URI is websiteURL + "apps/ios" (artise.co),
+    /// so the scheme must start "co.artise".
     @Test
     func signInReturnsToTheAppWithASchemeTheSignInServiceAccepts() {
-        // MAS's client registration policy: a native app's custom scheme must begin with the client URI's host
-        // reversed. The client URI is websiteURL + "apps/ios" (artise.co), so the scheme must start "co.artise".
         let scheme = ArtiseConfiguration.oAuthRedirectURL.scheme ?? ""
         let reversedHost = (ArtiseConfiguration.websiteURL.host() ?? "").split(separator: ".").reversed()
         #expect(Array(scheme.split(separator: ".").prefix(reversedHost.count)) == Array(reversedHost))
@@ -35,6 +35,7 @@ struct ArtiseConfigurationTests {
         #expect(ArtiseConfiguration.oAuthRedirectURL.path() == "/oauth")
     }
     
+    /// The links shown in the app must point at Artise's public pages over HTTPS.
     @Test
     func publicLinksUseArtiseOverHTTPS() {
         let links = [ArtiseConfiguration.websiteURL, ArtiseConfiguration.logoURL,

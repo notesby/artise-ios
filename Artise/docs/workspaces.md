@@ -22,7 +22,11 @@ One Artise app serves every company. Each company is a workspace with its own Ma
    `co.artise.workspace` section. If the section is missing or unreadable, the app uses Artise's look and
    sign-in still works.
 3. Element's own discovery sets up sign-in for the server, falling back to `m.homeserver.base_url`. The
-   sign-in screen then shows the workspace's logo and name.
+   sign-in screen then shows the workspace's logo and name. A workspace with its own sign-in service
+   (MAS) opens that service's page instead. The page returns to the app at `co.artise.app:/oauth`
+   (`ArtiseConfiguration.oAuthRedirectURL`). MAS only accepts a native app's custom scheme when it starts
+   with the client URI's host reversed (`artise.co`, so `co.artise`). Element's
+   `https://element.io/oauth/ios/…` address is refused, and it would only open Element's app.
 
 Accounts signed in before workspaces keep working as they are; for them the workspace is `artise.co`.
 
