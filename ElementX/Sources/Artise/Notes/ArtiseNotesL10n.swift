@@ -4,25 +4,70 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 //
 
+import ArtiseWorkspaces
 import Foundation
 
 /// The notes texts, from the `ArtiseNotes` string table (imported from the Android app, same keys).
 enum ArtiseNotesL10n {
-    static let title = text("screen_notes_title")
-    static let chatsEmpty = text("screen_notes_chats_empty")
-    static let offline = text("screen_notes_offline")
-    static let syncFailed = text("screen_notes_sync_failed")
-    static let syncPartial = text("screen_notes_sync_partial")
-    static let privacyTitle = text("screen_notes_privacy_title")
-    static let privacyBody = text("screen_notes_privacy_body")
-    static let privacyOK = text("screen_notes_privacy_ok")
-    static let folderEmpty = text("screen_notes_folder_empty")
-    static let folderIsEmpty = text("screen_notes_folder_is_empty")
-    static let unsent = text("screen_notes_unsent")
-    static let notDownloaded = text("screen_notes_not_downloaded")
-    static let attachmentMissing = text("screen_notes_attachment_missing")
-    static let attachmentUnavailable = text("screen_notes_attachment_unavailable")
-    static let missingNoteCreate = text("screen_notes_missing_note_create")
+    static var title: String {
+        text("screen_notes_title")
+    }
+    
+    static var chatsEmpty: String {
+        text("screen_notes_chats_empty")
+    }
+    
+    static var offline: String {
+        text("screen_notes_offline")
+    }
+    
+    static var syncFailed: String {
+        text("screen_notes_sync_failed")
+    }
+    
+    static var syncPartial: String {
+        text("screen_notes_sync_partial")
+    }
+    
+    static var privacyTitle: String {
+        text("screen_notes_privacy_title")
+    }
+    
+    static var privacyBody: String {
+        text("screen_notes_privacy_body")
+    }
+    
+    static var privacyOK: String {
+        text("screen_notes_privacy_ok")
+    }
+    
+    static var folderEmpty: String {
+        text("screen_notes_folder_empty")
+    }
+    
+    static var folderIsEmpty: String {
+        text("screen_notes_folder_is_empty")
+    }
+    
+    static var unsent: String {
+        text("screen_notes_unsent")
+    }
+    
+    static var notDownloaded: String {
+        text("screen_notes_not_downloaded")
+    }
+    
+    static var attachmentMissing: String {
+        text("screen_notes_attachment_missing")
+    }
+    
+    static var attachmentUnavailable: String {
+        text("screen_notes_attachment_unavailable")
+    }
+    
+    static var missingNoteCreate: String {
+        text("screen_notes_missing_note_create")
+    }
     
     /// "3 notes" / "3 notas".
     static func folderCount(_ notes: Int) -> String {
@@ -34,7 +79,9 @@ enum ArtiseNotesL10n {
         String.localizedStringWithFormat(text("screen_notes_folder_file_count"), files)
     }
     
+    /// Texts that say "Ari" use the workspace's assistant name.
     static func text(_ key: String) -> String {
-        NSLocalizedString(key, tableName: "ArtiseNotes", bundle: .main, comment: "")
+        let text = NSLocalizedString(key, tableName: "ArtiseNotes", bundle: .main, comment: "")
+        return ArtiseWorkspaces.shared.branding?.naming(text) ?? text
     }
 }

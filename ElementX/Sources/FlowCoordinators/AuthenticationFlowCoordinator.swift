@@ -164,6 +164,12 @@ class AuthenticationFlowCoordinator: FlowCoordinatorProtocol {
         }
     }
     
+    /// Artise: opens "Your workspace" after an invite link's join page; it then signs in to that workspace.
+    func artiseShowWorkspaceSignIn() {
+        guard stateMachine.state == .startScreen else { return } // Already there, or further on: the screen takes it.
+        stateMachine.tryEvent(.selectServer(.login))
+    }
+    
     func handleOAuthCallbackURL(_ url: URL) {
         guard let oAuthPresenter else {
             MXLog.error("Failed to find an OAuth request in progress.")
@@ -350,7 +356,8 @@ class AuthenticationFlowCoordinator: FlowCoordinatorProtocol {
                                                                     appSettings: appSettings,
                                                                     homeserverHistoryManager: homeserverHistoryManager,
                                                                     userIndicatorController: userIndicatorController)
-        let coordinator = ServerSelectionScreenCoordinator(parameters: parameters)
+        // Artise: "Your workspace" instead of choosing a server (ArtiseWorkspaces).
+        let coordinator = ArtiseWorkspaceScreenCoordinator(parameters: parameters)
         
         coordinator.actions
             .sink { [weak self] action in

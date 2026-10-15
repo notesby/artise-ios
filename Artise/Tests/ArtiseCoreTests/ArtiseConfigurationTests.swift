@@ -23,6 +23,18 @@ struct ArtiseConfigurationTests {
         #expect(ArtiseConfiguration.pushAppID(isDebugBuild: true) == "co.artise.app.ios.debug")
     }
     
+    /// A workspace's sign-in page (MAS) returns to the app's own scheme, which MAS accepts: a native app's custom
+    /// scheme must begin with the client URI's host reversed. The client URI is websiteURL + "apps/ios" (artise.co),
+    /// so the scheme must start "co.artise".
+    @Test
+    func signInReturnsToTheAppWithASchemeTheSignInServiceAccepts() {
+        let scheme = ArtiseConfiguration.oAuthRedirectURL.scheme ?? ""
+        let reversedHost = (ArtiseConfiguration.websiteURL.host() ?? "").split(separator: ".").reversed()
+        #expect(Array(scheme.split(separator: ".").prefix(reversedHost.count)) == Array(reversedHost))
+        #expect(scheme == "co.artise.app") // the app's registered URL scheme (BASE_BUNDLE_IDENTIFIER)
+        #expect(ArtiseConfiguration.oAuthRedirectURL.path() == "/oauth")
+    }
+    
     /// The links shown in the app must point at Artise's public pages over HTTPS.
     @Test
     func publicLinksUseArtiseOverHTTPS() {
@@ -43,12 +55,11 @@ struct ArtiseConfigurationTests {
         #expect(ArtiseConfiguration.sourceCodeURL.absoluteString == "https://github.com/notesby/artise-ios")
     }
     
-    /// Sign-in and push notifications must reach Artise's own server, never a third-party one.
+    /// The default workspace and push notifications reach Artise's own servers, never a third-party one.
     @Test
     func homeserverAndPushGatewayAreArtise() {
         #expect(ArtiseConfiguration.homeserverURL.host() == "matrix.artise.co")
-        #expect(ArtiseConfiguration.pushGatewayBaseURL.host() == "matrix.artise.co")
         #expect(ArtiseConfiguration.pushGatewayBaseURL.appending(path: "_matrix/push/v1/notify").absoluteString
-            == "https://matrix.artise.co/_matrix/push/v1/notify")
+            == "https://push.artise.co/_matrix/push/v1/notify")
     }
 }

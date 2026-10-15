@@ -39,7 +39,7 @@ final class ArtiseStickers {
         let model = StickerPickerModel(service: service, roomID: roomID) {
             host?.dismiss(animated: true)
         }
-        let controller = UIHostingController(rootView: StickerPickerScreen(model: model))
+        let controller = UIHostingController(rootView: StickerPickerScreen(model: model).artiseWorkspaceAccent())
         controller.modalPresentationStyle = .pageSheet
         controller.sheetPresentationController?.detents = [.medium(), .large()]
         controller.sheetPresentationController?.prefersGrabberVisible = true
@@ -135,7 +135,7 @@ final class ArtiseStickers {
         let model = AddStickerModel(service: service, picture: picture) {
             host?.dismiss(animated: true)
         }
-        let controller = UIHostingController(rootView: AddStickerScreen(model: model))
+        let controller = UIHostingController(rootView: AddStickerScreen(model: model).artiseWorkspaceAccent())
         controller.sheetPresentationController?.detents = [.medium(), .large()]
         host = controller
         presenter.present(controller, animated: true)

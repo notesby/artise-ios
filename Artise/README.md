@@ -6,7 +6,8 @@
 
 # Artise for iOS
 
-Artise is a private messaging app for the artise.co Matrix server. This repository is a fork of
+Artise is a private messaging app for Artise workspaces: each company has its own Matrix server
+(`acme` → `acme.artise.co`), and one app in the stores signs in to any of them. This repository is a fork of
 [Element X iOS](https://github.com/element-hq/element-x-ios) (AGPL-3.0). The Android app,
 [artise-android](https://github.com/notesby/artise-android), is the reference for what users see.
 
@@ -26,7 +27,7 @@ Artise plugs into upstream's own extension points:
 - `Artise/override.yml` is an XcodeGen include. It adds our package, the app icon and the
   string override build step to the ElementX target.
 - `ElementX/Sources/Artise/ArtiseAppHooks.swift` registers our `AppHooks` (`AppSettingsHook`:
-  server lock, links, push gateway; `UserSessionHook`: starts notes for the signed-in account).
+  default workspace, links, push gateway; `UserSessionHook`: starts notes for the signed-in account).
 - Features keep their logic in the `Artise` package (tested with `swift test`, on Linux too) and their
   screens in `ElementX/Sources/Artise/<Feature>`, built with Compound so they look like the rest of the app.
 - Rules that touch upstream screens live in `ArtiseCore`, so the upstream edit stays a one-line
@@ -71,6 +72,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 | `NSE/Sources/NotificationContentBuilder.swift`, `NSE/Sources/NotificationHandler.swift` | Ari's important and critical posts (`co.artise.automation`) are Time Sensitive, critical ones always make a sound, and they show even when quiet notifications are hidden (`ArtiseAutomationLevel`). |
 | `ElementX/Resources/Assets.xcassets/images/app-logo.imageset/app-logo.pdf`, `ElementCallService.swift` | The welcome screen shows Artise's round logo; CallKit uses Artise's mark as its icon (`ArtiseCallKitIcon`). Both drawn by `Artise/Resources/AppIcon/make_app_icon.py`. |
 | `NSE/SupportingFiles/target.yml` | Notification filtering entitlement off until Apple grants it to our team. |
+| `AuthenticationFlowCoordinator.swift`, `AppSettings.swift` (`showCreateAccountButton`) | "Your workspace" replaces the server picker (`ArtiseWorkspaceScreenCoordinator`) and opens after an invite link's join page; no "Create account", as accounts come from invite links. |
+| `LoginScreen.swift`, `HomeScreen.swift` | The workspace's logo and name on the sign-in screen and in the home top bar (`ArtiseWorkspaces`). |
+| `NotificationManager.swift`, `ClientProxy.swift` (`setPusher`) | The pusher goes to the workspace's push gateway (default `push.artise.co`), with `append: true` so other accounts' pushers on the phone stay. |
+| `AppCoordinator.swift` (`handleDeepLink`), `UserSessionStore.swift`, `SettingsScreenViewModel.swift` | Invite links (`join.artise.co`), forgetting the workspace's look on sign-out, and Delete account on the workspace's `links.delete_account` page (hidden without one). |
 
 ## Branches
 
@@ -119,7 +124,8 @@ Never commit keys, the APNs key or certificates. Local copies stay in git-ignore
 ## Server requirements
 
 Changes on the server go through the project owner. What each feature needs is written down in
-`Artise/docs/`, starting with `server-push.md` (APNs in Sygnal).
+`Artise/docs/`, starting with `server-push.md` (APNs in Sygnal). `workspaces.md` covers signing in to
+any workspace, its look, the shared push gateway and invite links.
 
 ## Apple entitlements to request
 

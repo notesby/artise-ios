@@ -235,7 +235,8 @@ final nonisolated class AppSettings: @unchecked Sendable {
     /// Whether or not the Create Account button is shown on the start screen.
     ///
     /// **Note:** Setting this to false doesn't prevent someone from creating an account when the selected homeserver's MAS allows registration.
-    let showCreateAccountButton = true
+    // Artise: accounts are made from a workspace's invite link, not in the app.
+    let showCreateAccountButton = false
     
     // MARK: - Notifications
     
