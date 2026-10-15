@@ -40,8 +40,8 @@ safe to run it again:
   filled in from secrets.
 - "What to Test" for the build (`beta/<language>/what_to_test.txt`).
 - The external group **Artise beta**, with the build in it. The build is then sent to Beta App Review.
-- The group's public link, with no tester limit. Apple turns it on only after the first build is approved, so run the
-  job again after approval. The link is shown in the run's summary.
+- The group's public link, with no tester limit, shown in the run's summary. The link can be shared right away, but
+  people can join only after Beta App Review approves the build. Artise's link: https://testflight.apple.com/join/FH1CyMN1
 
 ```sh
 gh workflow run artise.yml --ref <branch> -f beta_build=113   # a build already in TestFlight
