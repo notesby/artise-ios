@@ -1,0 +1,5 @@
+Artise is a private, encrypted chat for your family or team, with Ari, an assistant who remembers. Every chat has shared notes, and you can send stickers and make voice and video calls.
+
+To sign in you need an Artise account: ask your workspace's admin for an invite. Then open the app, tap "Sign in manually" and type your workspace's name.
+
+This is a test version of Artise, so it changes often. Tell us what you think: take a screenshot in the app, or open TestFlight, choose Artise and tap Send Beta Feedback.

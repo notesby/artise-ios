@@ -92,6 +92,8 @@ on this repository.
   the Artise package. Preview snapshot tests are skipped because Artise's branding changes them.
 - **TestFlight** runs on demand, for the branch to try on a phone:
   `gh workflow run artise.yml --ref <branch>`. The build number is the workflow run number.
+- **Public beta** runs on demand: it puts a build in the public TestFlight group "Artise beta" and sends it to Beta
+  App Review (`-f beta=true` with a new build, or `-f beta_build=<number>`). See `Artise/store/README.md`.
 - **Signing** is manual: Artise's distribution certificate and an App Store profile per target
   (`Artise App Store`, `Artise NSE App Store`, `Artise Share App Store`), all made with the App Store
   Connect API. Xcode's automatic provisioning fails with API keys for this team, so it isn't used.
@@ -115,6 +117,7 @@ on this repository.
 | `GOOGLE_SERVICE_INFO_PLIST` | Firebase's `GoogleService-Info.plist` for `co.artise.app`, base64-encoded (analytics are off in TestFlight builds without it) |
 | `MAPLIBRE_API_KEY` | MapTiler key for maps (location sharing is off in TestFlight builds without it). The same step sets Element's Sentry, rageshake and PostHog values to `nil`: no crash reporting or bug reports, as on Android |
 | `PROFILE_APP`, `PROFILE_NSE`, `PROFILE_SHARE`, `PROFILE_STICKER` | The App Store profiles (app, notification extension, share extension, "Artise sticker" extension), base64-encoded |
+| `BETA_CONTACT_*`, `BETA_REVIEW_*` | Beta App Review's contact and reviewer account, for the public beta (see `Artise/store/README.md`) |
 
 Local copies of the keys and the certificate live in `~/.artise-keys/` on the maintainer's machine.
 When an App ID's capabilities change, the profiles must be made again (they copy the App ID).
