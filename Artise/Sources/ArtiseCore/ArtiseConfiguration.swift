@@ -17,6 +17,9 @@ public enum ArtiseConfiguration {
     public static let logoURL = URL(staticString: "https://artise.co/icon.png")
     public static let termsURL = URL(staticString: "https://artise.co/terms.html")
     public static let privacyURL = URL(staticString: "https://artise.co/privacy.html")
+    /// Where a workspace's sign-in page (its MAS) sends people back after they sign in: the app's own scheme (its bundle
+    /// id). MAS accepts a native app's custom scheme only when it starts with `websiteURL`'s host reversed (co.artise).
+    public static let oAuthRedirectURL = URL(staticString: "co.artise.app:/oauth")
     /// The app's source code and licence (AGPL), crediting Element X, which Artise is built on.
     public static let sourceCodeURL = URL(staticString: "https://github.com/notesby/artise-ios")
     

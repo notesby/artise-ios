@@ -25,6 +25,17 @@ struct ArtiseConfigurationTests {
     
     /// The links shown in the app must point at Artise's public pages over HTTPS.
     @Test
+    func signInReturnsToTheAppWithASchemeTheSignInServiceAccepts() {
+        // MAS's client registration policy: a native app's custom scheme must begin with the client URI's host
+        // reversed. The client URI is websiteURL + "apps/ios" (artise.co), so the scheme must start "co.artise".
+        let scheme = ArtiseConfiguration.oAuthRedirectURL.scheme ?? ""
+        let reversedHost = (ArtiseConfiguration.websiteURL.host() ?? "").split(separator: ".").reversed()
+        #expect(Array(scheme.split(separator: ".").prefix(reversedHost.count)) == Array(reversedHost))
+        #expect(scheme == "co.artise.app") // the app's registered URL scheme (BASE_BUNDLE_IDENTIFIER)
+        #expect(ArtiseConfiguration.oAuthRedirectURL.path() == "/oauth")
+    }
+    
+    @Test
     func publicLinksUseArtiseOverHTTPS() {
         let links = [ArtiseConfiguration.websiteURL, ArtiseConfiguration.logoURL,
                      ArtiseConfiguration.termsURL, ArtiseConfiguration.privacyURL,

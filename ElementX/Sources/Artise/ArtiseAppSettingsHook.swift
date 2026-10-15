@@ -16,8 +16,11 @@ struct ArtiseAppSettingsHook: AppSettingsHookProtocol {
                              allowOtherAccountProviders: true,
                              hideBrandChrome: false,
                              pushGatewayBaseURL: ArtiseConfiguration.pushGatewayBaseURL,
-                             // artise.co signs in with a password, so the OAuth values are never used.
-                             oAuthRedirectURL: appSettings.oAuthRedirectURL,
+                             // A workspace with its sign-in service (MAS) opens its sign-in page; the page returns to the app
+                             // at co.artise.app:/oauth. MAS accepts it because the scheme is websiteURL's host reversed
+                             // (artise.co), and iOS gives it to this app without a website file (Element's https
+                             // address only works for Element's own app).
+                             oAuthRedirectURL: ArtiseConfiguration.oAuthRedirectURL,
                              oAuthClientURIPath: appSettings.oAuthClientURIPath,
                              websiteURL: ArtiseConfiguration.websiteURL,
                              logoURL: ArtiseConfiguration.logoURL,
