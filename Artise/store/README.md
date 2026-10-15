@@ -30,13 +30,38 @@ reach them minutes after processing, with no review.
 
 ### Public link (external testing)
 
-1. TestFlight → **Test Information**, for each language: the beta description (`listing/<language>/promotional_text.txt`),
-   a feedback email, the marketing URL `https://artise.co` and the privacy URL `https://artise.co/privacy.html`.
-2. **Beta App Review information:** contact name, phone and email, and the reviewer account (section 4). Entered in App
-   Store Connect only, never in git.
-3. Create an external group "Artise testers", turn on its **public link**, and add a build. The first build of each
-   version goes to Beta App Review (usually a day); later builds of the same version usually don't.
-4. Share the link: anyone with an iPhone can join, up to 10,000 people. Builds expire after 90 days.
+Anyone with an iPhone can join through the public link (up to 10,000 people); artise.co/iphone points to it. The
+workflow's **Public beta** job does everything through the App Store Connect API. Each step checks first, so it's
+safe to run it again:
+
+- The beta description, a feedback email, `https://artise.co` and the privacy URL, in English and Spanish
+  (`beta/<language>/description.txt`).
+- The Beta App Review contact and the reviewer account. The notes come from `beta/review_notes.txt`, with the account
+  filled in from secrets.
+- "What to Test" for the build (`beta/<language>/what_to_test.txt`).
+- The external group **Artise beta**, with the build in it. The build is then sent to Beta App Review.
+- The group's public link, with no tester limit. Apple turns it on only after the first build is approved, so run the
+  job again after approval. The link is shown in the run's summary.
+
+```sh
+gh workflow run artise.yml --ref <branch> -f beta_build=113   # a build already in TestFlight
+gh workflow run artise.yml --ref <branch> -f beta=true        # a new build, then the beta
+```
+
+**Repository secrets** (in addition to the App Store Connect key). Set them with `gh secret set <NAME>` and never put
+them in git:
+
+| Secret | What |
+|---|---|
+| `BETA_CONTACT_FIRST_NAME`, `BETA_CONTACT_LAST_NAME`, `BETA_CONTACT_PHONE`, `BETA_CONTACT_EMAIL` | Who Apple contacts about the review. The email is also the testers' feedback email. |
+| `BETA_REVIEW_USERNAME`, `BETA_REVIEW_PASSWORD` | The reviewer account on artise.co (section 4) |
+| `BETA_REVIEW_RECOVERY_KEY` | That account's recovery key, for "Confirm this device" |
+
+**Every ~60 days:** builds expire after 90 days. Upload a fresh build with `-f beta=true` from the current branch.
+Testers get it as an update in TestFlight. The first build of a new version (`MARKETING_VERSION`) goes through Beta
+App Review again; later builds of the same version usually don't.
+
+Export compliance needs nothing per build: `ITSAppUsesNonExemptEncryption` is `NO` (section 6).
 
 ## 3. The App Store listing
 
@@ -69,8 +94,9 @@ reach them minutes after processing, with no review.
 - **Notes for the reviewer** (English):
 
   > Artise is a private chat for families on their own Artise server (artise.co). Accounts are created by invitation,
-  > so please use this account: tap "Sign in", the server is already set. Username: `<reviewer account>`, password:
-  > `<password>`. If asked to verify this device, choose "Use recovery key" and enter: `<key>`.
+  > so please use this account: tap "Sign in manually", type `artise.co` as the workspace and tap Continue. Username:
+  > `<reviewer account>`, password: `<password>`. If asked to verify this device, choose "Use recovery key" and enter:
+  > `<key>`.
   > The "Demo" chat includes Ari, the assistant: ask it something, e.g. "remind me in 5 minutes to check the oven".
   > The notes icon at the top of the chat opens its shared notes. The sticker button is at the end of the empty
   > message field. Settings → Delete account deletes the account (on artise.co's page).

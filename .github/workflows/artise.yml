@@ -7,6 +7,7 @@
 # - checks: Artise file headers and script tests (Linux, fast).
 # - tests: upstream SwiftFormat lint and unit tests, plus the Artise package tests.
 # - testflight (on demand): archives, signs with Artise's distribution certificate and uploads to TestFlight.
+# - beta (on demand): puts a build in the public TestFlight group "Artise beta" and sends it to Beta App Review.
 # Upstream's own workflows are disabled on this repository.
 
 name: Artise
@@ -15,6 +16,15 @@ on:
   push:
     branches: [development, "feature/**", "fix/**", "ci/**"]
   workflow_dispatch:
+    inputs:
+      beta:
+        description: "Also put the new build in the public beta (Artise beta)"
+        type: boolean
+        default: false
+      beta_build:
+        description: "Only put this existing build number in the public beta (no new build)"
+        type: string
+        default: ""
 
 permissions:
   contents: read
@@ -42,6 +52,7 @@ jobs:
 
   tests:
     name: Tests
+    if: github.event_name != 'workflow_dispatch' || inputs.beta_build == ''
     runs-on: macos-26
     # A run without the compilation cache builds everything from scratch.
     timeout-minutes: 150
@@ -131,7 +142,7 @@ jobs:
   testflight:
     name: TestFlight
     # On demand, for the branch to try on a phone: gh workflow run artise.yml --ref <branch>
-    if: github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'workflow_dispatch' && inputs.beta_build == ''
     runs-on: macos-26
     timeout-minutes: 90
     env:
@@ -290,3 +301,37 @@ jobs:
         run: |
           rm -rf "$RUNNER_TEMP/private_keys"
           [ -n "${ARTISE_KEYCHAIN:-}" ] && security delete-keychain "$ARTISE_KEYCHAIN" || true
+
+  beta:
+    name: Public beta
+    # gh workflow run artise.yml --ref <branch> -f beta=true          (a new build, then the beta)
+    # gh workflow run artise.yml --ref <branch> -f beta_build=<number> (a build already in TestFlight)
+    # Run it again after Beta App Review approves the first build: that's when the public link can be turned on.
+    needs: testflight
+    if: >-
+      always() && github.event_name == 'workflow_dispatch' &&
+      (inputs.beta_build != '' || (inputs.beta && needs.testflight.result == 'success'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+      ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+      ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+      BETA_BUILD: ${{ inputs.beta_build || github.run_number }}
+      BETA_CONTACT_FIRST_NAME: ${{ secrets.BETA_CONTACT_FIRST_NAME }}
+      BETA_CONTACT_LAST_NAME: ${{ secrets.BETA_CONTACT_LAST_NAME }}
+      BETA_CONTACT_PHONE: ${{ secrets.BETA_CONTACT_PHONE }}
+      BETA_CONTACT_EMAIL: ${{ secrets.BETA_CONTACT_EMAIL }}
+      BETA_REVIEW_USERNAME: ${{ secrets.BETA_REVIEW_USERNAME }}
+      BETA_REVIEW_PASSWORD: ${{ secrets.BETA_REVIEW_PASSWORD }}
+      BETA_REVIEW_RECOVERY_KEY: ${{ secrets.BETA_REVIEW_RECOVERY_KEY }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install the token library
+        run: python3 -m pip install --quiet "PyJWT[crypto]==2.10.1"
+
+      - name: Put the build in the public beta
+        run: python3 Artise/Scripts/testflight_beta.py

@@ -1,0 +1,10 @@
+Artise is a private chat for families and small teams on their own Artise server. Accounts are created by invitation, so please use this account:
+
+1. Tap "Sign in manually". For "Your workspace", type artise.co and tap Continue.
+2. Username: {username}
+   Password: {password}
+3. If asked to confirm this device, choose "Use recovery key" and enter: {recovery_key}
+
+The "Demo" chat includes Ari, the assistant: ask it something, for example "remind me in 5 minutes to check the oven". The notes icon at the top of a chat opens its shared notes. The sticker button is at the end of the empty message field.
+
+Settings > Delete account deletes the account (on the workspace's web page). People in a chat can be reported (long press a message > Report) and blocked (their profile > Block).
