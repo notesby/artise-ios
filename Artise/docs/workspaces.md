@@ -8,6 +8,39 @@
 
 One Artise app serves every company. Each company is a workspace with its own Matrix server.
 
+## Signing in with Artise ID
+
+The first screen (`ArtiseStartScreen`) lets people sign in once and pick their workspace, so nobody types a
+workspace name.
+
+1. `GET https://api.artise.co/v1/sign-in` gives Artise ID's issuer, client ID, return address
+   (`https://join.artise.co/oauth`), scopes and provider IDs. It's kept for an hour.
+   - If it's missing (404, offline, unreadable, or slower than 6 seconds), the screen is Element's start screen,
+     which leads to "Your workspace" as before.
+   - A provisioning link also shows Element's start screen.
+2. The buttons are **Continue with Apple** (first, App Store guideline 4.8), **Google**, **Microsoft** and
+   **email**.
+   - Each provider button adds the scope `urn:zitadel:iam:org:idp:id:<provider id>`, so Artise ID opens that provider
+     directly.
+   - Email opens Artise ID's own page.
+3. The sign-in itself is OIDC authorization code with PKCE (S256), using the issuer's discovery document and no client
+   secret.
+   - It opens in `ASWebAuthenticationSession`, not ephemeral, like the workspaces' sign-in pages, so Artise ID's
+     session carries over to them.
+   - The return is told apart from a workspace's by its `state`.
+4. `GET https://api.artise.co/v1/me/workspaces` with the access token gives the person's workspaces.
+   - One workspace opens directly. Several are listed (name, with the server name under it).
+   - None shows "You're not in any workspace yet…".
+   - The list is never kept on disk.
+5. Opening a workspace is the workspace sign-in below (`ArtiseWorkspaceSignInStarter`), with its own app client.
+   Artise ID's session is already open, so no page should show.
+6. The Artise ID tokens are kept in the Keychain (this device only), only to read the list again. They're deleted
+   when the person signs out, or taps "Sign in another way".
+
+"Have your workspace's name? Type it" opens "Your workspace". Invite links work as before.
+
+These screens use the phone's language when it's English, Spanish or Portuguese, and Spanish otherwise.
+
 ## Signing in
 
 1. **"Your workspace"** (`ArtiseWorkspaceScreen`, in place of Element's server picker). Someone types

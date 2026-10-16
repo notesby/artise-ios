@@ -112,6 +112,8 @@ final class ArtiseWorkspaces {
         current = nil
         userSession = nil
         foregroundObserver = nil
+        // Artise signs in to one workspace at a time, so this was the last one.
+        ArtiseIDSession.shared.forget()
     }
     
     /// Reads the workspace file again; admins change it any time with `!workspace`. When the push gateway
@@ -190,9 +192,16 @@ final class ArtiseWorkspaces {
 }
 
 enum ArtiseWorkspacesL10n {
+    /// The phone's language when it's English, Spanish or Portuguese (pt-BR too); Spanish otherwise.
     static func text(_ key: String) -> String {
-        NSLocalizedString(key, tableName: "ArtiseWorkspaces", bundle: .main, comment: "")
+        NSLocalizedString(key, tableName: "ArtiseWorkspaces", bundle: bundle, comment: "")
     }
+    
+    private static let bundle: Bundle = {
+        let preferred = Bundle.main.preferredLocalizations.first.map { String($0.prefix(2)) }
+        let language = ["en", "es", "pt"].contains(preferred) ? preferred ?? "es" : "es"
+        return Bundle.main.path(forResource: language, ofType: "lproj").flatMap(Bundle.init(path:)) ?? .main
+    }()
 }
 
 extension Color {

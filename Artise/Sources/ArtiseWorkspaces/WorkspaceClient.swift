@@ -9,9 +9,17 @@ import Foundation
 import FoundationNetworking
 #endif
 
-/// Sends GET requests. A seam, so tests can answer without a network.
+/// Sends requests. A seam, so tests can answer without a network.
 public protocol WorkspaceHTTPTransport: Sendable {
-    func get(_ url: URL) async throws -> (Data, HTTPURLResponse)
+    func send(_ request: URLRequest) async throws -> (Data, HTTPURLResponse)
+}
+
+public extension WorkspaceHTTPTransport {
+    func get(_ url: URL) async throws -> (Data, HTTPURLResponse) {
+        var request = URLRequest(url: url)
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        return try await send(request)
+    }
 }
 
 /// `URLSession` as a transport, without cookies or a shared cache: the client keeps its own, as the server asks.
@@ -25,10 +33,8 @@ public struct URLSessionWorkspaceTransport: WorkspaceHTTPTransport {
         session = URLSession(configuration: configuration)
     }
     
-    public func get(_ url: URL) async throws -> (Data, HTTPURLResponse) {
-        var request = URLRequest(url: url)
-        request.setValue("application/json", forHTTPHeaderField: "Accept")
-        return try await withCheckedThrowingContinuation { continuation in
+    public func send(_ request: URLRequest) async throws -> (Data, HTTPURLResponse) {
+        try await withCheckedThrowingContinuation { continuation in
             session.dataTask(with: request) { data, response, error in
                 if let error {
                     continuation.resume(throwing: error)

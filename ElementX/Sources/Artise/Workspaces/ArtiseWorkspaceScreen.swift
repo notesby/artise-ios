@@ -44,9 +44,7 @@ final class ArtiseWorkspaceScreenModel {
     @ObservationIgnored var window: UIWindow?
     
     @ObservationIgnored let actions = PassthroughSubject<ServerSelectionScreenCoordinatorAction, Never>()
-    @ObservationIgnored private let authenticationService: AuthenticationServiceProtocol
-    @ObservationIgnored private let authenticationFlow: AuthenticationFlow
-    @ObservationIgnored private let appSettings: AppSettings
+    @ObservationIgnored private let signInStarter: ArtiseWorkspaceSignInStarter
     @ObservationIgnored private let userIndicatorController: UserIndicatorControllerProtocol
     @ObservationIgnored private var inviteObserver: AnyCancellable?
     
@@ -54,9 +52,9 @@ final class ArtiseWorkspaceScreenModel {
          authenticationFlow: AuthenticationFlow,
          appSettings: AppSettings,
          userIndicatorController: UserIndicatorControllerProtocol) {
-        self.authenticationService = authenticationService
-        self.authenticationFlow = authenticationFlow
-        self.appSettings = appSettings
+        signInStarter = ArtiseWorkspaceSignInStarter(authenticationService: authenticationService,
+                                                     authenticationFlow: authenticationFlow,
+                                                     appSettings: appSettings)
         self.userIndicatorController = userIndicatorController
         text = ArtiseWorkspaces.shared.lastAddress ?? ""
         
@@ -98,14 +96,14 @@ final class ArtiseWorkspaceScreenModel {
         
         switch await ArtiseWorkspaces.shared.client.resolve(address) {
         case .ready(let workspace):
-            guard await configure(for: workspace) else {
-                MXLog.error("Sign-in isn't available for workspace server \(workspace.serverName)")
-                errorMessage = String(format: ArtiseWorkspacesL10n.text("screen_workspace_error_sign_in_unavailable"),
-                                      workspace.displayName ?? workspace.serverName)
-                return
+            switch await signInStarter.start(workspace, address: address, window: window) {
+            case .password:
+                actions.send(.continueWithPassword)
+            case .oAuth(let data, let window):
+                actions.send(.continueWithOAuth(data: data, window: window))
+            case .failed(let message):
+                errorMessage = message
             }
-            ArtiseWorkspaces.shared.didChoose(workspace, address: address)
-            await continueToSignIn(workspace)
         case .notFound(let slug):
             errorMessage = String(format: ArtiseWorkspacesL10n.text("screen_workspace_error_not_found"), slug)
         case .paused:
@@ -114,46 +112,6 @@ final class ArtiseWorkspaceScreenModel {
             errorMessage = ArtiseWorkspacesL10n.text("screen_workspace_error_rate_limited")
         case .unreachable:
             errorMessage = ArtiseWorkspacesL10n.text("screen_workspace_error_unreachable")
-        }
-    }
-    
-    /// The server's own discovery first; the workspace file's address if that fails.
-    private func configure(for workspace: ResolvedWorkspace) async -> Bool {
-        if case .success = await authenticationService.configure(for: workspace.serverName, flow: authenticationFlow) {
-            return true
-        }
-        guard let homeserverURL = workspace.file?.homeserverURL else { return false }
-        if case .success = await authenticationService.configure(for: homeserverURL.absoluteString, flow: authenticationFlow) {
-            return true
-        }
-        return false
-    }
-    
-    /// As the server picker does: a password form, or the server's own sign-in page. That page uses the workspace's
-    /// own app client when it has one, which skips the "Continue to Artise" consent page.
-    private func continueToSignIn(_ workspace: ResolvedWorkspace) async {
-        guard authenticationService.homeserver.value.loginMode.supportsOAuthFlow else {
-            actions.send(.continueWithPassword)
-            return
-        }
-        let client = await ArtiseWorkspaces.shared.client.signInClient(for: workspace)
-        appSettings.artiseUseOAuthClient(redirectURL: client.redirectURL,
-                                         staticRegistrations: client.staticRegistrations.reduce(into: [:]) { registrations, entry in
-                                             if let issuer = URL(string: entry.key) {
-                                                 registrations[issuer] = entry.value
-                                             }
-                                         })
-        guard let window else {
-            MXLog.error("No window available for OAuth presentation")
-            errorMessage = L10n.errorUnknown
-            return
-        }
-        switch await authenticationService.urlForOAuthLogin(loginHint: nil) {
-        case .success(let oAuthData):
-            actions.send(.continueWithOAuth(data: oAuthData, window: window))
-        case .failure(let error):
-            MXLog.error("Failed to get OAuth login URL: \(error)")
-            errorMessage = L10n.errorUnknown
         }
     }
     
