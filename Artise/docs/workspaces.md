@@ -27,6 +27,16 @@ One Artise app serves every company. Each company is a workspace with its own Ma
    (`ArtiseConfiguration.oAuthRedirectURL`). MAS only accepts a native app's custom scheme when it starts
    with the client URI's host reversed (`artise.co`, so `co.artise`). Element's
    `https://element.io/oauth/ios/…` address is refused, and it would only open Element's app.
+   - **The workspace's own app client.** When the file has `oauth`
+     (`{"ios": "<client id>", "android": "<client id>", "redirect_uri": "https://join.artise.co/oauth"}`),
+     the app reads the sign-in service's `issuer` from `{base_url}/_matrix/client/v1/auth_metadata` (or the
+     older `unstable/org.matrix.msc2965` path). It then signs in with the `ios` client for that issuer and
+     returns to `https://join.artise.co/oauth`. The service knows that client, so it skips its "Continue to
+     Artise" consent page. iOS gives that address to the sign-in session through Associated Domains
+     (`webcredentials:join.artise.co`; join.artise.co's apple-app-site-association lists `/oauth`).
+   - Without `oauth`, a return address that isn't on join.artise.co, or an unreadable issuer, the app
+     registers itself as before (`co.artise.app:/oauth`).
+   - `/oauth` has one path segment, so it's never taken for an invite link (`/{slug}/{code}`).
 
 Accounts signed in before workspaces keep working as they are; for them the workspace is `artise.co`.
 

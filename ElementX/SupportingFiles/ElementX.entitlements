@@ -14,6 +14,7 @@
 		<string>applinks:matrix.to</string>
 		<string>webcredentials:*.element.io</string>
 		<string>applinks:join.artise.co</string>
+		<string>webcredentials:join.artise.co</string>
 	</array>
 	<key>com.apple.developer.usernotifications.communication</key>
 	<true/>

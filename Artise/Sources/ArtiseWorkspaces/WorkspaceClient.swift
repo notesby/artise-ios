@@ -150,4 +150,10 @@ public actor WorkspaceClient {
         }
         return file
     }
+    
+    /// A 200 answer's body, or `nil`.
+    func answer(_ url: URL) async -> Data? {
+        guard let (body, response) = try? await transport.get(url), response.statusCode == 200 else { return nil }
+        return body
+    }
 }

@@ -23,6 +23,7 @@ final class ArtiseWorkspaceScreenCoordinator: CoordinatorProtocol {
         self.parameters = parameters
         model = ArtiseWorkspaceScreenModel(authenticationService: parameters.authenticationService,
                                            authenticationFlow: parameters.authenticationFlow,
+                                           appSettings: parameters.appSettings,
                                            userIndicatorController: parameters.userIndicatorController)
     }
     
@@ -45,14 +46,17 @@ final class ArtiseWorkspaceScreenModel {
     @ObservationIgnored let actions = PassthroughSubject<ServerSelectionScreenCoordinatorAction, Never>()
     @ObservationIgnored private let authenticationService: AuthenticationServiceProtocol
     @ObservationIgnored private let authenticationFlow: AuthenticationFlow
+    @ObservationIgnored private let appSettings: AppSettings
     @ObservationIgnored private let userIndicatorController: UserIndicatorControllerProtocol
     @ObservationIgnored private var inviteObserver: AnyCancellable?
     
     init(authenticationService: AuthenticationServiceProtocol,
          authenticationFlow: AuthenticationFlow,
+         appSettings: AppSettings,
          userIndicatorController: UserIndicatorControllerProtocol) {
         self.authenticationService = authenticationService
         self.authenticationFlow = authenticationFlow
+        self.appSettings = appSettings
         self.userIndicatorController = userIndicatorController
         text = ArtiseWorkspaces.shared.lastAddress ?? ""
         
@@ -101,7 +105,7 @@ final class ArtiseWorkspaceScreenModel {
                 return
             }
             ArtiseWorkspaces.shared.didChoose(workspace, address: address)
-            await continueToSignIn()
+            await continueToSignIn(workspace)
         case .notFound(let slug):
             errorMessage = String(format: ArtiseWorkspacesL10n.text("screen_workspace_error_not_found"), slug)
         case .paused:
@@ -125,12 +129,20 @@ final class ArtiseWorkspaceScreenModel {
         return false
     }
     
-    /// As the server picker does: a password form, or the server's own sign-in page.
-    private func continueToSignIn() async {
+    /// As the server picker does: a password form, or the server's own sign-in page. That page uses the workspace's
+    /// own app client when it has one, which skips the "Continue to Artise" consent page.
+    private func continueToSignIn(_ workspace: ResolvedWorkspace) async {
         guard authenticationService.homeserver.value.loginMode.supportsOAuthFlow else {
             actions.send(.continueWithPassword)
             return
         }
+        let client = await ArtiseWorkspaces.shared.client.signInClient(for: workspace)
+        appSettings.artiseUseOAuthClient(redirectURL: client.redirectURL,
+                                         staticRegistrations: client.staticRegistrations.reduce(into: [:]) { registrations, entry in
+                                             if let issuer = URL(string: entry.key) {
+                                                 registrations[issuer] = entry.value
+                                             }
+                                         })
         guard let window else {
             MXLog.error("No window available for OAuth presentation")
             errorMessage = L10n.errorUnknown
