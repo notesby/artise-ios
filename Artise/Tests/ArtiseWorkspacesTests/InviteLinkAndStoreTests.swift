@@ -30,6 +30,15 @@ struct InviteLinkAndStoreTests {
         }
     }
     
+    /// A sign-in page returning to the app (`/oauth`, one segment) is never an invite.
+    @Test
+    func signInReturnIsNotAnInvite() {
+        for link in ["https://join.artise.co/oauth?code=abcdef123456&state=Ab3xYz9", "https://join.artise.co/oauth",
+                     "https://join.artise.co/oauth?error=access_denied"] {
+            #expect(invite(link) == nil, "\(link)")
+        }
+    }
+    
     /// The join page is the directory's `join_url` plus the code; before servers send it, the link itself.
     @Test
     func joinPage() throws {

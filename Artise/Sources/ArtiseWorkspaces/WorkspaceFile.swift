@@ -47,10 +47,12 @@ public struct WorkspaceBranding: Codable, Equatable, Sendable {
     public var pushGatewayURL: URL?
     /// The workspace's web app; `nil` when its server has none.
     public var links: WorkspaceLinks?
+    /// The workspace's own Artise app client for its sign-in service; `nil` on workspaces without it.
+    public var oauth: WorkspaceOAuthClient?
     
     public init(name: String? = nil, logoURL: URL? = nil, accentHex: String? = nil, assistantName: String? = nil,
                 welcome: [String: String] = [:], language: String? = nil, features: Set<String>? = nil, pushGatewayURL: URL? = nil,
-                links: WorkspaceLinks? = nil) {
+                links: WorkspaceLinks? = nil, oauth: WorkspaceOAuthClient? = nil) {
         self.name = name
         self.logoURL = logoURL
         self.accentHex = accentHex
@@ -60,6 +62,7 @@ public struct WorkspaceBranding: Codable, Equatable, Sendable {
         self.features = features
         self.pushGatewayURL = pushGatewayURL
         self.links = links
+        self.oauth = oauth
     }
     
     /// Reads the section field by field, so one bad value doesn't lose the others. Any `version` is read:
@@ -77,7 +80,8 @@ public struct WorkspaceBranding: Codable, Equatable, Sendable {
                   language: Self.text(section["language"], limit: 10)?.lowercased(),
                   features: (section["features"] as? [Any]).map { Set($0.compactMap { $0 as? String }) },
                   pushGatewayURL: (section["push_gateway"] as? String).flatMap(WorkspaceURL.https),
-                  links: (section["links"] as? [String: Any]).flatMap(WorkspaceLinks.init(section:)))
+                  links: (section["links"] as? [String: Any]).flatMap(WorkspaceLinks.init(section:)),
+                  oauth: (section["oauth"] as? [String: Any]).flatMap(WorkspaceOAuthClient.init(section:)))
     }
     
     /// Where the pusher is registered: the workspace's gateway, else Artise's shared one.

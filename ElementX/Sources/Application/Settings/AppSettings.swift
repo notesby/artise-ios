@@ -213,7 +213,8 @@ final nonisolated class AppSettings: @unchecked Sendable {
     // MARK: - Authentication
     
     /// Any pre-defined static client registrations for OAuth issuers.
-    let oAuthStaticRegistrations: [URL: String] = ["https://id.thirdroom.io/realms/thirdroom": "elementx"]
+    // Artise: settable, for a workspace's own app client (artiseUseOAuthClient).
+    private(set) var oAuthStaticRegistrations: [URL: String] = ["https://id.thirdroom.io/realms/thirdroom": "elementx"]
     /// The redirect URL used for OAuth. For the normal case we don't actually need the bundle ID as the web authentication session handles the redirect internally.
     /// However in the case where MAS sends the user to an external app, we need to make sure that the system will open the correct variant of the app (e.g. Nightly).
     private(set) nonisolated(unsafe) var oAuthRedirectURL: URL! = URL(string: "https://element.io/oauth/ios/\(InfoPlistReader.main.bundleIdentifier)")
@@ -221,6 +222,12 @@ final nonisolated class AppSettings: @unchecked Sendable {
     /// distinguish the various clients we have for Android, iOS and Web from each other.
     /// Intentionally a distinct property so it can be easily overridden without having to manipulate the website URL.
     private(set) var oAuthClientURIPath: String? = "apps/ios"
+    
+    // Artise: a workspace's own app client and its return address, set before its sign-in page opens.
+    func artiseUseOAuthClient(redirectURL: URL, staticRegistrations: [URL: String]) {
+        oAuthRedirectURL = redirectURL
+        oAuthStaticRegistrations = staticRegistrations
+    }
     
     var oAuthConfiguration: OAuthConfiguration {
         OAuthConfiguration(clientName: InfoPlistReader.main.bundleDisplayName,
