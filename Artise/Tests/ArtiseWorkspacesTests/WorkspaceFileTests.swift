@@ -127,22 +127,50 @@ struct WorkspaceFileTests {
         #expect(WorkspaceFile.parse(Data(#"{"co.artise.workspace":{"links":"https://chat.acme.example"}}"#.utf8))?.branding?.links == nil)
     }
     
-    /// Without `links` a workspace has no notes or delete page, and nothing is guessed from its server name;
-    /// only artise.co falls back to chat.artise.co until its file has them.
+    /// Without `links` a workspace has no notes, help or delete page; nothing is guessed from its server name.
     @Test
-    func linksFallbackOnlyForArtise() {
+    func linksOnlyFromTheFile() {
         let acme = ResolvedWorkspace(slug: "acme", serverName: "acme.artise.co", directoryName: "Acme",
                                      file: WorkspaceFile(homeserverURL: nil, branding: WorkspaceBranding(name: "Acme")))
         #expect(WorkspaceLinks.links(for: acme) == nil)
         #expect(WorkspaceLinks.links(for: nil) == nil)
-        
         let artise = ResolvedWorkspace(slug: "artise", serverName: "artise.co", directoryName: "Artise", file: nil)
-        #expect(WorkspaceLinks.links(for: artise)?.notesAPI?.absoluteString == "https://chat.artise.co/api/notes/v1")
-        #expect(WorkspaceLinks.links(for: artise)?.deleteAccount?.absoluteString == "https://chat.artise.co/account/delete")
+        #expect(WorkspaceLinks.links(for: artise) == nil)
         
         let published = WorkspaceLinks(notesAPI: URL(string: "https://web.acme.example/api/notes/v1"))
         let acmeWithLinks = ResolvedWorkspace(slug: "acme", serverName: "acme.artise.co", directoryName: "Acme",
                                               file: WorkspaceFile(homeserverURL: nil, branding: WorkspaceBranding(links: published)))
         #expect(WorkspaceLinks.links(for: acmeWithLinks) == published)
+    }
+    
+    /// mas-k8s's new fields: the help page, Ari's and the admin's accounts, no minimum version, no App Store link yet.
+    @Test
+    func helpAriAndVersion() throws {
+        let file = try #require(WorkspaceFile.parse(Data("""
+        {"co.artise.workspace":{"links":{"web":"https://chat.mas-k8s.artise.co","help":"https://artise.co/help",
+         "invites_api":"https://chat.mas-k8s.artise.co/api/invites/v1"},
+         "assistant_user_id":"@wikibot:mas-k8s.artise.co","contact_user_id":"@hector:mas-k8s.artise.co",
+         "min_app_version":{},"store_links":{"android":"https://play.google.com/store/apps/details?id=co.artise.app"}}}
+        """.utf8)))
+        let branding = try #require(file.branding)
+        #expect(branding.links?.help?.absoluteString == "https://artise.co/help")
+        #expect(branding.assistantUserID == "@wikibot:mas-k8s.artise.co")
+        #expect(branding.contactUserID == "@hector:mas-k8s.artise.co")
+        #expect(branding.minimumAppVersion == MinimumAppVersion(ios: nil))
+        #expect(branding.storeLinks == StoreLinks(ios: nil))
+        
+        let bad = try #require(WorkspaceFile.parse(Data(#"{"co.artise.workspace":{"assistant_user_id":"wikibot","contact_user_id":"@a b:x","min_app_version":"26.9"}}"#.utf8)))
+        #expect(bad.branding?.assistantUserID == nil)
+        #expect(bad.branding?.contactUserID == nil)
+        #expect(bad.branding?.minimumAppVersion == nil)
+    }
+    
+    /// A workspace kept on the phone before these fields existed still reads.
+    @Test
+    func storedBrandingWithoutNewFields() throws {
+        let stored = #"{"welcome":{},"name":"Acme"}"#
+        let branding = try JSONDecoder().decode(WorkspaceBranding.self, from: Data(stored.utf8))
+        #expect(branding.name == "Acme")
+        #expect(branding.assistantUserID == nil)
     }
 }

@@ -49,10 +49,17 @@ public struct WorkspaceBranding: Codable, Equatable, Sendable {
     public var links: WorkspaceLinks?
     /// The workspace's own Artise app client for its sign-in service; `nil` on workspaces without it.
     public var oauth: WorkspaceOAuthClient?
+    /// Ari's account, whose chat is pinned.
+    public var assistantUserID: String?
+    /// The person to write to for help: the workspace's first admin.
+    public var contactUserID: String?
+    public var minimumAppVersion: MinimumAppVersion?
+    public var storeLinks: StoreLinks?
     
     public init(name: String? = nil, logoURL: URL? = nil, accentHex: String? = nil, assistantName: String? = nil,
                 welcome: [String: String] = [:], language: String? = nil, features: Set<String>? = nil, pushGatewayURL: URL? = nil,
-                links: WorkspaceLinks? = nil, oauth: WorkspaceOAuthClient? = nil) {
+                links: WorkspaceLinks? = nil, oauth: WorkspaceOAuthClient? = nil, assistantUserID: String? = nil,
+                contactUserID: String? = nil, minimumAppVersion: MinimumAppVersion? = nil, storeLinks: StoreLinks? = nil) {
         self.name = name
         self.logoURL = logoURL
         self.accentHex = accentHex
@@ -63,6 +70,10 @@ public struct WorkspaceBranding: Codable, Equatable, Sendable {
         self.pushGatewayURL = pushGatewayURL
         self.links = links
         self.oauth = oauth
+        self.assistantUserID = assistantUserID
+        self.contactUserID = contactUserID
+        self.minimumAppVersion = minimumAppVersion
+        self.storeLinks = storeLinks
     }
     
     /// Reads the section field by field, so one bad value doesn't lose the others. Any `version` is read:
@@ -81,7 +92,11 @@ public struct WorkspaceBranding: Codable, Equatable, Sendable {
                   features: (section["features"] as? [Any]).map { Set($0.compactMap { $0 as? String }) },
                   pushGatewayURL: (section["push_gateway"] as? String).flatMap(WorkspaceURL.https),
                   links: (section["links"] as? [String: Any]).flatMap(WorkspaceLinks.init(section:)),
-                  oauth: (section["oauth"] as? [String: Any]).flatMap(WorkspaceOAuthClient.init(section:)))
+                  oauth: (section["oauth"] as? [String: Any]).flatMap(WorkspaceOAuthClient.init(section:)),
+                  assistantUserID: (section["assistant_user_id"] as? String).flatMap(Self.userID),
+                  contactUserID: (section["contact_user_id"] as? String).flatMap(Self.userID),
+                  minimumAppVersion: MinimumAppVersion(value: section["min_app_version"]),
+                  storeLinks: StoreLinks(value: section["store_links"]))
     }
     
     /// Where the pusher is registered: the workspace's gateway, else Artise's shared one.
@@ -114,6 +129,16 @@ public struct WorkspaceBranding: Codable, Equatable, Sendable {
         return "#" + digits
     }
     
+    /// `@name:server`, without spaces; anything else is ignored.
+    static func userID(_ value: String) -> String? {
+        let parts = value.split(separator: ":", maxSplits: 1)
+        guard value.hasPrefix("@"), value.count <= 255, parts.count == 2, parts[0].count > 1, !parts[1].isEmpty,
+              !value.contains(where: \.isWhitespace) else {
+            return nil
+        }
+        return value
+    }
+    
     private static func text(_ value: Any?, limit: Int) -> String? {
         guard let value = value as? String else { return nil }
         let text = value.split(whereSeparator: \.isWhitespace).joined(separator: " ")
@@ -138,34 +163,28 @@ public struct WorkspaceLinks: Codable, Equatable, Sendable {
     public var notesAPI: URL?
     /// Settings → Delete account.
     public var deleteAccount: URL?
+    /// Settings → Help.
+    public var help: URL?
     
-    public init(web: URL? = nil, notesAPI: URL? = nil, deleteAccount: URL? = nil) {
+    public init(web: URL? = nil, notesAPI: URL? = nil, deleteAccount: URL? = nil, help: URL? = nil) {
         self.web = web
         self.notesAPI = notesAPI
         self.deleteAccount = deleteAccount
+        self.help = help
     }
     
     init?(section: [String: Any]) {
         self.init(web: (section["web"] as? String).flatMap(WorkspaceURL.https),
                   notesAPI: (section["notes_api"] as? String).flatMap(WorkspaceURL.https),
-                  deleteAccount: (section["delete_account"] as? String).flatMap(WorkspaceURL.https))
+                  deleteAccount: (section["delete_account"] as? String).flatMap(WorkspaceURL.https),
+                  help: (section["help"] as? String).flatMap(WorkspaceURL.https))
         if self == WorkspaceLinks() {
             return nil
         }
     }
     
-    /// artise.co's web app, until its workspace file has `links`. Remove once the server deploy that adds them is live.
-    static let artiseFallback = WorkspaceLinks(web: URL(staticString: "https://chat.artise.co"),
-                                               notesAPI: URL(staticString: "https://chat.artise.co/api/notes/v1"),
-                                               deleteAccount: URL(staticString: "https://chat.artise.co/account/delete"))
-    
-    /// The workspace's links. Without them its notes and the delete page are hidden, except for artise.co, whose
-    /// file doesn't have them yet.
+    /// The workspace's links. Without them its notes, help and delete page are hidden.
     public static func links(for workspace: ResolvedWorkspace?) -> WorkspaceLinks? {
-        guard let workspace else { return nil }
-        if let links = workspace.branding?.links {
-            return links
-        }
-        return workspace.serverName == ArtiseConfiguration.serverName ? artiseFallback : nil
+        workspace?.branding?.links
     }
 }

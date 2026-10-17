@@ -29,6 +29,10 @@ public struct ArtiseIDConfiguration: Equatable, Sendable {
     public let scopes: [String]
     /// Artise ID's id for each provider, for the scope that opens it directly.
     public let providers: [ArtiseIDProvider: String]
+    /// Artise ID's own page for the password, passkeys and second steps.
+    public var securityURL: URL?
+    public var minimumAppVersion: MinimumAppVersion?
+    public var storeLinks: StoreLinks?
     
     /// `nil` unless the answer has an https issuer, a client ID and a return address the app can receive.
     public static func parse(_ data: Data) -> ArtiseIDConfiguration? {
@@ -46,7 +50,16 @@ public struct ArtiseIDConfiguration: Equatable, Sendable {
             }
         }
         return ArtiseIDConfiguration(issuer: issuer, clientID: clientID, redirectURL: redirectURL,
-                                     scopes: scopes.isEmpty ? ["openid"] : scopes, providers: providers)
+                                     scopes: scopes.isEmpty ? ["openid"] : scopes, providers: providers,
+                                     securityURL: (object["security_url"] as? String).flatMap(WorkspaceURL.https)
+                                         .flatMap { ArtiseIDText.sameHost($0, issuer) ? $0 : nil },
+                                     minimumAppVersion: MinimumAppVersion(value: object["min_app_version"]),
+                                     storeLinks: StoreLinks(value: object["store_links"]))
+    }
+    
+    /// Whether the tokens can be renewed without a new sign-in.
+    public var asksForRefreshTokens: Bool {
+        scopes.contains("offline_access")
     }
     
     /// The scopes to ask for: Artise's, plus the one that opens a provider directly (none for "Continue with email").
@@ -60,6 +73,8 @@ public struct ArtiseIDConfiguration: Equatable, Sendable {
 public struct ArtiseIDEndpoints: Equatable, Sendable {
     public let authorization: URL
     public let token: URL
+    /// Where a refresh token is given back at the last sign-out; `nil` when the issuer doesn't say.
+    public var revocation: URL?
     
     public static func discoveryURL(issuer: URL) -> URL {
         issuer.appendingPathComponent(".well-known/openid-configuration")
@@ -74,7 +89,9 @@ public struct ArtiseIDEndpoints: Equatable, Sendable {
               let token = (object["token_endpoint"] as? String).flatMap(WorkspaceURL.https) else {
             return nil
         }
-        return ArtiseIDEndpoints(authorization: authorization, token: token)
+        let revocation = (object["revocation_endpoint"] as? String).flatMap(WorkspaceURL.https)
+        return ArtiseIDEndpoints(authorization: authorization, token: token,
+                                 revocation: revocation.flatMap { ArtiseIDText.sameHost($0, issuer) ? $0 : nil })
     }
 }
 
@@ -129,6 +146,36 @@ public enum ArtiseIDError: Error, Equatable, Sendable {
     case unreachable
     /// The access token isn't valid any more.
     case unauthorized
+    /// Artise's server doesn't offer this yet (404).
+    case notAvailable
+}
+
+/// How the person's Artise ID sign-in is protected (`GET https://api.artise.co/v1/me/security`).
+public struct ArtiseIDSecurity: Equatable, Sendable {
+    public static let url = URL(staticString: "https://api.artise.co/v1/me/security")
+    
+    /// A second step is set up: an authenticator app, an email code or a security key. A passkey alone isn't one.
+    public let twoStep: Bool
+    /// The second steps Artise ID offers, best first: `passkey`, `totp`, `email`.
+    public let methods: [String]
+    /// Google, Microsoft or Apple when the person signs in with them; `nil` for an Artise ID password or passkey.
+    public let provider: ArtiseIDProvider?
+    
+    public init(twoStep: Bool, methods: [String], provider: ArtiseIDProvider?) {
+        self.twoStep = twoStep
+        self.methods = methods
+        self.provider = provider
+    }
+    
+    static func parse(_ data: Data) -> ArtiseIDSecurity? {
+        guard let object = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any],
+              let twoStep = object["two_step"] as? Bool else {
+            return nil
+        }
+        return ArtiseIDSecurity(twoStep: twoStep,
+                                methods: (object["methods"] as? [Any])?.compactMap { $0 as? String } ?? [],
+                                provider: (object["provider"] as? String).flatMap(ArtiseIDProvider.init(rawValue:)))
+    }
 }
 
 /// Proof Key for Code Exchange (RFC 7636).
@@ -302,15 +349,43 @@ public actor ArtiseIDClient {
     
     /// The workspaces the person is in. Never kept on disk.
     public func workspaces(accessToken: String) async -> Result<[ArtiseIDWorkspace], ArtiseIDError> {
-        var request = URLRequest(url: ArtiseIDWorkspace.listURL)
+        await authorizedGet(ArtiseIDWorkspace.listURL, accessToken: accessToken, parse: ArtiseIDWorkspace.parseList)
+    }
+    
+    /// Whether two-step verification is on, and how the person signs in.
+    public func security(accessToken: String) async -> Result<ArtiseIDSecurity, ArtiseIDError> {
+        await authorizedGet(ArtiseIDSecurity.url, accessToken: accessToken, parse: ArtiseIDSecurity.parse)
+    }
+    
+    /// Gives a refresh token back at the last sign-out, so it's refused from then on. Best effort: `false` when
+    /// Artise ID couldn't be told.
+    @discardableResult
+    public func revoke(refreshToken: String, configuration: ArtiseIDConfiguration, endpoints: ArtiseIDEndpoints) async -> Bool {
+        guard let url = endpoints.revocation else { return false }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
+        request.httpBody = Data(ArtiseIDText.formEncoded(["token": refreshToken, "token_type_hint": "refresh_token",
+                                                          "client_id": configuration.clientID]).utf8)
+        guard let (_, response) = try? await transport.send(request) else { return false }
+        return response.statusCode == 200
+    }
+    
+    private func authorizedGet<T>(_ url: URL, accessToken: String, parse: (Data) -> T?) async -> Result<T, ArtiseIDError> {
+        var request = URLRequest(url: url)
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
         guard let (body, response) = try? await transport.send(request) else { return .failure(.unreachable) }
-        if response.statusCode == 401 {
+        switch response.statusCode {
+        case 200:
+            return parse(body).map(Result.success) ?? .failure(.unreachable)
+        case 401:
             return .failure(.unauthorized)
+        case 404:
+            return .failure(.notAvailable)
+        default:
+            return .failure(.unreachable)
         }
-        guard response.statusCode == 200, let list = ArtiseIDWorkspace.parseList(body) else { return .failure(.unreachable) }
-        return .success(list)
     }
     
     private func tokenRequest(_ url: URL, form: [String: String], previousRefreshToken: String?) async -> Result<ArtiseIDTokens, ArtiseIDError> {
@@ -334,6 +409,10 @@ enum ArtiseIDText {
     /// Printable ASCII without spaces: client IDs, scopes, provider IDs.
     static func isToken(_ value: String) -> Bool {
         (1...255).contains(value.count) && value.unicodeScalars.allSatisfy { (0x21...0x7E).contains($0.value) }
+    }
+    
+    static func sameHost(_ lhs: URL, _ rhs: URL) -> Bool {
+        lhs.host?.lowercased() == rhs.host?.lowercased()
     }
     
     static func sameIssuer(_ lhs: URL, _ rhs: URL) -> Bool {

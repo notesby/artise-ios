@@ -14,19 +14,38 @@ import SwiftUI
 final class ArtiseIDSession {
     static let shared = ArtiseIDSession()
     
-    let client = ArtiseIDClient()
-    /// The tokens, only to read the list again; deleted when the person signs out.
-    private let keychain = Keychain(service: "co.artise.app.artise-id").accessibility(.afterFirstUnlockThisDeviceOnly)
-    private let tokensKey = "tokens"
+    let client: ArtiseIDClient
+    /// The tokens, kept to read the list and the security settings again; given back when the person signs out.
+    private let tokens: ArtiseIDTokenKeeper
     private var webSession: ArtiseIDWebSession?
+    
+    init() {
+        client = ArtiseIDClient()
+        tokens = ArtiseIDTokenKeeper(client: client, storage: ArtiseIDKeychainStorage())
+    }
     
     /// How to sign in to Artise ID; `nil` when Artise ID isn't available, and the app offers "type your workspace".
     func configuration() async -> ArtiseIDConfiguration? {
         await client.configuration()
     }
     
+    /// Whether the person signed in with Artise ID on this phone and it's still usable without a new sign-in.
+    func hasTokens() async -> Bool {
+        await tokens.hasTokens
+    }
+    
     /// The browser sign-in (straight to a provider, or Artise ID's own page), then the person's workspaces.
     func signIn(provider: ArtiseIDProvider?, window: UIWindow) async -> Result<[ArtiseIDWorkspace], ArtiseIDError> {
+        switch await signInOnly(provider: provider, window: window) {
+        case .success(let accessToken):
+            return await client.workspaces(accessToken: accessToken)
+        case .failure(let error):
+            return .failure(error)
+        }
+    }
+    
+    /// The browser sign-in alone, keeping the tokens; the access token on success.
+    func signInOnly(provider: ArtiseIDProvider?, window: UIWindow) async -> Result<String, ArtiseIDError> {
         guard let configuration = await client.configuration(),
               let endpoints = await client.endpoints(for: configuration),
               let authorization = ArtiseIDAuthorization(configuration: configuration, endpoints: endpoints, provider: provider) else {
@@ -48,57 +67,91 @@ final class ArtiseIDSession {
             return .failure(error)
         }
         switch await client.tokens(code: code, authorization: authorization, configuration: configuration, endpoints: endpoints) {
-        case .success(let tokens):
-            save(tokens)
-            return await client.workspaces(accessToken: tokens.accessToken)
+        case .success(let received):
+            await tokens.keep(received)
+            return .success(received.accessToken)
         case .failure(let error):
             MXLog.error("Artise ID tokens failed: \(error)")
             return .failure(error)
         }
     }
     
-    /// The list again with the kept tokens, refreshed if needed; `nil` without usable tokens (sign in again).
-    func workspacesAgain() async -> Result<[ArtiseIDWorkspace], ArtiseIDError>? {
-        guard var tokens = savedTokens() else { return nil }
-        if !tokens.isFresh(at: .now) {
-            guard let configuration = await client.configuration(), let endpoints = await client.endpoints(for: configuration),
-                  case .success(let refreshed) = await client.refresh(tokens, configuration: configuration, endpoints: endpoints) else {
-                forget()
-                return nil
-            }
-            tokens = refreshed
-            save(tokens)
-        }
-        let result = await client.workspaces(accessToken: tokens.accessToken)
-        if result == .failure(.unauthorized) {
-            forget()
-            return nil
-        }
-        return result
+    /// Opens Artise ID's own page (password, passkeys, second steps) in the sign-in browser session, so it needs
+    /// no new sign-in. Returns when the person closes it.
+    func openSecurityPage(_ url: URL, window: UIWindow) async {
+        guard let configuration = await client.configuration() else { return }
+        let webSession = ArtiseIDWebSession(window: window)
+        self.webSession = webSession
+        defer { self.webSession = nil }
+        _ = await webSession.open(url, returningTo: configuration.redirectURL)
     }
     
-    /// Called when the person signs out of their (only) workspace.
+    /// The list again with the kept tokens, refreshed if needed; `nil` without usable tokens (sign in again).
+    func workspacesAgain() async -> Result<[ArtiseIDWorkspace], ArtiseIDError>? {
+        await withAccessToken { accessToken in await self.client.workspaces(accessToken: accessToken) }
+    }
+    
+    /// Two-step verification and how the person signs in; `nil` without usable tokens (sign in again).
+    func security() async -> Result<ArtiseIDSecurity, ArtiseIDError>? {
+        await withAccessToken { accessToken in await self.client.security(accessToken: accessToken) }
+    }
+    
+    /// Called when the person signs out of their last workspace, or picks another way to sign in.
     func forget() {
-        do {
-            try keychain.remove(tokensKey)
-        } catch {
-            MXLog.error("Couldn't delete the Artise ID tokens: \(error)")
-        }
+        Task { await tokens.forget() }
     }
     
     // MARK: - Private
     
-    private func save(_ tokens: ArtiseIDTokens) {
+    /// Runs `call` with a usable access token; after a 401, once more with a refreshed one.
+    private func withAccessToken<T>(_ call: (String) async -> Result<T, ArtiseIDError>) async -> Result<T, ArtiseIDError>? {
+        for attempt in 0..<2 {
+            switch await tokens.accessToken() {
+            case nil:
+                return nil
+            case .failure(let error):
+                return .failure(error)
+            case .success(let accessToken):
+                let result = await call(accessToken)
+                guard case .failure(.unauthorized) = result else { return result }
+                await tokens.accessTokenRejected(accessToken)
+                if attempt == 1 {
+                    return nil
+                }
+            }
+        }
+        return nil
+    }
+}
+
+/// The Artise ID tokens in the Keychain, on this phone only.
+private struct ArtiseIDKeychainStorage: ArtiseIDTokenStorage {
+    private static let service = "co.artise.app.artise-id"
+    private static let key = "tokens"
+    
+    func load() -> ArtiseIDTokens? {
+        guard let data = try? keychain.getData(Self.key) else { return nil }
+        return try? JSONDecoder().decode(ArtiseIDTokens.self, from: data)
+    }
+    
+    func save(_ tokens: ArtiseIDTokens) {
         do {
-            try keychain.set(JSONEncoder().encode(tokens), key: tokensKey)
+            try keychain.set(JSONEncoder().encode(tokens), key: Self.key)
         } catch {
             MXLog.error("Couldn't keep the Artise ID tokens: \(error)")
         }
     }
     
-    private func savedTokens() -> ArtiseIDTokens? {
-        guard let data = try? keychain.getData(tokensKey) else { return nil }
-        return try? JSONDecoder().decode(ArtiseIDTokens.self, from: data)
+    func remove() {
+        do {
+            try keychain.remove(Self.key)
+        } catch {
+            MXLog.error("Couldn't delete the Artise ID tokens: \(error)")
+        }
+    }
+    
+    private var keychain: Keychain {
+        Keychain(service: Self.service).accessibility(.afterFirstUnlockThisDeviceOnly)
     }
 }
 
