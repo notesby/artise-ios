@@ -210,7 +210,8 @@ struct SettingsScreen: View {
     
     private var signOutSection: some View {
         Section {
-            ListRow(label: .action(title: L10n.screenSignoutPreferenceItem,
+            // Artise: "Sign out of {workspace}".
+            ListRow(label: .action(title: ArtiseSignOutText.settingsItem,
                                    icon: \.close,
                                    role: .destructive),
                     kind: .button {

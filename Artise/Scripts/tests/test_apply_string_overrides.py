@@ -92,7 +92,8 @@ class ArtiseOverridesTests(unittest.TestCase):
         files = sorted(ARTISE.glob("*.lproj/*.strings"))
         self.assertTrue(files)
         for path in files:
-            upstream = overrides.load_strings(UPSTREAM / "en.lproj" / path.name)
+            table = "Localizable" if path.stem == "Wording" else path.stem
+            upstream = overrides.load_strings(UPSTREAM / "en.lproj" / f"{table}.strings")
             for key, value in overrides.load_strings(path).items():
                 self.assertIn(key, upstream, f"{path}: {key}")
                 self.assertEqual(sorted(PLACEHOLDER.findall(value)), sorted(PLACEHOLDER.findall(upstream[key])), f"{path}: {key}")
@@ -103,6 +104,37 @@ class ArtiseOverridesTests(unittest.TestCase):
             english = set(overrides.load_strings(ARTISE / "en.lproj" / f"{table}.strings"))
             spanish = set(overrides.load_strings(ARTISE / "es.lproj" / f"{table}.strings"))
             self.assertTrue(english <= spanish, f"{table}: missing in Spanish: {english - spanish}")
+
+    def test_wording_covers_every_language_and_is_current(self):
+        """Scenario: the generated Wording.strings. Expected: en, es and pt have the same keys, and they match the
+        table in wording_overrides.py (someone edited the table without running it, or the reverse)."""
+        import wording_overrides
+        keys = set(wording_overrides.wording_for_ios(REPO))
+        for language in wording_overrides.LANGUAGES:
+            self.assertEqual(set(overrides.load_strings(ARTISE / f"{language}.lproj" / "Wording.strings")), keys, language)
+
+    def test_hand_written_overrides_win_over_wording(self):
+        """Scenario: a key in both Wording.strings and Localizable.strings. Expected: Localizable's text is used."""
+        with tempfile.TemporaryDirectory() as folder:
+            root = pathlib.Path(folder)
+            (root / "app/es.lproj").mkdir(parents=True)
+            (root / "artise/es.lproj").mkdir(parents=True)
+            (root / "app/es.lproj/Localizable.strings").write_text('"k" = "sala";', encoding="utf-8")
+            (root / "artise/es.lproj/Wording.strings").write_text('"k" = "chat"; "j" = "x";', encoding="utf-8")
+            (root / "artise/es.lproj/Localizable.strings").write_text('"k" = "mano";', encoding="utf-8")
+            overrides.apply(root / "app", root / "artise")
+            self.assertEqual(overrides.load_strings(root / "app/es.lproj/Localizable.strings"), {"k": "mano", "j": "x"})
+
+    def test_pt_folder_covers_brazilian_phones(self):
+        """Scenario: a pt-BR table and only a pt override folder. Expected: the pt texts are applied."""
+        with tempfile.TemporaryDirectory() as folder:
+            root = pathlib.Path(folder)
+            (root / "app/pt-BR.lproj").mkdir(parents=True)
+            (root / "artise/pt.lproj").mkdir(parents=True)
+            (root / "app/pt-BR.lproj/Localizable.strings").write_text('"k" = "sala";', encoding="utf-8")
+            (root / "artise/pt.lproj/Wording.strings").write_text('"k" = "conversa";', encoding="utf-8")
+            overrides.apply(root / "app", root / "artise")
+            self.assertEqual(overrides.load_strings(root / "app/pt-BR.lproj/Localizable.strings"), {"k": "conversa"})
 
     def test_no_override_names_element(self):
         """Scenario: Artise's own wording. Expected: it never mentions Element."""

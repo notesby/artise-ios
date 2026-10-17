@@ -114,6 +114,7 @@ final class ArtiseWorkspaces {
             await refresh()
             // Also makes Settings → Security show once Artise ID's answer is known.
             await checkAppVersion()
+            _ = await ArtiseIDSession.shared.hasTokens()
             if store.consumeWelcome(serverName: serverName) {
                 ArtiseWorkspaceWelcome.showIfNeeded(for: current)
             }
