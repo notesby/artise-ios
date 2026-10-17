@@ -108,3 +108,13 @@
 "screen_artise_chat_sound_long_other" = "Escolher outro";
 "screen_artise_chat_sound_too_big" = "Este arquivo é grande demais para um som de aviso. Escolha um com menos de 10 MB.";
 "screen_artise_chat_sound_error" = "Não conseguimos usar esse som. Tente outro.";
+
+/* Recovery key in iCloud Keychain, changing phones */
+"screen_artise_recovery_key_show" = "Ver minha chave de recuperação";
+"screen_artise_recovery_key_footer" = "Salva no seu Porta-chaves do iCloud, para que um iPhone novo com sua conta Apple abra suas conversas sem perguntar. Num celular Android, escaneie o código deste celular ou digite esta chave.";
+"screen_artise_recovery_key_reason" = "Para mostrar sua chave de recuperação";
+"screen_artise_changing_phone_title" = "Vai trocar de celular?";
+"screen_artise_changing_phone_description" = "Antes de apagar este, abra o Artise no novo, toque em «Já entrou em outro celular? Escaneie o código dele» e, aqui, vá em Configurações → %1$@.";
+"screen_artise_keep_key_card" = "Guarde sua chave de recuperação ou crie uma chave de acesso, caso troque de celular.";
+"screen_artise_keep_key_card_show" = "Ver minha chave";
+"screen_artise_keep_key_card_later" = "Agora não";

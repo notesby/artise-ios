@@ -33,8 +33,12 @@ class SecureBackupController: SecureBackupControllerProtocol {
         keyBackupStateSubject.asCurrentValuePublisher()
     }
     
-    init(encryption: Encryption) {
+    /// Artise: the account whose recovery key is kept in iCloud Keychain (ArtiseRecoveryKeys).
+    private let artiseUserID: String?
+    
+    init(encryption: Encryption, artiseUserID: String? = nil) {
         self.encryption = encryption
+        self.artiseUserID = artiseUserID
         
         backupStateListenerTaskHandle = encryption.backupStateListener(listener: SDKListener.onMainActor { [weak self] state in
             guard let self else { return }
@@ -133,6 +137,10 @@ class SecureBackupController: SecureBackupControllerProtocol {
                 }
             })
             
+            // Artise: a new recovery key is kept in iCloud Keychain, for the next iPhone.
+            if let artiseUserID {
+                ArtiseRecoveryKeys.save(recoveryKey, userID: artiseUserID)
+            }
             return keyUploadErrored.withLock { $0 } ? .failure(.failedGeneratingRecoveryKey) : .success(recoveryKey)
         } catch {
             MXLog.error("Failed generating recovery key with error: \(error)")
@@ -145,6 +153,10 @@ class SecureBackupController: SecureBackupControllerProtocol {
         do {
             MXLog.info("Confirming recovery key")
             try await encryption.recoverAndFixBackup(recoveryKey: key)
+            // Artise: a key that worked is kept in iCloud Keychain, for the next iPhone.
+            if let artiseUserID {
+                ArtiseRecoveryKeys.save(key, userID: artiseUserID)
+            }
             return .success(())
         } catch {
             MXLog.info("Failed confirming recovery key with error: \(error)")

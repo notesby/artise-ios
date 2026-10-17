@@ -177,6 +177,9 @@ English text):
 > Stickers are made from your photos on your iPhone; the photo isn't sent anywhere until you send the sticker. The
 > app uses your location only when you share it in a chat, once or live. It has no ads and no tracking.
 >
+> **Your recovery key.** The key that unlocks your encrypted chats is kept in your iCloud Keychain, which Apple
+> encrypts end to end, so a new iPhone with your Apple account opens your chats without asking. Artise never sees it.
+>
 > **Crash reports and problem reports (optional).** Only if you say yes on "Help improve Artise", a crash sends
 > Artise's own server (in the EU) what crashed, with your iPhone model and the iOS and app version; never your messages
 > or names. If you send Settings → Report a problem, the app's logs go with it (no message text). Both are kept 90 days

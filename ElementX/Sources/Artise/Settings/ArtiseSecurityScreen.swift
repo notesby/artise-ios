@@ -7,6 +7,7 @@
 import ArtiseWorkspaces
 import Compound
 import SwiftUI
+import UniformTypeIdentifiers
 
 /// Settings → Security: whether two-step verification is on for the person's Artise ID, and Artise ID's own page
 /// to change it (password, passkeys, second steps). Someone who signs in with Google, Microsoft or Apple is
@@ -65,12 +66,17 @@ final class ArtiseSecurityModel {
 
 struct ArtiseSecurityScreen: View {
     @State private var model = ArtiseSecurityModel()
+    @State private var revealedKey: String?
     @Environment(\.dismiss) private var dismiss
     
     var body: some View {
         ElementNavigationStack {
             Form {
-                content
+                if ArtiseIDSession.shared.securityURL != nil {
+                    content
+                }
+                recoveryKeySection
+                changingPhoneSection
             }
             .compoundList()
             .navigationTitle(ArtiseWorkspacesL10n.text("screen_artise_security_title"))
@@ -86,6 +92,53 @@ struct ArtiseSecurityScreen: View {
             model.window = window
         }
         .task { await model.load() }
+    }
+    
+    /// The recovery key kept in iCloud Keychain, after Face ID: what an Android phone or a new phone without the
+    /// same Apple account needs.
+    @ViewBuilder
+    private var recoveryKeySection: some View {
+        if ArtiseRecoveryKeys.shared.hasKey {
+            Section {
+                if let revealedKey {
+                    ListRow(kind: .custom {
+                        Text(revealedKey)
+                            .font(.compound.bodyLG.monospaced())
+                            .foregroundStyle(.compound.textPrimary)
+                            .textSelection(.enabled)
+                            .padding(.horizontal, ListRowPadding.horizontal)
+                            .padding(.vertical, 12)
+                    })
+                    ListRow(label: .default(title: L10n.actionCopy, icon: \.copy),
+                            kind: .button { ArtiseSecurityScreen.copy(revealedKey) })
+                } else {
+                    ListRow(label: .default(title: ArtiseWorkspacesL10n.text("screen_artise_recovery_key_show"), icon: \.key),
+                            kind: .button { Task { revealedKey = await ArtiseRecoveryKeys.shared.revealKey() } })
+                }
+            } footer: {
+                Text(ArtiseWorkspacesL10n.text("screen_artise_recovery_key_footer"))
+                    .compoundListSectionFooter()
+            }
+        }
+    }
+    
+    /// Before leaving this phone: scan from the new one, so the chats and their history come along.
+    @ViewBuilder
+    private var changingPhoneSection: some View {
+        if ArtiseWorkspaces.shared.canLinkNewDevice {
+            Section {
+                ListRow(label: .default(title: ArtiseWorkspacesL10n.text("screen_artise_changing_phone_title"),
+                                        description: String(format: ArtiseWorkspacesL10n.text("screen_artise_changing_phone_description"), L10n.commonLinkNewDevice),
+                                        icon: \.devices),
+                        kind: .label)
+            }
+        }
+    }
+    
+    /// Copied for two minutes and only on this phone, as it unlocks every chat.
+    private static func copy(_ key: String) {
+        UIPasteboard.general.setItems([[UTType.plainText.identifier: key]],
+                                      options: [.expirationDate: Date.now.addingTimeInterval(120), .localOnly: true])
     }
     
     @ViewBuilder

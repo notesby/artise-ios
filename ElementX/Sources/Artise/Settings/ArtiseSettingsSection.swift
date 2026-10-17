@@ -18,7 +18,7 @@ struct ArtiseSettingsSection: View {
     @Environment(\.openURL) private var openURL
     
     var body: some View {
-        if session.securityURL != nil {
+        if session.securityURL != nil || ArtiseRecoveryKeys.shared.hasKey {
             Section {
                 ListRow(label: .default(title: ArtiseWorkspacesL10n.text("screen_artise_security_title"), icon: \.verified),
                         kind: .navigationLink { isPresentingSecurity = true })

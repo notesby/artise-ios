@@ -111,6 +111,7 @@ final class ArtiseNotes {
 nonisolated struct ArtiseUserSessionHook: UserSessionHookProtocol {
     func configure(with userSession: UserSessionProtocol?) async {
         await ArtiseWorkspaces.shared.configure(with: userSession)
+        await ArtiseRecoveryKeys.shared.configure(with: userSession)
         await ArtiseNotes.shared.configure(with: userSession)
         await ArtiseStickers.shared.configure(with: userSession)
         await ArtiseLinkPreviews.shared.configure(with: userSession)

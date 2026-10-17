@@ -230,7 +230,8 @@ class ClientProxy: ClientProxyProtocol {
         
         notificationSettings = await NotificationSettingsProxy(notificationSettings: client.getNotificationSettings())
         
-        secureBackupController = SecureBackupController(encryption: client.encryption())
+        // Artise: knows the account, to keep its recovery key in iCloud Keychain.
+        secureBackupController = SecureBackupController(encryption: client.encryption(), artiseUserID: try? client.userId())
         
         spaceService = await SpaceServiceProxy(spaceService: client.spaceService())
         

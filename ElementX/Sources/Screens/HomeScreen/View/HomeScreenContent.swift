@@ -54,6 +54,7 @@ struct HomeScreenContent: View {
                                 // Artise: what's new after an update, and Ari pinned at the top, unless searching or filtering.
                                 if context.searchQuery.isEmpty, !context.filtersState.isFiltering {
                                     ArtiseWhatsNewCard()
+                                    ArtiseKeepKeyCard()
                                     ArtiseAssistantRow()
                                 }
                                 HomeScreenRoomList(context: context)

@@ -108,3 +108,13 @@
 "screen_artise_chat_sound_long_other" = "Choose another";
 "screen_artise_chat_sound_too_big" = "This file is too big for a notification sound. Choose one under 10 MB.";
 "screen_artise_chat_sound_error" = "We couldn't use that sound. Try another one.";
+
+/* Recovery key in iCloud Keychain, changing phones */
+"screen_artise_recovery_key_show" = "Show my recovery key";
+"screen_artise_recovery_key_footer" = "Saved in your iCloud Keychain, so a new iPhone with your Apple account opens your chats without asking. On an Android phone, scan the code from this phone, or type this key.";
+"screen_artise_recovery_key_reason" = "To show your recovery key";
+"screen_artise_changing_phone_title" = "Changing phones?";
+"screen_artise_changing_phone_description" = "Before you erase this one, open Artise on the new phone, tap “Signed in on another phone? Scan its code” and, here, go to Settings → %1$@.";
+"screen_artise_keep_key_card" = "Keep your recovery key or create a passkey, in case you change phones.";
+"screen_artise_keep_key_card_show" = "Show my key";
+"screen_artise_keep_key_card_later" = "Not now";
