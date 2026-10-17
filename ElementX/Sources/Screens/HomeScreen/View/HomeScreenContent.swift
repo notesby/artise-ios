@@ -51,8 +51,9 @@ struct HomeScreenContent: View {
                                 RoomListFiltersEmptyStateView(state: context.filtersState)
                                     .frame(maxWidth: .infinity, minHeight: max(0, geometry.size.height - topSectionHeight))
                             } else {
-                                // Artise: Ari pinned at the top, unless searching or filtering.
+                                // Artise: what's new after an update, and Ari pinned at the top, unless searching or filtering.
                                 if context.searchQuery.isEmpty, !context.filtersState.isFiltering {
+                                    ArtiseWhatsNewCard()
                                     ArtiseAssistantRow()
                                 }
                                 HomeScreenRoomList(context: context)

@@ -33,7 +33,7 @@ struct ArtiseAssistantRow: View {
                         Text(branding.naming(ArtiseWorkspacesL10n.text("screen_artise_assistant_hint")))
                             .font(.compound.bodyMD)
                             .foregroundStyle(.compound.textSecondary)
-                            .lineLimit(2)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                     Spacer(minLength: 0)
                     CompoundIcon(\.pin, size: .small, relativeTo: .compound.bodyMD)

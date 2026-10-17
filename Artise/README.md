@@ -82,7 +82,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 | `LoginScreen.swift`, `HomeScreen.swift` | The workspace's logo and name on the sign-in screen and in the home top bar (`ArtiseWorkspaces`). |
 | `SettingsScreen.swift` (sign-out row), `UserSessionFlowCoordinator.swift` (sign-out confirmation) | "Sign out of {workspace}", what happens, and that Artise ID signs out too (`ArtiseSignOutText`). |
 | `SettingsScreen.swift` | Artise's own Settings rows (`ArtiseSettingsSection`): Security, for Artise ID's two-step verification, and Help (the workspace's help page, writing to its admin). |
-| `HomeScreenContent.swift` | Ari pinned at the top of the chat list (`ArtiseAssistantRow`), when the workspace file names Ari's account. |
+| `HomeScreenContent.swift` | Ari pinned at the top of the chat list (`ArtiseAssistantRow`), when the workspace file names Ari's account, and the "What's new" card after an update (`ArtiseWhatsNew`). |
+| `UserSessionFlowCoordinator.swift` (reachability) | "{workspace} isn't answering. Your messages will go out when it's back." instead of Element's server message. |
 | `SettingsScreenViewModel.swift` (`showLinkNewDeviceButton`) | Link new device shows where the workspace's server supports QR sign-in (MSC4108), not only with the developer flag. |
 | `AppCoordinator.swift` (`handleBackgroundAppRefresh`) | Element's background refresh also syncs the notes of the chats on the phone (`ArtiseNotes.syncKnownChats`). |
 | `AppCoordinator.swift` (`setupSentry`) | Crash reports without breadcrumbs, performance traces or failed-request capture (`ArtiseCrashReports`). |
