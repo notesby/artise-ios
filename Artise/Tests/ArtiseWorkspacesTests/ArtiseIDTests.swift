@@ -40,6 +40,17 @@ struct ArtiseIDTests {
     }
     
     /// An answer without an https issuer, a client or a return address on join.artise.co isn't used.
+    /// api.artise.co's answer on 2026-10-17, verbatim: it reads, and each provider button opens its own provider.
+    @Test
+    func readsTheLiveSignInAnswer() throws {
+        let live = #"{"issuer": "https://id.artise.co", "client_id": "395423549856219219", "redirect_uri": "https://join.artise.co/oauth", "scopes": ["openid", "profile", "email"], "providers": {"apple": "395419033345720907", "google": "395415843124544075", "microsoft": "395417126111805523"}}"#
+        let configuration = try #require(ArtiseIDConfiguration.parse(Data(live.utf8)))
+        #expect(configuration.providers.count == 3)
+        #expect(configuration.scopes(for: .apple).last == "urn:zitadel:iam:org:idp:id:395419033345720907")
+        let endpoints = try #require(ArtiseIDEndpoints.parse(Data(Self.discovery.utf8), issuer: configuration.issuer))
+        #expect(endpoints.token.absoluteString == "https://id.artise.co/oauth/v2/token")
+    }
+    
     @Test
     func unusableSignInAnswers() {
         for body in [#"{"issuer":"http://id.artise.co","client_id":"1","redirect_uri":"https://join.artise.co/oauth"}"#,
