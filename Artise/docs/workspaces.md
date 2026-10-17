@@ -43,6 +43,15 @@ workspace name.
    - When the person signs out, or taps "Sign in another way", the tokens are deleted and the refresh token is
      revoked (`revocation_endpoint` from the discovery document).
 
+Settings → Security (`ArtiseSecurityScreen`) shows when `/v1/sign-in` has a `security_url`.
+- `GET https://api.artise.co/v1/me/security` says whether two-step verification is on and how the person signs in.
+- Someone who signs in with Google, Microsoft or Apple sees that the account protects their sign-in, and isn't
+  offered a second step (Artise ID would ask for it on top of the provider's).
+- Otherwise the screen shows On or Off and "Manage in Artise ID", which opens `security_url` in the same browser
+  session as the sign-in, so it needs no new sign-in. The status is read again when the page closes.
+- Without Artise ID tokens on the phone (signed in by typing the workspace), it offers Artise ID's sign-in first.
+- `webcredentials:id.artise.co` is in Associated Domains for Artise ID's passkeys.
+
 "Have your workspace's name? Type it" opens "Your workspace". Invite links work as before.
 
 These screens use the phone's language when it's English, Spanish or Portuguese, and Spanish otherwise.

@@ -76,6 +76,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 | `AppSettings.swift` (`artiseUseOAuthClient`, `oAuthStaticRegistrations` settable) | A workspace with its own app client (`co.artise.workspace.oauth`) signs in with it and returns to `https://join.artise.co/oauth`, so its sign-in page skips the consent screen. |
 | `AuthenticationFlowCoordinator.swift` (start screen) | The first screen is `ArtiseStartScreenCoordinator`: Artise ID (Apple, Google, Microsoft, email) and the person's workspaces. It shows Element's start screen when Artise ID isn't available or for a provisioning link. |
 | `LoginScreen.swift`, `HomeScreen.swift` | The workspace's logo and name on the sign-in screen and in the home top bar (`ArtiseWorkspaces`). |
+| `SettingsScreen.swift` | Artise's own Settings rows (`ArtiseSettingsSection`): Security, for Artise ID's two-step verification. |
 | `NotificationManager.swift`, `ClientProxy.swift` (`setPusher`) | The pusher goes to the workspace's push gateway (default `push.artise.co`), with `append: true` so other accounts' pushers on the phone stay. |
 | `AppCoordinator.swift` (`handleDeepLink`), `UserSessionStore.swift`, `SettingsScreenViewModel.swift` | Invite links (`join.artise.co`), forgetting the workspace's look on sign-out, and Delete account on the workspace's `links.delete_account` page (hidden without one). |
 

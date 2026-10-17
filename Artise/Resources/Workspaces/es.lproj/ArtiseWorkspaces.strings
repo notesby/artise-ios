@@ -34,3 +34,21 @@
 "screen_artise_id_no_workspaces" = "Todavía no estás en ningún espacio. Pídele a quien te invitó el enlace de invitación.";
 "screen_artise_id_other_account" = "Iniciar sesión de otra forma";
 "screen_artise_id_error" = "No se pudo iniciar sesión con Artise ID. Inténtalo de nuevo.";
+
+/* Settings → Security */
+"screen_artise_security_title" = "Seguridad";
+"screen_artise_security_two_step" = "Verificación en dos pasos";
+"screen_artise_security_on" = "Activada";
+"screen_artise_security_off" = "Desactivada";
+"screen_artise_security_on_description" = "Al iniciar sesión en un teléfono o navegador nuevo, se te pide un segundo paso después de tu contraseña.";
+"screen_artise_security_off_description" = "Es opcional. Agrega un segundo paso, como una app de autenticación o un código por correo, para proteger tu Artise ID.";
+"screen_artise_security_manage" = "Administrar en Artise ID";
+"screen_artise_security_manage_description" = "Cambia tu contraseña, agrega una llave de acceso o configura la verificación en dos pasos.";
+"screen_artise_security_provider_google" = "Tu cuenta de Google protege tu inicio de sesión";
+"screen_artise_security_provider_microsoft" = "Tu cuenta de Microsoft protege tu inicio de sesión";
+"screen_artise_security_provider_apple" = "Tu cuenta de Apple protege tu inicio de sesión";
+"screen_artise_security_provider_description" = "Para cambiar la verificación en dos pasos, usa los ajustes de esa cuenta.";
+"screen_artise_security_sign_in_title" = "Inicia sesión con Artise ID";
+"screen_artise_security_sign_in_description" = "Para ver cómo está protegida tu cuenta, inicia sesión en Artise ID en este teléfono.";
+"screen_artise_security_sign_in_action" = "Continuar";
+"screen_artise_security_error" = "No pudimos revisar la seguridad de tu cuenta. Revisa tu conexión e inténtalo de nuevo.";

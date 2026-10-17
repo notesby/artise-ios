@@ -33,6 +33,9 @@ struct SettingsScreen: View {
             
             manageMyAppSection
             
+            // Artise: Security (Artise ID), and Artise's other rows.
+            ArtiseSettingsSection()
+            
             generalSection
             
             signOutSection
