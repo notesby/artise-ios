@@ -43,6 +43,12 @@ workspace name.
    - When the person signs out, or taps "Sign in another way", the tokens are deleted and the refresh token is
      revoked (`revocation_endpoint` from the discovery document).
 
+"Update Artise" (`ArtiseUpdateNotice`) covers the app, and can't be closed, when `min_app_version.ios` in
+`/v1/sign-in` or in the workspace file is newer than the app. It's checked on the first screen, when the session
+starts and when the app comes back. Versions compare as numbers, part by part; an empty object means no minimum.
+The button opens `store_links.ios` when there is one; until then the screen says to update from the App Store or
+TestFlight.
+
 Settings → Security (`ArtiseSecurityScreen`) shows when `/v1/sign-in` has a `security_url`.
 - `GET https://api.artise.co/v1/me/security` says whether two-step verification is on and how the person signs in.
 - Someone who signs in with Google, Microsoft or Apple sees that the account protects their sign-in, and isn't

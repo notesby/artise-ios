@@ -52,3 +52,10 @@
 "screen_artise_security_sign_in_description" = "Para ver cómo está protegida tu cuenta, inicia sesión en Artise ID en este teléfono.";
 "screen_artise_security_sign_in_action" = "Continuar";
 "screen_artise_security_error" = "No pudimos revisar la seguridad de tu cuenta. Revisa tu conexión e inténtalo de nuevo.";
+
+/* Update Artise */
+"screen_artise_update_title" = "Actualiza Artise";
+"screen_artise_update_message" = "Esta versión de Artise ya no funciona con %1$@. Actualízala para seguir.";
+"screen_artise_update_message_generic" = "Esta versión de Artise ya no funciona. Actualízala para seguir.";
+"screen_artise_update_action" = "Actualizar";
+"screen_artise_update_no_link" = "Actualízala desde el App Store, o desde TestFlight si la estás probando.";

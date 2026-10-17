@@ -94,14 +94,15 @@ final class ArtiseWorkspaces {
         signingIn = nil
         foregroundObserver = NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)
             .sink { [weak self] _ in
-                Task { await self?.refresh() }
+                Task {
+                    await self?.refresh()
+                    await self?.checkAppVersion()
+                }
             }
         Task {
-            // Settings → Security shows once Artise ID's answer is known.
-            _ = await ArtiseIDSession.shared.configuration()
-        }
-        Task {
             await refresh()
+            // Also makes Settings → Security show once Artise ID's answer is known.
+            await checkAppVersion()
             if store.consumeWelcome(serverName: serverName) {
                 ArtiseWorkspaceWelcome.showIfNeeded(for: current)
             }
@@ -118,6 +119,15 @@ final class ArtiseWorkspaces {
         foregroundObserver = nil
         // Artise signs in to one workspace at a time, so this was the last one.
         ArtiseIDSession.shared.forget()
+    }
+    
+    /// "Update Artise" when Artise ID or this workspace needs a newer app.
+    func checkAppVersion() async {
+        let configuration = await ArtiseIDSession.shared.configuration()
+        let branding = current?.branding
+        ArtiseUpdateNotice.check([configuration?.minimumAppVersion, branding?.minimumAppVersion],
+                                 storeLink: branding?.storeLinks?.ios ?? configuration?.storeLinks?.ios,
+                                 workspaceName: current?.displayName)
     }
     
     /// Reads the workspace file again; admins change it any time with `!workspace`. When the push gateway
