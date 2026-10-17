@@ -60,3 +60,8 @@
 "screen_artise_update_message_generic" = "This version of Artise no longer works. Update it to keep going.";
 "screen_artise_update_action" = "Update";
 "screen_artise_update_no_link" = "Update it from the App Store, or from TestFlight if you're testing it.";
+
+/* Ari pinned, Settings → Help */
+"screen_artise_assistant_hint" = "Ask Ari for reminders, notes, or to let someone know";
+"screen_artise_help" = "Help";
+"screen_artise_contact_admin" = "Write to your workspace's admin";

@@ -132,6 +132,33 @@ final class ArtiseWorkspaces {
         ArtiseIDSession.shared.forget()
     }
     
+    // MARK: - Ari and help
+    
+    /// Ari's chat, opened from the pinned row: the direct chat when there is one, else Ari's profile (with "Message").
+    /// `nil` when the workspace doesn't name Ari's account.
+    func assistantChatURL() -> URL? {
+        guard let userID = branding?.assistantUserID, let userSession else { return nil }
+        if case .success(let roomID?) = userSession.clientProxy.directRoomForUserID(userID) {
+            return Self.matrixToURL(roomID)
+        }
+        return Self.matrixToURL(userID)
+    }
+    
+    /// The workspace's admin to write to for help; `nil` without one, or when it's the person themselves.
+    var contactURL: URL? {
+        guard let userID = branding?.contactUserID, userID != userSession?.clientProxy.userID else { return nil }
+        return Self.matrixToURL(userID)
+    }
+    
+    var helpURL: URL? {
+        WorkspaceLinks.links(for: current)?.help
+    }
+    
+    /// A permalink the app opens itself (a chat or a profile).
+    private static func matrixToURL(_ id: String) -> URL? {
+        URL(string: "https://matrix.to/#/\(id)")
+    }
+    
     /// "Update Artise" when Artise ID or this workspace needs a newer app.
     func checkAppVersion() async {
         let configuration = await ArtiseIDSession.shared.configuration()

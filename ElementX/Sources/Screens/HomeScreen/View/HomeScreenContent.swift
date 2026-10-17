@@ -51,6 +51,10 @@ struct HomeScreenContent: View {
                                 RoomListFiltersEmptyStateView(state: context.filtersState)
                                     .frame(maxWidth: .infinity, minHeight: max(0, geometry.size.height - topSectionHeight))
                             } else {
+                                // Artise: Ari pinned at the top, unless searching or filtering.
+                                if context.searchQuery.isEmpty, !context.filtersState.isFiltering {
+                                    ArtiseAssistantRow()
+                                }
                                 HomeScreenRoomList(context: context)
                                     .accessibilityAddTraits(.updatesFrequently)
                             }

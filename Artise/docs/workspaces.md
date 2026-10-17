@@ -48,6 +48,11 @@ scanner. The phone that's already signed in shows the code from Settings → Lin
 workspace's server reports `org.matrix.msc4108` in `/_matrix/client/versions` (mas-k8s today; artise.co once it's
 approved). The new phone signs in with the device-code grant and gets the chats' keys over the encrypted channel.
 
+Ari is pinned at the top of the chat list (`ArtiseAssistantRow`) when the workspace file has `assistant_user_id`,
+except while searching or filtering. Tapping it opens the direct chat with Ari, or Ari's profile when there's none yet.
+Settings → Help opens `links.help`, and "Write to your workspace's admin" opens `contact_user_id`'s profile (hidden
+for the admin themselves).
+
 "Update Artise" (`ArtiseUpdateNotice`) covers the app, and can't be closed, when `min_app_version.ios` in
 `/v1/sign-in` or in the workspace file is newer than the app. It's checked on the first screen, when the session
 starts and when the app comes back. Versions compare as numbers, part by part; an empty object means no minimum.
