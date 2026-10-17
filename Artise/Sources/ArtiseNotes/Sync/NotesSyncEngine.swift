@@ -108,8 +108,13 @@ public final class NotesSyncEngine: NotesRepository {
             let pull: PullResult
             let started = now()
             do {
-                push = try await pushQueue(roomID)
+                // Text edits, then what others changed, then photos and files: a big upload never hides others' changes.
+                let edits = try await pushQueue(roomID, step: .edits)
                 pull = try await pullTree(roomID)
+                if pull.updated + pull.removed > 0 {
+                    await changeCenter.notify(roomID)
+                }
+                push = try await edits + pushQueue(roomID, step: .uploads)
             } catch {
                 await activityTracker.finish(roomID)
                 await changeCenter.notify(roomID)
@@ -307,6 +312,18 @@ public final class NotesSyncEngine: NotesRepository {
         var sent = 0
         var needChoice = 0
         var failed = 0
+        
+        static func + (lhs: PushResult, rhs: PushResult) -> PushResult {
+            PushResult(sent: lhs.sent + rhs.sent, needChoice: lhs.needChoice + rhs.needChoice, failed: lhs.failed + rhs.failed)
+        }
+    }
+    
+    /// A sync sends text edits before pulling, and photos and files after it.
+    enum PushStep {
+        /// Saves and deletes, except those queued after an upload of the same file.
+        case edits
+        /// Uploads, and whatever waited behind them.
+        case uploads
     }
     
     enum PushOutcome {
@@ -319,13 +336,23 @@ public final class NotesSyncEngine: NotesRepository {
     
     /// Sends pending edits in order. A network or sign-in failure stops the push and leaves the rest queued.
     /// Any other failure of one edit sets it aside and goes on: one bad item never holds up the whole chat.
-    private func pushQueue(_ roomID: String) async throws -> PushResult {
+    private func pushQueue(_ roomID: String, step: PushStep) async throws -> PushResult {
         guard let record = try await store.chat(roomID) else { return PushResult() }
         var result = PushResult()
         // An edit waiting for a choice holds back later edits to the same file, so they don't overtake it.
         var heldBack = Set(record.edits.filter { $0.state != .pending }.map(\.path))
+        // Each file's edits stay in order, and a photo goes up before the notes that show it (its name may change):
+        // anything after an upload of that file, or a note embedding one, waits for the uploads step.
+        let uploading = record.edits.filter { $0.state == .pending && $0.kind == .upload }.map(\.path)
+        var afterUpload: Set<String> = []
         for edit in record.edits where edit.state == .pending {
-            if heldBack.contains(edit.path) {
+            let embedsUpload = edit.kind == .save && !uploading.isEmpty
+                && !NoteEmbeds.resolve(edit.content ?? "", paths: uploading).isEmpty
+            let isUploadStep = edit.kind == .upload || afterUpload.contains(edit.path) || embedsUpload
+            if isUploadStep {
+                afterUpload.insert(edit.path)
+            }
+            if heldBack.contains(edit.path) || isUploadStep != (step == .uploads) {
                 continue
             }
             let outcome = switch edit.kind {
