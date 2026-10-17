@@ -30,6 +30,7 @@
 "screen_artise_id_microsoft" = "Continuar com a Microsoft";
 "screen_artise_id_email" = "Continuar com e-mail";
 "screen_artise_id_type_workspace" = "Tem o nome do seu espaço? Digite-o";
+"screen_artise_id_qr_code" = "Já entrou em outro celular? Escaneie o código dele";
 "screen_artise_id_pick_workspace" = "Escolha seu espaço";
 "screen_artise_id_no_workspaces" = "Você ainda não está em nenhum espaço. Peça o link de convite a quem convidou você.";
 "screen_artise_id_other_account" = "Entrar de outra forma";

@@ -158,6 +158,17 @@ public actor WorkspaceClient {
     }
     
     /// A 200 answer's body, or `nil`.
+    /// Whether the workspace's server lets a signed-in phone show a QR code that signs in a new one (MSC4108).
+    /// `false` when it doesn't say, or can't be reached.
+    public func supportsQRSignIn(homeserverURL: URL) async -> Bool {
+        guard let body = await answer(homeserverURL.appending(path: "_matrix/client/versions")),
+              let object = (try? JSONSerialization.jsonObject(with: body)) as? [String: Any],
+              let features = object["unstable_features"] as? [String: Any] else {
+            return false
+        }
+        return features["org.matrix.msc4108"] as? Bool == true
+    }
+    
     func answer(_ url: URL) async -> Data? {
         guard let (body, response) = try? await transport.get(url), response.statusCode == 200 else { return nil }
         return body

@@ -30,7 +30,8 @@ class SettingsScreenViewModel: SettingsScreenViewModelType, SettingsScreenViewMo
         
         super.init(initialViewState: .init(deviceID: userSession.clientProxy.deviceID,
                                            userProfile: userSession.clientProxy.userProfilePublisher.value,
-                                           showLinkNewDeviceButton: appSettings.linkNewDeviceEnabled,
+                                           // Artise: also on where the workspace's server supports QR sign-in.
+                                           showLinkNewDeviceButton: appSettings.linkNewDeviceEnabled || ArtiseWorkspaces.shared.canLinkNewDevice,
                                            // Artise: opens the workspace's deletion page (App Store requirement); hidden without one.
                                            showAccountDeactivation: ArtiseWorkspaces.shared.accountDeletionURL(language: nil) != nil,
                                            showDeveloperOptions: appSettings.developerOptionsEnabled,
@@ -44,6 +45,7 @@ class SettingsScreenViewModel: SettingsScreenViewModelType, SettingsScreenViewMo
             .store(in: &cancellables)
         
         appSettings.linkNewDeviceEnabledPublisher
+            .map { $0 || ArtiseWorkspaces.shared.canLinkNewDevice } // Artise
             .weakAssign(to: \.state.showLinkNewDeviceButton, on: self)
             .store(in: &cancellables)
         

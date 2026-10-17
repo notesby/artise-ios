@@ -128,6 +128,15 @@ final class ArtiseStartScreenModel {
         actions.send(.login)
     }
     
+    /// Scanning the QR code another phone shows (Settings → Link new device there).
+    var canScanQRCode: Bool {
+        !ProcessInfo.processInfo.isiOSAppOnMac
+    }
+    
+    func scanQRCode() {
+        actions.send(.loginWithQR)
+    }
+    
     /// Back to the sign-in buttons, forgetting this Artise ID account's tokens.
     func showProviders() {
         ArtiseIDSession.shared.forget()
@@ -214,9 +223,15 @@ struct ArtiseStartScreen: View {
             }
             .readableFrame()
         } bottomContent: {
-            Button(ArtiseWorkspacesL10n.text("screen_artise_id_type_workspace"), action: model.typeWorkspace)
-                .buttonStyle(.compound(.textLink, size: .medium))
-                .disabled(model.isWorking)
+            VStack(spacing: 12) {
+                if model.canScanQRCode {
+                    Button(ArtiseWorkspacesL10n.text("screen_artise_id_qr_code"), action: model.scanQRCode)
+                        .buttonStyle(.compound(.textLink, size: .medium))
+                }
+                Button(ArtiseWorkspacesL10n.text("screen_artise_id_type_workspace"), action: model.typeWorkspace)
+                    .buttonStyle(.compound(.textLink, size: .medium))
+            }
+            .disabled(model.isWorking)
         }
         .background { AuthenticationStartScreenBackgroundImage() }
         .navigationBarHidden(true)

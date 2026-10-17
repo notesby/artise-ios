@@ -27,6 +27,8 @@ final class ArtiseWorkspaces {
     
     /// The signed-in account's workspace.
     private(set) var current: ResolvedWorkspace?
+    /// Whether this workspace's server lets the phone sign in a new one with a QR code (Settings → Link new device).
+    private(set) var canLinkNewDevice = false
     /// The workspace picked in "Your workspace", shown on the sign-in screen.
     private(set) var signingIn: ResolvedWorkspace?
     /// A workspace to sign in to after an invite link's join page closed, until "Your workspace" takes it.
@@ -84,6 +86,7 @@ final class ArtiseWorkspaces {
     /// Called when an account's session is ready, and with `nil` when it's gone.
     func configure(with userSession: UserSessionProtocol?) {
         self.userSession = userSession
+        canLinkNewDevice = false
         guard let userSession, let serverName = WorkspaceHosts.serverName(userID: userSession.clientProxy.userID) else {
             current = nil
             foregroundObserver = nil
@@ -99,6 +102,14 @@ final class ArtiseWorkspaces {
                     await self?.checkAppVersion()
                 }
             }
+        if let homeserverURL = current?.file?.homeserverURL ?? URL(string: userSession.clientProxy.homeserver) {
+            Task {
+                let supported = await client.supportsQRSignIn(homeserverURL: homeserverURL)
+                if self.userSession?.clientProxy.userID == userSession.clientProxy.userID {
+                    canLinkNewDevice = supported
+                }
+            }
+        }
         Task {
             await refresh()
             // Also makes Settings → Security show once Artise ID's answer is known.

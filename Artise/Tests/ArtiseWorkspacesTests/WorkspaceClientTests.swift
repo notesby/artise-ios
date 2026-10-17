@@ -117,6 +117,21 @@ struct WorkspaceClientTests {
 }
 
 /// Answers by URL; anything else fails as if offline.
+extension WorkspaceClientTests {
+    /// The QR sign-in shows only where the server says it supports it (mas-k8s today, not artise.co).
+    @Test
+    func qrSignInSupport() async throws {
+        let url = try #require(URL(string: "https://matrix.mas-k8s.artise.co"))
+        let versions = "https://matrix.mas-k8s.artise.co/_matrix/client/versions"
+        let on = FakeTransport([versions: .init(body: #"{"versions":["v1.11"],"unstable_features":{"org.matrix.msc4108":true}}"#)])
+        #expect(await WorkspaceClient(transport: on).supportsQRSignIn(homeserverURL: url))
+        let off = FakeTransport([versions: .init(body: #"{"versions":["v1.11"],"unstable_features":{"org.matrix.msc4108":false}}"#)])
+        #expect(await !WorkspaceClient(transport: off).supportsQRSignIn(homeserverURL: url))
+        #expect(await !WorkspaceClient(transport: FakeTransport([versions: .init(body: #"{"versions":[]}"#)])).supportsQRSignIn(homeserverURL: url))
+        #expect(await !WorkspaceClient(transport: FakeTransport([:])).supportsQRSignIn(homeserverURL: url))
+    }
+}
+
 final class FakeTransport: WorkspaceHTTPTransport, @unchecked Sendable {
     struct Answer {
         var status = 200
