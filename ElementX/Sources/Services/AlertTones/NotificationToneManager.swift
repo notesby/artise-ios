@@ -106,7 +106,8 @@ nonisolated struct NotificationToneManager: NotificationToneManagerProtocol {
             throw ManagerError.fileAlreadyExists
         }
         
-        if sourceURL.pathExtension.lowercased() == "caf" {
+        // Artise: a .caf longer than a notification may play is converted too, so it gets cut.
+        if sourceURL.pathExtension.lowercased() == "caf", !Self.artiseIsTooLong(sourceURL) {
             try FileManager.default.copyItem(at: sourceURL, to: outputURL)
         } else {
             try convertToCAF(from: sourceURL, to: outputURL)
@@ -156,7 +157,8 @@ nonisolated struct NotificationToneManager: NotificationToneManagerProtocol {
                 guard pcmBuffer.frameLength > 0 else { break }
                 
                 try destTempFile.write(from: pcmBuffer)
-            } while pcmBuffer.frameLength > 0 && sourceFile.framePosition < sourceFile.length
+                // Artise: stops at iOS's notification limit; a longer sound would play the default instead.
+            } while pcmBuffer.frameLength > 0 && sourceFile.framePosition < min(sourceFile.length, Self.artiseFrameLimit(sourceFile))
         } catch {
             let nsError = error as NSError
             guard
@@ -272,7 +274,8 @@ nonisolated struct NotificationToneManager: NotificationToneManagerProtocol {
         return url
     }()
     
-    private static func toneLocation(for tone: NotificationTone) -> URL {
+    // Artise: not private, for a chat's own sound (ArtiseChatSounds).
+    static func toneLocation(for tone: NotificationTone) -> URL {
         let root: URL
         switch tone.storageLocationRoot {
         case .system:

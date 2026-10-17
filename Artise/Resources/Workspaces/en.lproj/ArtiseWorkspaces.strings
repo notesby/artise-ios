@@ -94,3 +94,17 @@
 "screen_artise_quiet_hours_days" = "Starting on";
 "screen_artise_quiet_hours_mentions" = "Still ring when someone mentions me";
 "screen_artise_quiet_hours_reminders" = "Still ring for Ari's reminders";
+
+/* A chat's own sound */
+"screen_artise_chat_sound" = "Sound";
+"screen_artise_chat_sound_footer" = "Only on this phone.";
+"screen_artise_chat_sound_default" = "Default";
+"screen_artise_chat_sound_none" = "No sound";
+"screen_artise_chat_sound_yours" = "Your sounds";
+"screen_artise_chat_sound_pick_file" = "Choose an audio file";
+"screen_artise_chat_sound_long_title" = "The sound is %1$@ long";
+"screen_artise_chat_sound_long_message" = "The first 30 seconds will be used.";
+"screen_artise_chat_sound_long_use" = "Use";
+"screen_artise_chat_sound_long_other" = "Choose another";
+"screen_artise_chat_sound_too_big" = "This file is too big for a notification sound. Choose one under 10 MB.";
+"screen_artise_chat_sound_error" = "We couldn't use that sound. Try another one.";

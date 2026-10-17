@@ -54,6 +54,8 @@ struct RoomNotificationSettingsScreenViewState: BindableState {
     var customSettingsSectionHeader: String
     var deletingCustomSetting = false
     var shouldDisplayMentionsOnlyDisclaimer = true
+    /// Artise: for the chat's own sound (ArtiseChatSoundSection).
+    var artiseRoomID: String?
     
     func description(mode: RoomNotificationModeProxy) -> String? {
         guard mode == .mentionsAndKeywordsOnly,

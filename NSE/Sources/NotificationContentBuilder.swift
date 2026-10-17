@@ -51,8 +51,19 @@ nonisolated struct NotificationContentBuilder {
         
         MXLog.info("isNoisy: \(notificationItem.isNoisy)")
         notificationContent.sound = notificationItem.isNoisy ? .init(named: notificationSoundName) : nil
-        // Artise: Ari's important and critical posts are Time Sensitive; critical ones always make a sound.
+        // Artise: a chat's own sound, chosen on this phone (ChatSoundStore). Ari's reminders keep the app's sound.
         let artiseLevel = ArtiseAutomationLevel(rawEvent: (notificationItem as? NotificationItemProxy)?.notificationItem.rawEvent)
+        if notificationItem.isNoisy, artiseLevel?.isReminder != true {
+            switch ChatSoundStore(suiteName: AppSettings.suiteName).sound(userID: notificationItem.receiverID, roomID: notificationItem.roomID) {
+            case .file(let name, _):
+                notificationContent.sound = .init(named: UNNotificationSoundName(name))
+            case .silent:
+                notificationContent.sound = nil
+            case nil:
+                break
+            }
+        }
+        // Artise: Ari's important and critical posts are Time Sensitive; critical ones always make a sound.
         notificationContent.applyArtiseAutomationLevel(artiseLevel, sound: .init(named: notificationSoundName))
         // Artise: the workspace's quiet hours (no sound, no screen wake); mentions and reminders can still ring.
         notificationContent.applyArtiseQuietHours(QuietHoursStore(suiteName: AppSettings.suiteName).load(userID: notificationItem.receiverID),
