@@ -432,17 +432,34 @@ public final class NotesSyncEngine: NotesRepository {
         var result = PullResult()
         let local = try await store.chat(roomID)
         let changed = tree.files.filter { Self.needsDownload($0, local: local) }
-        var notesLeft = changed.count { $0.isNote }
+        // Photos and documents download when opened; only their listing is kept, in one write.
+        let listings = changed.filter { !$0.isNote }
+        if !listings.isEmpty {
+            try await store.updateChat(roomID) { record in
+                for file in listings {
+                    record.files[file.path] = FileRecord(file, content: nil)
+                }
+            }
+            result.updated += listings.count
+        }
+        // Notes come down a few at a time, and each batch is written once: every write re-encrypts the chat's copy.
+        let notes = changed.filter(\.isNote)
+        var notesLeft = notes.count
         await setDownloading(roomID, notesLeft)
-        for file in changed {
+        for start in stride(from: 0, to: notes.count, by: Self.downloadBatch) {
+            let batch = Array(notes[start..<min(start + Self.downloadBatch, notes.count)])
             // Anything but "deleted meanwhile" stops the pull without saving the ETag, so the next sync tries again.
-            if try await pullFile(roomID, file) {
-                result.updated += 1
+            let downloaded = try await download(roomID, batch)
+            if !downloaded.isEmpty {
+                try await store.updateChat(roomID) { record in
+                    for stored in downloaded {
+                        record.files[stored.path] = stored
+                    }
+                }
             }
-            if file.isNote {
-                notesLeft -= 1
-                await setDownloading(roomID, notesLeft)
-            }
+            result.updated += downloaded.count
+            notesLeft -= batch.count
+            await setDownloading(roomID, notesLeft)
         }
         
         let remotePaths = Set(tree.files.map(\.path))
@@ -473,24 +490,33 @@ public final class NotesSyncEngine: NotesRepository {
         return file.isNote && mine.content == nil
     }
     
-    /// Stores one changed file; `false` when it was deleted between the tree and this request.
-    private func pullFile(_ roomID: String, _ file: NotesFile) async throws -> Bool {
-        guard file.isNote else {
-            // Photos and documents download when opened; only the listing is kept.
-            try await store.updateChat(roomID) { $0.files[file.path] = FileRecord(file, content: nil) }
-            return true
+    /// How many notes download at once, and are then written together.
+    static let downloadBatch = 4
+    
+    /// The notes' text, all at once; a note deleted between the tree and its request is left out.
+    private func download(_ roomID: String, _ files: [NotesFile]) async throws -> [FileRecord] {
+        try await withThrowingTaskGroup(of: FileRecord?.self) { group in
+            for file in files {
+                group.addTask {
+                    do {
+                        let note = try await self.api.note(roomID: roomID, path: file.path)
+                        var stored = FileRecord(file, content: note.content)
+                        stored.version = note.version
+                        return stored
+                    } catch NotesError.notFound {
+                        // Deleted between the tree and this request: the next tree won't list it.
+                        return nil
+                    }
+                }
+            }
+            var downloaded: [FileRecord] = []
+            for try await stored in group {
+                if let stored {
+                    downloaded.append(stored)
+                }
+            }
+            return downloaded
         }
-        let note: Note
-        do {
-            note = try await api.note(roomID: roomID, path: file.path)
-        } catch .notFound {
-            // Deleted between the tree and this request: the next tree won't list it.
-            return false
-        }
-        var stored = FileRecord(file, content: note.content)
-        stored.version = note.version
-        try await store.updateChat(roomID) { [stored] record in record.files[file.path] = stored }
-        return true
     }
     
     /// Shows the count only while several notes come down, so a one-note update doesn't flash a line.
