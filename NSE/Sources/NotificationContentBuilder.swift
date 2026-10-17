@@ -52,8 +52,11 @@ nonisolated struct NotificationContentBuilder {
         MXLog.info("isNoisy: \(notificationItem.isNoisy)")
         notificationContent.sound = notificationItem.isNoisy ? .init(named: notificationSoundName) : nil
         // Artise: Ari's important and critical posts are Time Sensitive; critical ones always make a sound.
-        notificationContent.applyArtiseAutomationLevel(ArtiseAutomationLevel(rawEvent: (notificationItem as? NotificationItemProxy)?.notificationItem.rawEvent),
-                                                       sound: .init(named: notificationSoundName))
+        let artiseLevel = ArtiseAutomationLevel(rawEvent: (notificationItem as? NotificationItemProxy)?.notificationItem.rawEvent)
+        notificationContent.applyArtiseAutomationLevel(artiseLevel, sound: .init(named: notificationSoundName))
+        // Artise: the workspace's quiet hours (no sound, no screen wake); mentions and reminders can still ring.
+        notificationContent.applyArtiseQuietHours(QuietHoursStore(suiteName: AppSettings.suiteName).load(userID: notificationItem.receiverID),
+                                                  isMention: notificationItem.hasMention, isReminder: artiseLevel?.isReminder == true)
         
         switch notificationItem.event {
         case .none:

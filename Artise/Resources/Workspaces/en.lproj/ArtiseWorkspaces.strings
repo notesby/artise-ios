@@ -85,3 +85,12 @@
 "screen_artise_whats_new_2" = "Ari is pinned at the top of your chats, and Settings has Help and Security.";
 "screen_artise_whats_new_3" = "Notes update by themselves when you open the app, and you can search them.";
 "screen_artise_whats_new_done" = "Got it";
+
+/* Settings → Quiet hours */
+"screen_artise_quiet_hours_title" = "Quiet hours";
+"screen_artise_quiet_hours_description" = "During these hours, this workspace's notifications arrive without sound and without lighting up the screen. You'll find them in Notification Center.";
+"screen_artise_quiet_hours_from" = "From";
+"screen_artise_quiet_hours_to" = "Until";
+"screen_artise_quiet_hours_days" = "Starting on";
+"screen_artise_quiet_hours_mentions" = "Still ring when someone mentions me";
+"screen_artise_quiet_hours_reminders" = "Still ring for Ari's reminders";
