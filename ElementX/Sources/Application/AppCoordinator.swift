@@ -110,6 +110,8 @@ class AppCoordinator: AppCoordinatorProtocol, AuthenticationFlowCoordinatorDeleg
         
         // Artise: usage statistics go to Google Analytics for Firebase, and only after consent (ArtiseAnalyticsClient).
         analyticsService = AnalyticsService(client: ArtiseAnalyticsClient.shared, appSettings: appSettings)
+        // Artise: the keyboard keeps the app's light or dark appearance after the app comes back (ArtiseKeyboardAppearance).
+        ArtiseKeyboardAppearance.start()
         
         userIndicatorController = UserIndicatorController()
         
