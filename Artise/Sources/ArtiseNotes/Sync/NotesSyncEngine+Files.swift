@@ -65,6 +65,29 @@ public struct MediaFile: Equatable, Sendable {
 }
 
 /// Uploads being sent right now, and those whose last try failed on the server's side, by edit id.
+/// Each chat's sync in progress, for the folder's progress line.
+actor SyncActivityTracker {
+    /// From this many notes on, the folder says how many are coming.
+    static let threshold = 3
+    private var downloading: [String: Int] = [:]
+    
+    func activity(_ roomID: String) -> SyncActivity {
+        SyncActivity(downloadingNotes: downloading[roomID] ?? 0)
+    }
+    
+    /// Returns whether what the folder shows changed.
+    func setDownloading(_ roomID: String, _ count: Int) -> Bool {
+        let shown = count >= Self.threshold || (downloading[roomID] ?? 0) > 0 ? max(0, count) : 0
+        guard shown != (downloading[roomID] ?? 0) else { return false }
+        downloading[roomID] = shown == 0 ? nil : shown
+        return true
+    }
+    
+    func finish(_ roomID: String) {
+        downloading[roomID] = nil
+    }
+}
+
 actor UploadTracker {
     private var uploading: Set<Int64> = []
     private var retrying: Set<Int64> = []

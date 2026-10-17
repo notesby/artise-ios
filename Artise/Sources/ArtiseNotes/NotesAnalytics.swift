@@ -31,16 +31,21 @@ public enum NotesAnalyticsAction: String, Sendable {
     case choiceMade = "ChoiceMade"
     case searchUsed = "SearchUsed"
     case mediaDeleted = "MediaDeleted"
+    /// A sync that moved something or took 3 s or more, with its time and counts in coarse groups.
+    case syncFinished = "SyncFinished"
 }
 
-/// One notes action; `kind` says "photo" or "document" for attachments, or which choice was made.
+/// One notes action; `kind` says "photo" or "document" for attachments, or which choice was made. `values` are coarse
+/// groups such as `"1-5"`, never names or text.
 public struct NotesAnalyticsEvent: Equatable, Sendable {
     public let action: NotesAnalyticsAction
     public let kind: String?
+    public let values: [String: String]
     
-    public init(_ action: NotesAnalyticsAction, kind: String? = nil) {
+    public init(_ action: NotesAnalyticsAction, kind: String? = nil, values: [String: String] = [:]) {
         self.action = action
         self.kind = kind
+        self.values = values
     }
     
     /// "NotesNoteSaved", as the Android app names it.
@@ -49,6 +54,6 @@ public struct NotesAnalyticsEvent: Equatable, Sendable {
     }
     
     public var properties: [String: String] {
-        kind.map { ["kind": $0] } ?? [:]
+        values.merging(kind.map { ["kind": $0] } ?? [:]) { _, kind in kind }
     }
 }

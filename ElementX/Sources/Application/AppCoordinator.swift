@@ -1309,6 +1309,9 @@ class AppCoordinator: AppCoordinatorProtocol, AuthenticationFlowCoordinatorDeleg
         
         await resumeClientServices()
         
+        // Artise: the notes of the chats on this phone sync too (ArtiseNotes).
+        Task { await ArtiseNotes.shared.syncKnownChats() }
+        
         // Be a good citizen, run for a max of 10 SS responses or 10 seconds
         // An SS request will time out after 30 seconds if no new data is available
         backgroundRefreshSyncObserver = userSession.clientProxy

@@ -22,6 +22,7 @@ struct NotesFolderScreen: View {
     @State private var entries: [NotesFolderEntry] = []
     @State private var hasLoaded = false
     @State private var status = NotesSyncStatus.upToDate
+    @State private var downloadingNotes = 0
     @State private var chatName: String?
     @State private var route: NotesRoute?
     @State private var choicesCount = 0
@@ -47,7 +48,20 @@ struct NotesFolderScreen: View {
                 }
             }
             
-            if status != .upToDate {
+            if downloadingNotes > 0 {
+                Section {
+                    Label {
+                        Text(String(format: ArtiseWorkspacesL10n.text("screen_notes_updating"), downloadingNotes))
+                            .font(.compound.bodySM)
+                            .foregroundStyle(.compound.textSecondary)
+                    } icon: {
+                        ProgressView()
+                            .controlSize(.small)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .accessibilityAddTraits(.updatesFrequently)
+                }
+            } else if status != .upToDate {
                 Section {
                     NotesStatusLine(status: status)
                 }
@@ -181,6 +195,7 @@ struct NotesFolderScreen: View {
         actions.paths = paths
         actions.folders = folders
         choicesCount = await ((try? repository.edits(roomID: roomID)) ?? []).filter { $0.state != .pending }.count
+        downloadingNotes = await repository.activity(roomID: roomID).downloadingNotes
         if title == nil, folder.isEmpty {
             chatName = try? await repository.cachedChats().first { $0.roomID == roomID }?.name
         }

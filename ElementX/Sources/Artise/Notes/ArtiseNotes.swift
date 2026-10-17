@@ -15,6 +15,7 @@ final class ArtiseNotes {
     static let shared = ArtiseNotes()
     
     private(set) var service: ArtiseNotesService?
+    private var foregroundObserver: NSObjectProtocol?
     
     var isAvailable: Bool {
         service != nil
@@ -29,6 +30,20 @@ final class ArtiseNotes {
             return
         }
         service = ArtiseNotesService(clientProxy: userSession.clientProxy, notesAPIURL: notesAPIURL)
+        // Notas is already current when opened: the chats on this phone sync now and each time the app comes back.
+        foregroundObserver = foregroundObserver ?? NotificationCenter.default.addObserver(forName: UIApplication.willEnterForegroundNotification,
+                                                                                          object: nil, queue: .main) { _ in
+            Task { @MainActor in await ArtiseNotes.shared.syncKnownChats() }
+        }
+        Task { await syncKnownChats() }
+    }
+    
+    /// Syncs the chats this phone holds notes for (an unchanged one costs a `304`); also run by background refresh.
+    func syncKnownChats() async {
+        guard let service else { return }
+        let started = Date.now
+        let synced = await service.repository.syncKnownChats(concurrency: 3)
+        MXLog.info("Notes: synced \(synced) chats in \(Int(Date.now.timeIntervalSince(started) * 1000)) ms")
     }
     
     /// The account signed out: stops its notes and forgets them on this phone (files and key).

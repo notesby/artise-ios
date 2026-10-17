@@ -24,6 +24,7 @@ public final class NotesSyncEngine: NotesRepository {
     let now: @Sendable () -> Date
     let files: NotesFileOptions
     let uploads = UploadTracker()
+    let activityTracker = SyncActivityTracker()
     /// Counts what's done with notes, for people who said yes to usage statistics; never names or text.
     let track: @Sendable (NotesAnalyticsEvent) -> Void
     
@@ -105,14 +106,17 @@ public final class NotesSyncEngine: NotesRepository {
         try await locks.withLock(roomID) { () async throws -> SyncReport in
             let push: PushResult
             let pull: PullResult
+            let started = now()
             do {
                 push = try await pushQueue(roomID)
                 pull = try await pullTree(roomID)
             } catch {
+                await activityTracker.finish(roomID)
                 await changeCenter.notify(roomID)
                 throw error
             }
             let report = SyncReport(sent: push.sent, needChoice: push.needChoice, updated: pull.updated, removed: pull.removed, failed: push.failed)
+            trackTiming(report, seconds: now().timeIntervalSince(started))
             if report.changedAnything {
                 await changeCenter.notify(roomID)
             }
@@ -121,6 +125,34 @@ public final class NotesSyncEngine: NotesRepository {
             }
             return report
         }
+    }
+    
+    /// Syncs every chat this phone already holds notes for, a few at a time: an unchanged chat costs one `304`.
+    /// Chats never opened here aren't downloaded. Returns how many synced; failures wait for the next time.
+    @discardableResult
+    public func syncKnownChats(concurrency: Int = 3) async -> Int {
+        let roomIDs = await store.storedRoomIDs()
+        var synced = 0
+        await withTaskGroup(of: Bool.self) { group in
+            var pending = roomIDs[...]
+            func startNext() {
+                guard let roomID = pending.popFirst() else { return }
+                group.addTask { await (try? self.sync(roomID: roomID)) != nil }
+            }
+            for _ in 0..<max(1, concurrency) {
+                startNext()
+            }
+            for await succeeded in group {
+                synced += succeeded ? 1 : 0
+                startNext()
+            }
+        }
+        return synced
+    }
+    
+    /// What a sync in progress is doing, for "Actualizando 12 notas…".
+    public func activity(roomID: String) async -> SyncActivity {
+        await activityTracker.activity(roomID)
     }
     
     @discardableResult
@@ -399,10 +431,17 @@ public final class NotesSyncEngine: NotesRepository {
         
         var result = PullResult()
         let local = try await store.chat(roomID)
-        for file in tree.files where Self.needsDownload(file, local: local) {
+        let changed = tree.files.filter { Self.needsDownload($0, local: local) }
+        var notesLeft = changed.count { $0.isNote }
+        await setDownloading(roomID, notesLeft)
+        for file in changed {
             // Anything but "deleted meanwhile" stops the pull without saving the ETag, so the next sync tries again.
             if try await pullFile(roomID, file) {
                 result.updated += 1
+            }
+            if file.isNote {
+                notesLeft -= 1
+                await setDownloading(roomID, notesLeft)
             }
         }
         
@@ -452,6 +491,40 @@ public final class NotesSyncEngine: NotesRepository {
         stored.version = note.version
         try await store.updateChat(roomID) { [stored] record in record.files[file.path] = stored }
         return true
+    }
+    
+    /// Shows the count only while several notes come down, so a one-note update doesn't flash a line.
+    private func setDownloading(_ roomID: String, _ count: Int) async {
+        if await activityTracker.setDownloading(roomID, count) {
+            await changeCenter.notify(roomID)
+        }
+    }
+    
+    /// How long a sync took and how much it moved, in coarse groups; only syncs that did something, or took a while.
+    private func trackTiming(_ report: SyncReport, seconds: TimeInterval) {
+        guard report.sent + report.updated > 0 || seconds >= 3 else { return }
+        track(NotesAnalyticsEvent(.syncFinished, values: ["seconds": Self.secondsGroup(seconds),
+                                                          "downloaded": Self.countGroup(report.updated),
+                                                          "sent": Self.countGroup(report.sent)]))
+    }
+    
+    static func secondsGroup(_ seconds: TimeInterval) -> String {
+        switch seconds {
+        case ..<1: "0-1"
+        case ..<3: "1-3"
+        case ..<10: "3-10"
+        case ..<30: "10-30"
+        default: "30+"
+        }
+    }
+    
+    static func countGroup(_ count: Int) -> String {
+        switch count {
+        case ..<1: "0"
+        case ..<6: "1-5"
+        case ..<21: "6-20"
+        default: "21+"
+        }
     }
     
     // MARK: - Helpers
