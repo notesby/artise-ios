@@ -274,6 +274,20 @@ nonisolated struct NotificationToneManager: NotificationToneManagerProtocol {
         return url
     }()
     
+    // Artise: iOS plays a notification sound only if it's under 30 seconds; picked files are cut at 29.
+    static let artiseMaxSeconds: TimeInterval = 29
+    
+    // Artise: where a converted file stops.
+    static func artiseFrameLimit(_ file: AVAudioFile) -> AVAudioFramePosition {
+        AVAudioFramePosition(file.fileFormat.sampleRate * artiseMaxSeconds)
+    }
+    
+    // Artise: a .caf that's too long is converted (and so cut) instead of copied.
+    static func artiseIsTooLong(_ url: URL) -> Bool {
+        guard let file = try? AVAudioFile(forReading: url), file.fileFormat.sampleRate > 0 else { return false }
+        return Double(file.length) / file.fileFormat.sampleRate > artiseMaxSeconds
+    }
+    
     // Artise: not private, for a chat's own sound (ArtiseChatSounds).
     static func toneLocation(for tone: NotificationTone) -> URL {
         let root: URL
