@@ -359,6 +359,7 @@
 		3683C4C0DBFA397BE0105B0D /* NotificationTone.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF08D6FC1919CB804A9191E8 /* NotificationTone.swift */; };
 		3684AD01C5FCB7616B28F629 /* TimelineMediaPreviewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CDE60FEE95039CCCEEEE3B0 /* TimelineMediaPreviewController.swift */; };
 		36926D795D6D19177C7812F8 /* EncryptionResetPasswordScreenCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6935A55AB3B0C94BC566DD6 /* EncryptionResetPasswordScreenCoordinator.swift */; };
+		3698AE35D065352354186E1B /* ArtiseUpdateNotice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AC53C7BF36974E45DED9C27 /* ArtiseUpdateNotice.swift */; };
 		369BF960E52BBEE61F8A5BD1 /* BlockedUsersScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED60E4D2CD678E1EBF16F77A /* BlockedUsersScreen.swift */; };
 		36AC963F2F04069B7FF1AA0C /* UIConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E6D88E8AFFBF2C1D589C0FA /* UIConstants.swift */; };
 		36AD4DD4C798E22584ED3200 /* SwiftState in Frameworks */ = {isa = PBXBuildFile; productRef = 9573B94B1C86C6DF751AF3FD /* SwiftState */; };
@@ -2571,6 +2572,7 @@
 		7AAD8C633AA57948B34EDCF7 /* RoomChangeRolesScreenViewModelProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomChangeRolesScreenViewModelProtocol.swift; sourceTree = "<group>"; };
 		7AB74D407F0E413E7593B369 /* SpaceAddRoomsScreenViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpaceAddRoomsScreenViewModelTests.swift; sourceTree = "<group>"; };
 		7AC1E3FE9B59EA094867863E /* TimelineControllerFactoryProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineControllerFactoryProtocol.swift; sourceTree = "<group>"; };
+		7AC53C7BF36974E45DED9C27 /* ArtiseUpdateNotice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArtiseUpdateNotice.swift; sourceTree = "<group>"; };
 		7ACFFE7814849BB200CE0969 /* SpaceAddRoomsScreenModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpaceAddRoomsScreenModels.swift; sourceTree = "<group>"; };
 		7AD6FFE581238BD30B53BA0A /* SearchServiceProxy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchServiceProxy.swift; sourceTree = "<group>"; };
 		7AE094FCB6387D268C436161 /* SecureBackupScreenViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecureBackupScreenViewModel.swift; sourceTree = "<group>"; };
@@ -7658,6 +7660,7 @@
 			children = (
 				A1B748239D7E8D116815A0DE /* ArtiseIDSession.swift */,
 				1A826BF6EF6913B3EB2AFC61 /* ArtiseStartScreen.swift */,
+				7AC53C7BF36974E45DED9C27 /* ArtiseUpdateNotice.swift */,
 				3F67CBE86ECAD809B38F50A6 /* ArtiseWorkspacePresenter.swift */,
 				571D12EA7F13964F999A4C08 /* ArtiseWorkspaces.swift */,
 				88D92F76CF662B435CF2D62B /* ArtiseWorkspaceScreen.swift */,
@@ -9107,6 +9110,7 @@
 				4E983BD771084FF34A046857 /* ArtiseStartScreen.swift in Sources */,
 				9153CC17C62087C1261395DC /* ArtiseStickerButton.swift in Sources */,
 				9D909A5278A2C27232670C56 /* ArtiseStickers.swift in Sources */,
+				3698AE35D065352354186E1B /* ArtiseUpdateNotice.swift in Sources */,
 				E9AB3A393E990DB989A7C964 /* ArtiseWorkspacePresenter.swift in Sources */,
 				304B922567854A7D5E1028E9 /* ArtiseWorkspaceScreen.swift in Sources */,
 				DE52B3D91AE9527E49BB316E /* ArtiseWorkspaceSignInStarter.swift in Sources */,
