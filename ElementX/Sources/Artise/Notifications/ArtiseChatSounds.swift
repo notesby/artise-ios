@@ -17,7 +17,7 @@ nonisolated enum ArtiseChatSounds {
     /// Only its library is used (picked files, conversion); the app-wide tone stays Element's setting.
     static let toneManager = NotificationToneManager(appSettings: .volatile())
     /// The longest sound iOS plays for a notification; longer files are cut.
-    static let maxSeconds: TimeInterval = 29
+    static let maxSeconds = NotificationToneManager.artiseMaxSeconds
     /// Bigger files are refused.
     static let maxBytes = 10 * 1024 * 1024
     
@@ -60,17 +60,5 @@ nonisolated enum ArtiseChatSounds {
     
     private static func removeFile(userID: String, roomID: String) {
         try? FileManager.default.removeItem(at: soundsDirectory.appending(component: ChatSoundStore.fileName(userID: userID, roomID: roomID)))
-    }
-}
-
-extension NotificationToneManager {
-    /// Cut at iOS's notification limit when converting a picked file.
-    nonisolated static func artiseFrameLimit(_ file: AVAudioFile) -> AVAudioFramePosition {
-        AVAudioFramePosition(file.fileFormat.sampleRate * ArtiseChatSounds.maxSeconds)
-    }
-    
-    nonisolated static func artiseIsTooLong(_ url: URL) -> Bool {
-        guard let file = try? AVAudioFile(forReading: url), file.fileFormat.sampleRate > 0 else { return false }
-        return Double(file.length) / file.fileFormat.sampleRate > ArtiseChatSounds.maxSeconds
     }
 }
