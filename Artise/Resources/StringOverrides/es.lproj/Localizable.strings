@@ -15,7 +15,7 @@
 "screen_advanced_settings_element_call_base_url_description" = "Define una URL base personalizada para las llamadas.";
 
 /* Usage statistics: the consent texts, as in the Android app. */
-"screen_analytics_prompt_help_us_improve" = "Comparte qué pantallas y botones usas, para ayudarnos a mejorar Artise. Se envía a Google Analytics para Firebase.";
+"screen_analytics_prompt_help_us_improve" = "Comparte qué pantallas y botones usas, y los informes de fallos, para ayudarnos a mejorar Artise. El uso se envía a Google Analytics para Firebase; los informes de fallos, a los servidores de Artise en la UE.";
 "screen_analytics_prompt_data_usage" = "Nunca enviamos tus mensajes, notas, nombres ni contactos";
 "screen_analytics_prompt_third_party_sharing" = "Nada se usa para anuncios ni se vende";
-"screen_analytics_settings_help_us_improve" = "Comparte qué pantallas y botones usas, para ayudarnos a mejorar Artise. Se envía a Google Analytics para Firebase.";
+"screen_analytics_settings_help_us_improve" = "Comparte qué pantallas y botones usas, y los informes de fallos, para ayudarnos a mejorar Artise. El uso se envía a Google Analytics para Firebase; los informes de fallos, a los servidores de Artise en la UE.";

@@ -202,19 +202,25 @@ jobs:
       - name: Generate the Xcode project
         run: xcodegen
 
-      # The build's service keys. MapTiler's key goes in here and never into git; without it, location sharing stays
-      # off. Element's crash reporting (Sentry), bug reports (rageshake) and PostHog analytics are turned off, as on
-      # Android: their committed values are placeholders.
+      # The build's service keys go in here and never into git: MapTiler's key (without it, location sharing stays
+      # off), and Artise's crash reports (Sentry, crashes.artise.co) and bug reports (rageshake, reports.artise.co).
+      # Crash reports are sent only after "Help improve Artise" is accepted. Element's Rust SDK Sentry and PostHog
+      # stay off.
       - name: Set the build's service keys
         env:
           MAPLIBRE_API_KEY: ${{ secrets.MAPLIBRE_API_KEY }}
+          SENTRY_DSN_IOS: ${{ secrets.SENTRY_DSN_IOS }}
+          RAGESHAKE_URL: ${{ secrets.RAGESHAKE_URL }}
         run: |
           python3 - <<'PY'
           import json, os, pathlib, re
           path = pathlib.Path("Components/Secrets/Secrets.swift")
+          def secret(name):
+              value = os.environ.get(name, "").strip()
+              return json.dumps(value) if value else "nil"
           key = os.environ.get("MAPLIBRE_API_KEY", "").strip()
-          values = {"mapLibreAPIKey": json.dumps(key) if key else "nil",
-                    "sentryDSN": "nil", "sentryRustDSN": "nil", "rageshakeURL": "nil",
+          values = {"mapLibreAPIKey": secret("MAPLIBRE_API_KEY"),
+                    "sentryDSN": secret("SENTRY_DSN_IOS"), "sentryRustDSN": "nil", "rageshakeURL": secret("RAGESHAKE_URL"),
                     "postHogHost": "nil", "postHogAPIKey": "nil"}
           lines = []
           for line in path.read_text().splitlines():
@@ -224,7 +230,8 @@ jobs:
               lines.append(line)
           path.write_text("\n".join(lines) + "\n")
           print("MapTiler key added." if key else "::warning title=Maps::No MAPLIBRE_API_KEY secret: location sharing is off in this build.")
-          print("Crash reporting, bug reports and PostHog are off.")
+          for name, what in (("SENTRY_DSN_IOS", "Crash reports"), ("RAGESHAKE_URL", "Bug reports")):
+              print(f"{what} are on." if os.environ.get(name, "").strip() else f"::warning title={what}::No {name} secret: {what.lower()} are off in this build.")
           PY
 
       # Signing is manual: Artise's distribution certificate and App Store profiles, made with the
