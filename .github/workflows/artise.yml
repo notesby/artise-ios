@@ -64,6 +64,19 @@ jobs:
       - name: Setup environment
         run: source ci_scripts/ci_common.sh && setup_github_actions_environment
 
+      # Homebrew installs the newest SwiftFormat, whose new rules flag upstream's own code. Use the version upstream
+      # is formatted with; bump it when an upstream merge reformats the code.
+      - name: Pin SwiftFormat
+        run: |
+          zip="$RUNNER_TEMP/swiftformat.zip"
+          curl -fsSL -o "$zip" https://github.com/nicklockwood/SwiftFormat/releases/download/0.63.1/swiftformat.zip
+          echo "385ef1a263ba28685157b98c5536b9c9105e124518f28b7ef8a2bee4b167eaeb  $zip" | shasum -a 256 -c -
+          mkdir -p "$RUNNER_TEMP/swiftformat"
+          unzip -q -o "$zip" -d "$RUNNER_TEMP/swiftformat"
+          chmod +x "$RUNNER_TEMP/swiftformat/swiftformat"
+          echo "$RUNNER_TEMP/swiftformat" >> "$GITHUB_PATH"
+          "$RUNNER_TEMP/swiftformat/swiftformat" --version
+
       # Our repository holds only LFS pointers. The sample media the unit tests load comes from upstream's LFS.
       - name: Fetch upstream test media
         run: |

@@ -273,7 +273,8 @@ class AuthenticationFlowCoordinator: FlowCoordinatorProtocol {
                                                              appSettings: appSettings,
                                                              mediaProvider: mediaProvider,
                                                              userIndicatorController: userIndicatorController)
-        let coordinator = AuthenticationStartScreenCoordinator(parameters: parameters)
+        // Artise: sign in with Artise ID and pick a workspace; Element's start screen when Artise ID isn't available.
+        let coordinator = ArtiseStartScreenCoordinator(parameters: parameters)
         
         coordinator.actions
             .sink { [weak self] action in

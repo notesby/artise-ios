@@ -126,19 +126,23 @@ final class FakeTransport: WorkspaceHTTPTransport, @unchecked Sendable {
     
     private let answers: [String: Answer]
     private let lock = NSLock()
-    private var log: [String] = []
+    private var log: [URLRequest] = []
     
     init(_ answers: [String: Answer]) {
         self.answers = answers
     }
     
     var requested: [String] {
+        lock.withLock { log.compactMap { $0.url?.absoluteString } }
+    }
+    
+    var requests: [URLRequest] {
         lock.withLock { log }
     }
     
-    func get(_ url: URL) async throws -> (Data, HTTPURLResponse) {
-        lock.withLock { log.append(url.absoluteString) }
-        guard let answer = answers[url.absoluteString],
+    func send(_ request: URLRequest) async throws -> (Data, HTTPURLResponse) {
+        lock.withLock { log.append(request) }
+        guard let url = request.url, let answer = answers[url.absoluteString],
               let response = HTTPURLResponse(url: url, statusCode: answer.status, httpVersion: "HTTP/1.1", headerFields: answer.headers) else {
             throw URLError(.notConnectedToInternet)
         }
