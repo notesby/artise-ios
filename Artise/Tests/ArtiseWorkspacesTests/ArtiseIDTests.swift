@@ -101,7 +101,7 @@ struct ArtiseIDTests {
     /// RFC 7636's example: the S256 challenge for its verifier.
     @Test
     func pkceChallenge() {
-        #expect(PKCE.challenge(verifier: "dBjftJeZ4CVP-mJ92K9qXJ3qdIUu8pIiZ1-6YoG1Q0o") == "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM")
+        #expect(PKCE.challenge(verifier: "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk") == "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM")
     }
     #endif
     
