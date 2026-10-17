@@ -92,6 +92,12 @@ struct NotesFolderScreen: View {
         }
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
+                Button { route = .search(roomID: roomID) } label: {
+                    CompoundIcon(\.search)
+                }
+                .accessibilityLabel(ArtiseNotesL10n.text("a11y_notes_search"))
+            }
+            ToolbarItem(placement: .primaryAction) {
                 Menu {
                     Button { route = .map(roomID: roomID) } label: {
                         Label(ArtiseNotesL10n.text("screen_notes_map"), icon: \.share)
