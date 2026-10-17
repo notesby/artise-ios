@@ -81,6 +81,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 | `AppSettings.swift` (`artiseUseOAuthClient`, `oAuthStaticRegistrations` settable) | A workspace with its own app client (`co.artise.workspace.oauth`) signs in with it and returns to `https://join.artise.co/oauth`, so its sign-in page skips the consent screen. |
 | `AuthenticationFlowCoordinator.swift` (start screen) | The first screen is `ArtiseStartScreenCoordinator`: Artise ID (Apple, Google, Microsoft, email) and the person's workspaces. It shows Element's start screen when Artise ID isn't available or for a provisioning link. |
 | `LoginScreen.swift`, `HomeScreen.swift` | The workspace's logo and name on the sign-in screen and in the home top bar (`ArtiseWorkspaces`). |
+| `UnitTests/Sources/TimelineViewModelTests.swift` | Compares a reworded text with the string table instead of Element's English. |
 | `SettingsScreen.swift` (sign-out row), `UserSessionFlowCoordinator.swift` (sign-out confirmation) | "Sign out of {workspace}", what happens, and that Artise ID signs out too (`ArtiseSignOutText`). |
 | `SettingsScreen.swift` | Artise's own Settings rows (`ArtiseSettingsSection`): Security, for Artise ID's two-step verification, and Help (the workspace's help page, writing to its admin). |
 | `HomeScreenContent.swift` | Ari pinned at the top of the chat list (`ArtiseAssistantRow`), when the workspace file names Ari's account, and the "What's new" card after an update (`ArtiseWhatsNew`). |
