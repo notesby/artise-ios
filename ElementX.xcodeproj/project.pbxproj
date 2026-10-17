@@ -1306,6 +1306,7 @@
 		C6C06DDA8881260303FBA3A0 /* Date.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2141693488CE5446BB391964 /* Date.swift */; };
 		C76892321558E75101E68ED6 /* ReadableFrameModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 398817652FA8ABAE0A31AC6D /* ReadableFrameModifier.swift */; };
 		C7774720A4B2E34693E3227C /* RoomNotificationSettingsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8896CDD20CA2D87EA3B848A1 /* RoomNotificationSettingsScreen.swift */; };
+		C7939F317D320AADD1DFA444 /* ArtiseWhatsNew.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B348918D2DC87BFB3481B0C /* ArtiseWhatsNew.swift */; };
 		C797C0B4CF45C66CD1921252 /* SoftLogoutScreenViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC43313F21511C853D34544E /* SoftLogoutScreenViewModelTests.swift */; };
 		C7ABEBECDC513F7887DACF66 /* ProgressMaskModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68010886142843705E342645 /* ProgressMaskModifier.swift */; };
 		C7CEFC1FB0547CFC8F5C84EF /* Room.swift in Sources */ = {isa = PBXBuildFile; fileRef = D78C13EF5035879B6131030F /* Room.swift */; };
@@ -2196,6 +2197,7 @@
 		3AA9E2B1B5038DCABADA7D92 /* ContentScannerServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentScannerServiceProtocol.swift; sourceTree = "<group>"; };
 		3AB34956C87731AB094DB33A /* URLTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLTests.swift; sourceTree = "<group>"; };
 		3AD253E7EFF88F308D644272 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/SAS.strings"; sourceTree = "<group>"; };
+		3B348918D2DC87BFB3481B0C /* ArtiseWhatsNew.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArtiseWhatsNew.swift; sourceTree = "<group>"; };
 		3B5E97E9615A158C76B2AB77 /* DateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateTests.swift; sourceTree = "<group>"; };
 		3BAC027034248429A438886B /* AppMediatorMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppMediatorMock.swift; sourceTree = "<group>"; };
 		3BC1B7CB061C9865B2B91B56 /* QRCodeLoginScreenViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRCodeLoginScreenViewModel.swift; sourceTree = "<group>"; };
@@ -6005,6 +6007,7 @@
 				72E4AB98C9D94325B130BEDD /* ArtiseAppHooks.swift */,
 				BD3A26FF1E1D478C9AE3893A /* ArtiseAppSettingsHook.swift */,
 				F47B9CD0270A43FF2CD1262C /* ArtiseCrashReports.swift */,
+				3B348918D2DC87BFB3481B0C /* ArtiseWhatsNew.swift */,
 				75523D30A91769D7F5B6608F /* Analytics */,
 				EC02D624FAD77BAFD576DB54 /* LinkPreviews */,
 				61A23FCB44A197347B9602A8 /* Notes */,
@@ -9126,6 +9129,7 @@
 				9153CC17C62087C1261395DC /* ArtiseStickerButton.swift in Sources */,
 				9D909A5278A2C27232670C56 /* ArtiseStickers.swift in Sources */,
 				3698AE35D065352354186E1B /* ArtiseUpdateNotice.swift in Sources */,
+				C7939F317D320AADD1DFA444 /* ArtiseWhatsNew.swift in Sources */,
 				E9AB3A393E990DB989A7C964 /* ArtiseWorkspacePresenter.swift in Sources */,
 				304B922567854A7D5E1028E9 /* ArtiseWorkspaceScreen.swift in Sources */,
 				DE52B3D91AE9527E49BB316E /* ArtiseWorkspaceSignInStarter.swift in Sources */,
