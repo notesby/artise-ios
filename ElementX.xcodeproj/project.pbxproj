@@ -110,6 +110,7 @@
 		0EBF0A411E1C46D4BFA2B087 /* ManageAuthorizedSpacesScreenCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB9CD3A0A39BC063438E12D4 /* ManageAuthorizedSpacesScreenCoordinator.swift */; };
 		0EEC614342F823E5BF966C2C /* AppLockTimerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A5B4CD611DE7E94F5BA87B2 /* AppLockTimerTests.swift */; };
 		0EF629A7FBF86E516A079E02 /* StickerPickerScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47517CE4AAE645017FDD5393 /* StickerPickerScreen.swift */; };
+		0F2636E7273DF93D128E0CF4 /* ArtiseSignOutText.swift in Sources */ = {isa = PBXBuildFile; fileRef = C654B9DD3DB0DD4D21971644 /* ArtiseSignOutText.swift */; };
 		0F6C8033FA60CFD36F7CA205 /* AppLockSetupPINScreenViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A019A12C866D64CF072024B9 /* AppLockSetupPINScreenViewModel.swift */; };
 		0F81DEE3E02A6549B20DF09A /* DeactivateAccountScreenViewModelProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 633924B26ACCD29C18BEF4E8 /* DeactivateAccountScreenViewModelProtocol.swift */; };
 		0FA03F5A33C0857231B32B44 /* ReportRoomScreenViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1FDB0B87D925AE830E32621 /* ReportRoomScreenViewModel.swift */; };
@@ -3055,6 +3056,7 @@
 		C5AEB5907E24092D741718AF /* ResolveVerifiedUserSendFailureScreenCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResolveVerifiedUserSendFailureScreenCoordinator.swift; sourceTree = "<group>"; };
 		C5CB64E711E86270B722FAF7 /* LiveLocationManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveLocationManagerTests.swift; sourceTree = "<group>"; };
 		C5F06F2F09B2EDD067DC2174 /* NotificationSettingsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationSettingsScreen.swift; sourceTree = "<group>"; };
+		C654B9DD3DB0DD4D21971644 /* ArtiseSignOutText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArtiseSignOutText.swift; sourceTree = "<group>"; };
 		C687844F60BFF532D49A994C /* AnalyticsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsTests.swift; sourceTree = "<group>"; };
 		C6A9F49B3EE59147AF2F70BB /* SeparatorRoomTimelineItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeparatorRoomTimelineItem.swift; sourceTree = "<group>"; };
 		C705E605EF57C19DBE86FFA1 /* PlaceholderAvatarImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaceholderAvatarImage.swift; sourceTree = "<group>"; };
@@ -7665,6 +7667,7 @@
 			children = (
 				25B3BB68BA12575FC3D2D28C /* ArtiseAssistantRow.swift */,
 				A1B748239D7E8D116815A0DE /* ArtiseIDSession.swift */,
+				C654B9DD3DB0DD4D21971644 /* ArtiseSignOutText.swift */,
 				1A826BF6EF6913B3EB2AFC61 /* ArtiseStartScreen.swift */,
 				7AC53C7BF36974E45DED9C27 /* ArtiseUpdateNotice.swift */,
 				3F67CBE86ECAD809B38F50A6 /* ArtiseWorkspacePresenter.swift */,
@@ -9115,6 +9118,7 @@
 				22A7CB516C2A39DBC901ADB3 /* ArtiseNotesService.swift in Sources */,
 				7A962087BE5D357B5A35BBED /* ArtiseSecurityScreen.swift in Sources */,
 				2833794F1855F4AA75FF72FB /* ArtiseSettingsSection.swift in Sources */,
+				0F2636E7273DF93D128E0CF4 /* ArtiseSignOutText.swift in Sources */,
 				4E983BD771084FF34A046857 /* ArtiseStartScreen.swift in Sources */,
 				9153CC17C62087C1261395DC /* ArtiseStickerButton.swift in Sources */,
 				9D909A5278A2C27232670C56 /* ArtiseStickers.swift in Sources */,
