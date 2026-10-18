@@ -19,7 +19,7 @@ final class ArtiseNotesService {
     private var followed: [String: TaskHandle] = [:]
     
     /// `nil` when the account's notes can't be opened on this phone (no key in the Keychain).
-    init?(clientProxy: ClientProxyProtocol) {
+    init?(clientProxy: ClientProxyProtocol, notesAPIURL: URL) {
         guard let sdkClient = (clientProxy as? ClientProxy)?.client else {
             MXLog.error("Artise notes need the SDK client")
             return nil
@@ -40,7 +40,8 @@ final class ArtiseNotesService {
                                      pendingDirectory: Self.directory(for: userID).appending(path: "pending"),
                                      convertPhoto: { NotesPhotoConverter.toJPEG($0, contentType: $1) },
                                      canPrefetch: { NotesPrefetchPolicy.shared.canPrefetch })
-        repository = NotesSyncEngine(api: NotesAPIClient(tokenSource: tokenSource),
+        // Each workspace runs its own notes API, at the address its workspace file gives.
+        repository = NotesSyncEngine(api: NotesAPIClient(baseURL: notesAPIURL, tokenSource: tokenSource),
                                      directory: Self.directory(for: userID),
                                      cipher: AESGCMNotesCipher(keyData: keyData),
                                      files: files,

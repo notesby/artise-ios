@@ -46,16 +46,8 @@ struct LoginScreen: View {
     
     /// The header containing the title and icon.
     var header: some View {
-        VStack(spacing: 8) {
-            BigIcon(icon: \.lockSolid)
-                .padding(.bottom, 8)
-            
-            Text(L10n.screenLoginTitleWithHomeserver(context.viewState.homeserver.accountProvider.serverNameOrBaseURL))
-                .font(.compound.headingMDBold)
-                .multilineTextAlignment(.center)
-                .foregroundColor(.compound.textPrimary)
-        }
-        .padding(.horizontal, 16)
+        // Artise: the workspace's logo and name, else the lock and the server as before (ArtiseWorkspaces).
+        ArtiseWorkspaceLoginHeader(serverName: context.viewState.homeserver.accountProvider.serverNameOrBaseURL)
     }
     
     /// The form with text fields for username and password, along with a submit button.

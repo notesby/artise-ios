@@ -50,7 +50,8 @@ struct HomeScreen: View {
         if let selectedSpace = context.viewState.selectedSpaceFilter {
             selectedSpace.room.name
         } else {
-            L10n.screenRoomlistMainSpaceTitle
+            // Artise: the workspace's name instead of "Chats".
+            ArtiseHomeTitle.text(default: L10n.screenRoomlistMainSpaceTitle)
         }
     }
     
@@ -64,6 +65,10 @@ struct HomeScreen: View {
                     .buttonStyle(.borderless)
                 
                 if #available(iOS 26, *) {
+                    // Artise: the workspace's logo before its name.
+                    if context.viewState.selectedSpaceFilter == nil {
+                        ArtiseHomeWorkspaceLogo()
+                    }
                     Text(title)
                         .font(isInSidebar ? .compound.bodyLGSemibold : .compound.headingLGBold)
                         .foregroundStyle(.compound.textPrimary)

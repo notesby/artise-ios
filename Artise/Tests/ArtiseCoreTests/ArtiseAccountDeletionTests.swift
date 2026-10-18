@@ -13,13 +13,14 @@ import Testing
 struct ArtiseAccountDeletionTests {
     let defaults = UserDefaults(suiteName: "artise-tests-\(UUID().uuidString)") ?? .standard
     let start = Date(timeIntervalSince1970: 1_790_000_000)
+    let page = URL(staticString: "https://chat.artise.co/account/delete")
     
     /// The page is in Spanish when the app is, and in English otherwise.
     @Test
     func pageFollowsTheLanguage() {
-        #expect(ArtiseAccountDeletion.pageURL(language: "es-MX").absoluteString == "https://chat.artise.co/account/delete?lang=es")
-        #expect(ArtiseAccountDeletion.pageURL(language: "en").absoluteString == "https://chat.artise.co/account/delete")
-        #expect(ArtiseAccountDeletion.pageURL(language: nil) == ArtiseAccountDeletion.pageURL)
+        #expect(ArtiseAccountDeletion.pageURL(page, language: "es-MX").absoluteString == "https://chat.artise.co/account/delete?lang=es")
+        #expect(ArtiseAccountDeletion.pageURL(page, language: "en").absoluteString == "https://chat.artise.co/account/delete")
+        #expect(ArtiseAccountDeletion.pageURL(page, language: nil) == page)
     }
     
     /// A sign-out soon after opening the page counts as the deletion, once.
