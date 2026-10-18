@@ -8,8 +8,9 @@ import ArtiseCore
 import Compound
 import SwiftUI
 
-/// Settings → Quiet hours for this workspace: notifications arrive without sound and without lighting the screen,
-/// on the chosen days and hours. Mentions and Ari's reminders can still ring.
+/// Settings → Quiet hours for this workspace, as on Android: notifications arrive without sound and without lighting
+/// the screen during a night window, and all weekend if chosen. Mentions and replies can still ring; Ari's reminders
+/// always do.
 struct ArtiseQuietHoursScreen: View {
     let userID: String
     @State private var hours: QuietHours
@@ -35,23 +36,23 @@ struct ArtiseQuietHoursScreen: View {
                 }
                 if hours.isOn {
                     Section {
-                        DatePicker(ArtiseWorkspacesL10n.text("screen_artise_quiet_hours_from"), selection: time(\.start), displayedComponents: .hourAndMinute)
-                        DatePicker(ArtiseWorkspacesL10n.text("screen_artise_quiet_hours_to"), selection: time(\.end), displayedComponents: .hourAndMinute)
-                    }
-                    Section {
-                        ForEach(Self.weekdays, id: \.self) { weekday in
-                            ListRow(label: .plain(title: Calendar.current.weekdaySymbols[weekday - 1].capitalized),
-                                    kind: .multiSelection(isSelected: hours.days.contains(weekday)) { toggle(weekday) })
+                        ForEach(windows.indices, id: \.self) { index in
+                            let window = windows[index]
+                            ListRow(label: .plain(title: Self.windowText(window)),
+                                    kind: .selection(isSelected: hours.start == window.start && hours.end == window.end) {
+                                        hours.start = window.start
+                                        hours.end = window.end
+                                    })
                         }
                     } header: {
-                        Text(ArtiseWorkspacesL10n.text("screen_artise_quiet_hours_days"))
+                        Text(ArtiseWorkspacesL10n.text("screen_artise_quiet_hours_hours"))
                             .compoundListSectionHeader()
                     }
                     Section {
+                        ListRow(label: .plain(title: ArtiseWorkspacesL10n.text("screen_artise_quiet_hours_weekend")),
+                                kind: .toggle($hours.wholeWeekend))
                         ListRow(label: .plain(title: ArtiseWorkspacesL10n.text("screen_artise_quiet_hours_mentions")),
                                 kind: .toggle($hours.allowsMentions))
-                        ListRow(label: .plain(title: ArtiseWorkspacesL10n.text("screen_artise_quiet_hours_reminders")),
-                                kind: .toggle($hours.allowsReminders))
                     }
                 }
             }
@@ -67,24 +68,18 @@ struct ArtiseQuietHoursScreen: View {
         .onChange(of: hours) { store.save(hours, userID: userID) }
     }
     
-    /// Monday first, as people in Mexico and Brazil read a week.
-    private static let weekdays = [2, 3, 4, 5, 6, 7, 1]
-    
-    private func toggle(_ weekday: Int) {
-        if hours.days.contains(weekday) {
-            hours.days.remove(weekday)
-        } else {
-            hours.days.insert(weekday)
-        }
+    /// Android's four windows, plus the saved one when an earlier build chose other times.
+    private var windows: [(start: Int, end: Int)] {
+        let saved = (start: hours.start, end: hours.end)
+        return QuietHours.windows.contains { $0 == saved } ? QuietHours.windows : QuietHours.windows + [saved]
     }
     
-    /// A time of day, kept as minutes after midnight.
-    private func time(_ keyPath: WritableKeyPath<QuietHours, Int>) -> Binding<Date> {
-        Binding {
-            Calendar.current.startOfDay(for: .now).addingTimeInterval(TimeInterval(hours[keyPath: keyPath] * 60))
-        } set: { date in
-            let parts = Calendar.current.dateComponents([.hour, .minute], from: date)
-            hours[keyPath: keyPath] = (parts.hour ?? 0) * 60 + (parts.minute ?? 0)
-        }
+    /// "De 22:00 a 07:00", with the same 24-hour times as Android.
+    private static func windowText(_ window: (start: Int, end: Int)) -> String {
+        String(format: ArtiseWorkspacesL10n.text("screen_artise_quiet_hours_window"), clock(window.start), clock(window.end))
+    }
+    
+    private static func clock(_ minute: Int) -> String {
+        String(format: "%02d:%02d", minute / 60, minute % 60)
     }
 }

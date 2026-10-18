@@ -43,6 +43,17 @@ public struct ChatSoundStore: Sendable {
         return (defaults?.dictionaryRepresentation().keys ?? [:].keys).filter { $0.hasPrefix(prefix) }.map { String($0.dropFirst(prefix.count)) }
     }
     
+    /// The chats of this account using a sound with this name, to send them back to Default when it's removed from
+    /// "Your sounds" (as on Android).
+    public func roomIDs(userID: String, usingSoundNamed label: String) -> [String] {
+        roomIDs(userID: userID).filter { roomID in
+            if case .file(_, label) = sound(userID: userID, roomID: roomID) {
+                return true
+            }
+            return false
+        }
+    }
+    
     /// The file a chat's sound is copied to: one per chat, so changing it never touches another chat's.
     public static func fileName(userID: String, roomID: String) -> String {
         "artise-chat-\(stableHash(userID + "|" + roomID)).caf"

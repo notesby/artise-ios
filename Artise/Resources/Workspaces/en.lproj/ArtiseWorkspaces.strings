@@ -88,12 +88,11 @@
 
 /* Settings → Quiet hours */
 "screen_artise_quiet_hours_title" = "Quiet hours";
-"screen_artise_quiet_hours_description" = "During these hours, this workspace's notifications arrive without sound and without lighting up the screen. You'll find them in Notification Center.";
-"screen_artise_quiet_hours_from" = "From";
-"screen_artise_quiet_hours_to" = "Until";
-"screen_artise_quiet_hours_days" = "Starting on";
-"screen_artise_quiet_hours_mentions" = "Still ring when someone mentions me";
-"screen_artise_quiet_hours_reminders" = "Still ring for Ari's reminders";
+"screen_artise_quiet_hours_description" = "This workspace’s notifications arrive without sound. Ari’s reminders still sound.";
+"screen_artise_quiet_hours_hours" = "Hours";
+"screen_artise_quiet_hours_window" = "From %1$@ to %2$@";
+"screen_artise_quiet_hours_weekend" = "All weekend";
+"screen_artise_quiet_hours_mentions" = "Let mentions and replies sound";
 
 /* A chat's own sound */
 "screen_artise_chat_sound" = "Sound";
@@ -102,6 +101,7 @@
 "screen_artise_chat_sound_none" = "No sound";
 "screen_artise_chat_sound_yours" = "Your sounds";
 "screen_artise_chat_sound_pick_file" = "Choose an audio file";
+"screen_artise_chat_sound_remove" = "Remove";
 "screen_artise_chat_sound_long_title" = "The sound is %1$@ long";
 "screen_artise_chat_sound_long_message" = "The first 30 seconds will be used.";
 "screen_artise_chat_sound_long_use" = "Use";

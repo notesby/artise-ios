@@ -52,6 +52,14 @@ nonisolated enum ArtiseChatSounds {
         }
     }
     
+    /// Removes a picked file from "Your sounds"; the account's chats that used it go back to Default, as on Android.
+    static func removeFromYourSounds(_ tone: NotificationTone, userID: String) throws {
+        try toneManager.deleteCustomTone(tone)
+        for roomID in store.roomIDs(userID: userID, usingSoundNamed: tone.label) {
+            reset(userID: userID, roomID: roomID)
+        }
+    }
+    
     /// A picked file's length, to warn before it's cut; `nil` when it can't be read.
     static func duration(of url: URL) -> TimeInterval? {
         guard let file = try? AVAudioFile(forReading: url), file.fileFormat.sampleRate > 0 else { return nil }

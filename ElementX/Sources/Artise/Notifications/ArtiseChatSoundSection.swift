@@ -69,6 +69,12 @@ struct ArtiseChatSoundPicker: View {
                 Section {
                     ForEach(customTones, id: \.self) { tone in
                         toneRow(tone)
+                            .swipeActions {
+                                Button(ArtiseWorkspacesL10n.text("screen_artise_chat_sound_remove"), role: .destructive) { remove(tone) }
+                            }
+                            .contextMenu {
+                                Button(ArtiseWorkspacesL10n.text("screen_artise_chat_sound_remove"), role: .destructive) { remove(tone) }
+                            }
                     }
                     ListRow(label: .action(title: ArtiseWorkspacesL10n.text("screen_artise_chat_sound_pick_file"), icon: \.plus),
                             kind: .button { isImporting = true })
@@ -145,6 +151,18 @@ struct ArtiseChatSoundPicker: View {
                 errorMessage = ArtiseWorkspacesL10n.text("screen_artise_chat_sound_error")
             }
         }
+    }
+    
+    /// Takes a picked file out of "Your sounds"; chats that used it go back to Default.
+    private func remove(_ tone: NotificationTone) {
+        do {
+            try ArtiseChatSounds.removeFromYourSounds(tone, userID: userID)
+        } catch {
+            MXLog.error("Couldn't remove the sound: \(error)")
+            errorMessage = ArtiseWorkspacesL10n.text("screen_artise_chat_sound_error")
+        }
+        customTones = ArtiseChatSounds.toneManager.customTones()
+        current = ArtiseChatSounds.store.sound(userID: userID, roomID: roomID)
     }
     
     private func row(_ title: String, isSelected: Bool, action: @escaping () -> Void) -> some View {

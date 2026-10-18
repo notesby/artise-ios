@@ -87,6 +87,7 @@
 		0AD8EF040A60D62F488C18B5 /* KnockRequestProxyMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F957320D0EB7D7B4E30C79D /* KnockRequestProxyMock.swift */; };
 		0AE0AB1952F186EB86719B4F /* HomeScreenRoomCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED044D00F2176681CC02CD54 /* HomeScreenRoomCell.swift */; };
 		0B05A35FF5D1ED9E8A0B41A7 /* AuthenticationStartScreenViewModelProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65DDCF8E41759890355ACBC /* AuthenticationStartScreenViewModelProtocol.swift */; };
+		0B46F1B440DADE6AADA28CD3 /* ArtiseKeepKeyCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BDA41E7889C25D2A9EDDE23 /* ArtiseKeepKeyCard.swift */; };
 		0B9436A91CFA658202400465 /* WaitingConfirmation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E21DC54FCC2A7F78532923F /* WaitingConfirmation.swift */; };
 		0B948D544060AF4AF0CF8E40 /* ArtiseChatSounds.swift in Sources */ = {isa = PBXBuildFile; fileRef = B747EE1324CF7F5D5BBFE724 /* ArtiseChatSounds.swift */; };
 		0BDA19079FD6E17C5AC62E22 /* RoomDetailsEditScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB06F22CFA34885B40976061 /* RoomDetailsEditScreen.swift */; };
@@ -938,6 +939,7 @@
 		8BD22815DC34D7F9E9C1F2FE /* PillUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = C537DE821FED94D23467B6C4 /* PillUtilities.swift */; };
 		8C050A8012E6078BEAEF5BC8 /* PillTextAttachmentData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 913C8E13B8B602C7B6C0C4AE /* PillTextAttachmentData.swift */; };
 		8C1A5ECAF895D4CAF8C4D461 /* AppActivityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F21ED7205048668BEB44A38 /* AppActivityView.swift */; };
+		8C490D88B9698D9ED9027173 /* ArtiseKeyboardAppearance.swift in Sources */ = {isa = PBXBuildFile; fileRef = F75F021EAD01BFFBD15C4237 /* ArtiseKeyboardAppearance.swift */; };
 		8C706DA7EAC0974CA2F8F1CD /* MentionBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15748C254911E3654C93B0ED /* MentionBuilder.swift */; };
 		8C7B2D79E4F682F09B7BD235 /* ArtiseNotesServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0774963DD8DF97EB038025F3 /* ArtiseNotesServiceTests.swift */; };
 		8C91D242BEEC657FABCC0B95 /* BlockedUsersScreenModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8642512079EEFD622E3AA66B /* BlockedUsersScreenModels.swift */; };
@@ -1479,6 +1481,7 @@
 		E26E702F325F0AA49B8A5CFD /* RoomPowerLevelsProxyMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = E944F717FC10A428D027074D /* RoomPowerLevelsProxyMock.swift */; };
 		E27C4D1A1F8BB77CA790B403 /* InviteUsersScreenCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A861DA5932B128FE1DCB5CE2 /* InviteUsersScreenCoordinator.swift */; };
 		E290C78E7F09F47FD2662986 /* Task.swift in Sources */ = {isa = PBXBuildFile; fileRef = A40C19719687984FD9478FBE /* Task.swift */; };
+		E2A78BA370D03F59C70F4DB9 /* ArtiseRecoveryKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED271D78BE1A31183BCC19D5 /* ArtiseRecoveryKeys.swift */; };
 		E2D57361B835E4D2230960E6 /* ImageRoomTimelineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5599255A6C98EBDA77B76E6 /* ImageRoomTimelineView.swift */; };
 		E2DB696117BAEABAD5718023 /* MediaSourceProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = D49B9785E3AD7D1C15A29F2F /* MediaSourceProxy.swift */; };
 		E2DDA49BD62F03F180A42E30 /* MapLibreStaticMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 592A35163B0749C66BFD6186 /* MapLibreStaticMapView.swift */; };
@@ -2120,6 +2123,7 @@
 		2B9BCACD0CC4CB8E37F17732 /* lt */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = lt; path = lt.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
 		2BA894BC09972DC45E497D37 /* TimelineInteractionHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineInteractionHandler.swift; sourceTree = "<group>"; };
 		2BB385E148DE55C85C0A02D6 /* SoftLogoutScreenModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoftLogoutScreenModels.swift; sourceTree = "<group>"; };
+		2BDA41E7889C25D2A9EDDE23 /* ArtiseKeepKeyCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArtiseKeepKeyCard.swift; sourceTree = "<group>"; };
 		2BDB3E65A79779EDA5D33D8A /* AudioPlayerState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioPlayerState.swift; sourceTree = "<group>"; };
 		2BFDCA5A09EE70BC17F2EFA7 /* URLComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLComponents.swift; sourceTree = "<group>"; };
 		2C39B1D3FC8CF41D6C3B054F /* NavigationTabCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationTabCoordinator.swift; sourceTree = "<group>"; };
@@ -2363,6 +2367,7 @@
 		53482ECA4B6633961EC224F5 /* ScrollViewAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScrollViewAdapter.swift; sourceTree = "<group>"; };
 		5351EBD7A0B9610548E4B7B2 /* EncryptedRoomTimelineItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncryptedRoomTimelineItem.swift; sourceTree = "<group>"; };
 		536E72DCBEEC4A1FE66CFDCE /* target.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = target.yml; sourceTree = "<group>"; };
+		53C58D59EB21BD6BD14E71C5 /* pt */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = pt; path = pt.lproj/ArtiseNotes.stringsdict; sourceTree = "<group>"; };
 		53C65A839BC897F6C236E8A5 /* TimelineInteractionHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineInteractionHandlerTests.swift; sourceTree = "<group>"; };
 		53D4EE9E5F3E5BF651869242 /* NativeCallStackTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeCallStackTests.swift; sourceTree = "<group>"; };
 		53F41CEAAE2BB4E74CDC2278 /* TimelineMediaPreviewViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineMediaPreviewViewModel.swift; sourceTree = "<group>"; };
@@ -2671,6 +2676,7 @@
 		85EB16E7FE59A947CA441531 /* MediaProviderProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaProviderProtocol.swift; sourceTree = "<group>"; };
 		8610C1D21565C950BCA6A454 /* AppLockSetupSettingsScreenViewModelProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLockSetupSettingsScreenViewModelProtocol.swift; sourceTree = "<group>"; };
 		86376BEE425704AEE197CA54 /* PillContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PillContext.swift; sourceTree = "<group>"; };
+		86402CA447A04AEF68125445 /* pt */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pt; path = pt.lproj/ArtiseStickers.strings; sourceTree = "<group>"; };
 		8642512079EEFD622E3AA66B /* BlockedUsersScreenModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockedUsersScreenModels.swift; sourceTree = "<group>"; };
 		867DC9530C42F7B5176BE465 /* JoinedRoomProxyMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinedRoomProxyMock.swift; sourceTree = "<group>"; };
 		869A8A4632E511351BFE2EC4 /* JoinRoomScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinRoomScreen.swift; sourceTree = "<group>"; };
@@ -3195,6 +3201,7 @@
 		DADECBBB672497BCD4822468 /* Result.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Result.swift; sourceTree = "<group>"; };
 		DB06F22CFA34885B40976061 /* RoomDetailsEditScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomDetailsEditScreen.swift; sourceTree = "<group>"; };
 		DB08D1F7C27A8C24EF81073C /* MapURLs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapURLs.swift; sourceTree = "<group>"; };
+		DB4D330E3757B403EB613512 /* pt.lproj */ = {isa = PBXFileReference; path = pt.lproj; sourceTree = "<group>"; };
 		DB67A042079F7B250A62C8FB /* vi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = vi; path = vi.lproj/SAS.strings; sourceTree = "<group>"; };
 		DB6F137B69DCB59353E37B80 /* TimelineItemKeyForwarder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineItemKeyForwarder.swift; sourceTree = "<group>"; };
 		DB9292E3516E65DED7130684 /* HomeserverHistoryManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeserverHistoryManagerTests.swift; sourceTree = "<group>"; };
@@ -3308,6 +3315,7 @@
 		ED0CBEAB5F796BEFBAF7BB6A /* VideoRoomTimelineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoRoomTimelineView.swift; sourceTree = "<group>"; };
 		ED1D792EB82506A19A72C8DE /* RoomTimelineItemProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomTimelineItemProtocol.swift; sourceTree = "<group>"; };
 		ED25719E19B205B668FDACFF /* UserToInvite.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserToInvite.swift; sourceTree = "<group>"; };
+		ED271D78BE1A31183BCC19D5 /* ArtiseRecoveryKeys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArtiseRecoveryKeys.swift; sourceTree = "<group>"; };
 		ED33988DA4FD4FC666800106 /* SessionVerificationScreenViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionVerificationScreenViewModel.swift; sourceTree = "<group>"; };
 		ED482057AE39D5C6D9C5F3D8 /* message.caf */ = {isa = PBXFileReference; path = message.caf; sourceTree = "<group>"; };
 		ED49073BB1C1FC649DAC2CCD /* LocationRoomTimelineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationRoomTimelineView.swift; sourceTree = "<group>"; };
@@ -3377,6 +3385,7 @@
 		F70373EF23A73181D2568D79 /* SyncServiceBuilderSDKMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncServiceBuilderSDKMock.swift; sourceTree = "<group>"; };
 		F70CE73212EE10D98643B114 /* ArtiseSettingsSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArtiseSettingsSection.swift; sourceTree = "<group>"; };
 		F72EFC8C634469F9262659C7 /* NSItemProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSItemProvider.swift; sourceTree = "<group>"; };
+		F75F021EAD01BFFBD15C4237 /* ArtiseKeyboardAppearance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArtiseKeyboardAppearance.swift; sourceTree = "<group>"; };
 		F78B4E56DBFFD4A7A39D10F5 /* AudioPlaybackSpeed.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioPlaybackSpeed.swift; sourceTree = "<group>"; };
 		F7E247E29C7A0E421DB839D7 /* RoomPowerLevel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomPowerLevel.swift; sourceTree = "<group>"; };
 		F875D71347DC81EAE7687446 /* NavigationRootCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationRootCoordinatorTests.swift; sourceTree = "<group>"; };
@@ -4411,6 +4420,15 @@
 				1A18F6CE4D694D21E4EA9B25 /* Strings+Untranslated.swift */,
 			);
 			path = Generated;
+			sourceTree = "<group>";
+		};
+		33B98641352296483A68088D /* Security */ = {
+			isa = PBXGroup;
+			children = (
+				2BDA41E7889C25D2A9EDDE23 /* ArtiseKeepKeyCard.swift */,
+				ED271D78BE1A31183BCC19D5 /* ArtiseRecoveryKeys.swift */,
+			);
+			path = Security;
 			sourceTree = "<group>";
 		};
 		349FE0C25B41C7AC9B7C623F /* EffectsScene */ = {
@@ -6014,11 +6032,13 @@
 				72E4AB98C9D94325B130BEDD /* ArtiseAppHooks.swift */,
 				BD3A26FF1E1D478C9AE3893A /* ArtiseAppSettingsHook.swift */,
 				F47B9CD0270A43FF2CD1262C /* ArtiseCrashReports.swift */,
+				F75F021EAD01BFFBD15C4237 /* ArtiseKeyboardAppearance.swift */,
 				3B348918D2DC87BFB3481B0C /* ArtiseWhatsNew.swift */,
 				75523D30A91769D7F5B6608F /* Analytics */,
 				EC02D624FAD77BAFD576DB54 /* LinkPreviews */,
 				61A23FCB44A197347B9602A8 /* Notes */,
 				EBEFCC9C61B731B387D034DE /* Notifications */,
+				33B98641352296483A68088D /* Security */,
 				5C3D7D07072B17FD4B79F8AF /* Settings */,
 				F3C9820365EF77C5F5D3DA65 /* Stickers */,
 				F179D1B8E36F1DCBBCA88089 /* Workspaces */,
@@ -7350,6 +7370,7 @@
 			children = (
 				2E0F6879469C7C77D8AB8DB4 /* en.lproj */,
 				286F3064E37473499F2795AA /* es.lproj */,
+				DB4D330E3757B403EB613512 /* pt.lproj */,
 			);
 			path = SupportingFiles;
 			sourceTree = "<group>";
@@ -9134,6 +9155,8 @@
 				CAD547A1958E4F4F365C238C /* ArtiseComposerLinkPreview.swift in Sources */,
 				D01C1874B2C61A93842B520C /* ArtiseCrashReports.swift in Sources */,
 				7B9B07AD1692EAAF219CE961 /* ArtiseIDSession.swift in Sources */,
+				0B46F1B440DADE6AADA28CD3 /* ArtiseKeepKeyCard.swift in Sources */,
+				8C490D88B9698D9ED9027173 /* ArtiseKeyboardAppearance.swift in Sources */,
 				82B481FB863E613A11C904F0 /* ArtiseLinkPreviewCard.swift in Sources */,
 				8E375A8F523A01029E733052 /* ArtiseLinkPreviews.swift in Sources */,
 				51B9A943F6764C1E59E739A2 /* ArtiseNotes.swift in Sources */,
@@ -9142,6 +9165,7 @@
 				FB97FD795EAFEE572582DB5B /* ArtiseNotesL10n.swift in Sources */,
 				22A7CB516C2A39DBC901ADB3 /* ArtiseNotesService.swift in Sources */,
 				FA094751B7B5A1A702218F4B /* ArtiseQuietHoursScreen.swift in Sources */,
+				E2A78BA370D03F59C70F4DB9 /* ArtiseRecoveryKeys.swift in Sources */,
 				7A962087BE5D357B5A35BBED /* ArtiseSecurityScreen.swift in Sources */,
 				2833794F1855F4AA75FF72FB /* ArtiseSettingsSection.swift in Sources */,
 				0F2636E7273DF93D128E0CF4 /* ArtiseSignOutText.swift in Sources */,
@@ -10460,6 +10484,7 @@
 			children = (
 				E7417384368F664297CC8AF3 /* en */,
 				E9A254AEDBCFD440BBFCAE9D /* es */,
+				86402CA447A04AEF68125445 /* pt */,
 			);
 			name = ArtiseStickers.strings;
 			sourceTree = "<group>";
@@ -10563,6 +10588,7 @@
 			children = (
 				1BFC25FE0C36736F5C45F3CA /* en */,
 				2179EDE69C06C8F6C405F98F /* es */,
+				53C58D59EB21BD6BD14E71C5 /* pt */,
 			);
 			name = ArtiseNotes.stringsdict;
 			sourceTree = "<group>";
