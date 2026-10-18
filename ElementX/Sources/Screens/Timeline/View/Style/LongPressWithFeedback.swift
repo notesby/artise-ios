@@ -6,6 +6,7 @@
 // Please see LICENSE files in the repository root for full details.
 //
 
+import ArtiseCore
 import SwiftUI
 
 struct LongPressWithFeedback: ViewModifier {
@@ -46,7 +47,8 @@ struct LongPressWithFeedback: ViewModifier {
         
         triggerTask = Task {
             // The wait time needs to be at least 0.5 seconds or the long press gesture will take precedence over long pressing links.
-            try? await Task.sleep(for: .seconds(0.5))
+            // Artise: 250 ms in all, as in the Android app (see ArtiseTimeline).
+            try? await Task.sleep(for: .milliseconds(ArtiseTimeline.extraWaitMilliseconds))
             
             if Task.isCancelled {
                 return
