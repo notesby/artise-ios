@@ -86,13 +86,19 @@
 "screen_artise_whats_new_3" = "As notas se atualizam sozinhas quando você abre o app, e agora dá para pesquisá-las.";
 "screen_artise_whats_new_done" = "Entendi";
 
-/* Settings → Quiet hours */
-"screen_artise_quiet_hours_title" = "Silenciar fora do horário";
-"screen_artise_quiet_hours_description" = "As notificações deste espaço de trabalho chegam sem som. Os lembretes do Ari continuam tocando.";
-"screen_artise_quiet_hours_hours" = "Horário";
-"screen_artise_quiet_hours_window" = "Das %1$@ às %2$@";
-"screen_artise_quiet_hours_weekend" = "O fim de semana todo";
-"screen_artise_quiet_hours_mentions" = "Tocar menções e respostas";
+/* Settings → Notification hours */
+"screen_artise_notification_hours_title" = "Horário das notificações";
+"screen_artise_notification_hours_description" = "Fora deste horário, as notificações deste espaço de trabalho chegam sem som. Os lembretes do Ari sempre tocam.";
+"screen_artise_notification_hours_days" = "Dias";
+"screen_artise_notification_hours_every_day" = "Todos os dias";
+"screen_artise_notification_hours_weekdays" = "De segunda a sexta";
+"screen_artise_notification_hours_custom" = "Personalizado";
+"screen_artise_notification_hours_weekdays_footer" = "No sábado e no domingo, as notificações chegam sem som.";
+"screen_artise_notification_hours_custom_footer" = "Num dia desligado, as notificações chegam sem som. Se “Até” for antes de “De”, o horário passa da meia-noite.";
+"screen_artise_notification_hours_hours" = "Horário";
+"screen_artise_notification_hours_from" = "De";
+"screen_artise_notification_hours_until" = "Até";
+"screen_artise_notification_hours_mentions" = "Menções e respostas sempre tocam";
 
 /* A chat's own sound */
 "screen_artise_chat_sound" = "Som";
