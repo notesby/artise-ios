@@ -9,48 +9,58 @@ import Foundation
 import UserNotifications
 #endif
 
-/// A workspace's quiet hours: during them its notifications still arrive, but without sound and without lighting the
-/// screen (iOS can't hide them without Apple's filtering permission). Mentions and Ari's reminders can still ring.
+/// A workspace's quiet hours, as on Android: during them its notifications still arrive, but without sound and without
+/// lighting the screen (iOS can't hide them without Apple's filtering permission). A night window every day, and the
+/// whole weekend if chosen. Mentions and replies can still ring; Ari's reminders always do.
 public struct QuietHours: Codable, Equatable, Sendable {
     public var isOn: Bool
     /// Minutes after midnight; `start` after `end` means overnight (22:00–07:00).
     public var start: Int
     public var end: Int
-    /// `Calendar` weekdays (1 = Sunday … 7 = Saturday) on which quiet hours begin.
-    public var days: Set<Int>
+    /// Saturday and Sunday are quiet all day.
+    public var wholeWeekend: Bool
+    /// Mentions and replies (the same "mention" the server marks) still ring.
     public var allowsMentions: Bool
-    public var allowsReminders: Bool
     
-    public init(isOn: Bool = false, start: Int = 22 * 60, end: Int = 7 * 60, days: Set<Int> = Set(1...7),
-                allowsMentions: Bool = true, allowsReminders: Bool = true) {
+    /// The night windows to choose from, the same as Android's.
+    public static let windows: [(start: Int, end: Int)] = [(20 * 60, 8 * 60), (21 * 60, 8 * 60), (22 * 60, 7 * 60), (23 * 60, 7 * 60)]
+    
+    public init(isOn: Bool = false, start: Int = 22 * 60, end: Int = 7 * 60, wholeWeekend: Bool = false, allowsMentions: Bool = true) {
         self.isOn = isOn
         self.start = start
         self.end = end
-        self.days = days
+        self.wholeWeekend = wholeWeekend
         self.allowsMentions = allowsMentions
-        self.allowsReminders = allowsReminders
     }
     
-    /// Whether `date` falls in quiet hours. Overnight hours belong to the day they begin on.
+    /// Hours saved by earlier builds (chosen days, a reminders switch) keep their switch and times.
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        try self.init(isOn: container.decodeIfPresent(Bool.self, forKey: .isOn) ?? false,
+                      start: container.decodeIfPresent(Int.self, forKey: .start) ?? 22 * 60,
+                      end: container.decodeIfPresent(Int.self, forKey: .end) ?? 7 * 60,
+                      wholeWeekend: container.decodeIfPresent(Bool.self, forKey: .wholeWeekend) ?? false,
+                      allowsMentions: container.decodeIfPresent(Bool.self, forKey: .allowsMentions) ?? true)
+    }
+    
+    /// Whether `date` falls in quiet hours: the night window, or any time on a weekend when chosen.
     public func isQuiet(at date: Date, calendar: Calendar = .current) -> Bool {
-        guard isOn, start != end else { return false }
+        guard isOn else { return false }
         let parts = calendar.dateComponents([.hour, .minute, .weekday], from: date)
-        let minute = (parts.hour ?? 0) * 60 + (parts.minute ?? 0)
-        let weekday = parts.weekday ?? 1
-        let yesterday = weekday == 1 ? 7 : weekday - 1
-        if start < end {
-            return days.contains(weekday) && minute >= start && minute < end
+        if wholeWeekend, parts.weekday == 1 || parts.weekday == 7 {
+            return true
         }
-        return (days.contains(weekday) && minute >= start) || (days.contains(yesterday) && minute < end)
+        let minute = (parts.hour ?? 0) * 60 + (parts.minute ?? 0)
+        if start <= end {
+            return minute >= start && minute < end
+        }
+        return minute >= start || minute < end
     }
     
-    /// Whether this notification is quietened now.
+    /// Whether this notification is quietened now. Ari's reminders never are.
     public func silences(at date: Date, isMention: Bool, isReminder: Bool, calendar: Calendar = .current) -> Bool {
-        guard isQuiet(at: date, calendar: calendar) else { return false }
-        if isMention, allowsMentions {
-            return false
-        }
-        return !(isReminder && allowsReminders)
+        guard !isReminder, !(isMention && allowsMentions) else { return false }
+        return isQuiet(at: date, calendar: calendar)
     }
 }
 
@@ -90,7 +100,7 @@ public struct QuietHoursStore: Sendable {
 
 #if canImport(UserNotifications)
 public extension UNMutableNotificationContent {
-    /// In quiet hours: no sound and no screen wake, unless it's a mention or a reminder that's allowed through.
+    /// In quiet hours: no sound and no screen wake, unless it's a reminder or an allowed mention.
     func applyArtiseQuietHours(_ hours: QuietHours, now: Date = .now, isMention: Bool, isReminder: Bool) {
         guard hours.silences(at: now, isMention: isMention, isReminder: isReminder) else { return }
         sound = nil

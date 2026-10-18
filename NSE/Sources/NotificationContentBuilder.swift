@@ -65,7 +65,7 @@ nonisolated struct NotificationContentBuilder {
         }
         // Artise: Ari's important and critical posts are Time Sensitive; critical ones always make a sound.
         notificationContent.applyArtiseAutomationLevel(artiseLevel, sound: .init(named: notificationSoundName))
-        // Artise: the workspace's quiet hours (no sound, no screen wake); mentions and reminders can still ring.
+        // Artise: the workspace's quiet hours (no sound, no screen wake); reminders and allowed mentions still ring.
         notificationContent.applyArtiseQuietHours(QuietHoursStore(suiteName: AppSettings.suiteName).load(userID: notificationItem.receiverID),
                                                   isMention: notificationItem.hasMention, isReminder: artiseLevel?.isReminder == true)
         

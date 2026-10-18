@@ -87,13 +87,12 @@
 "screen_artise_whats_new_done" = "Entendi";
 
 /* Settings → Quiet hours */
-"screen_artise_quiet_hours_title" = "Horário silencioso";
-"screen_artise_quiet_hours_description" = "Nesse horário, os avisos deste espaço de trabalho chegam sem som e sem acender a tela. Eles ficam na Central de Notificações.";
-"screen_artise_quiet_hours_from" = "Das";
-"screen_artise_quiet_hours_to" = "Até";
-"screen_artise_quiet_hours_days" = "Começa nos dias";
-"screen_artise_quiet_hours_mentions" = "Tocar mesmo assim quando me mencionarem";
-"screen_artise_quiet_hours_reminders" = "Tocar mesmo assim nos lembretes do Ari";
+"screen_artise_quiet_hours_title" = "Silenciar fora do horário";
+"screen_artise_quiet_hours_description" = "As notificações deste espaço de trabalho chegam sem som. Os lembretes do Ari continuam tocando.";
+"screen_artise_quiet_hours_hours" = "Horário";
+"screen_artise_quiet_hours_window" = "Das %1$@ às %2$@";
+"screen_artise_quiet_hours_weekend" = "O fim de semana todo";
+"screen_artise_quiet_hours_mentions" = "Tocar menções e respostas";
 
 /* A chat's own sound */
 "screen_artise_chat_sound" = "Som";
@@ -102,6 +101,7 @@
 "screen_artise_chat_sound_none" = "Sem som";
 "screen_artise_chat_sound_yours" = "Seus sons";
 "screen_artise_chat_sound_pick_file" = "Escolher um arquivo de áudio";
+"screen_artise_chat_sound_remove" = "Remover";
 "screen_artise_chat_sound_long_title" = "O som dura %1$@";
 "screen_artise_chat_sound_long_message" = "Serão usados os primeiros 30 segundos.";
 "screen_artise_chat_sound_long_use" = "Usar";
