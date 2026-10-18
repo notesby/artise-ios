@@ -40,7 +40,7 @@ public enum ArtiseConfiguration {
     }
 }
 
-extension URL {
+public extension URL {
     /// Builds a URL from a literal that is known to be valid at compile time.
     init(staticString: StaticString) {
         guard let url = URL(string: "\(staticString)") else {

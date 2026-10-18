@@ -16,7 +16,7 @@ missing=0
 
 while IFS= read -r file; do
     case "$file" in
-        *.swift|*.sh|*.yml|*.yaml|*.plist|*.md|*.py|*.strings|*.xcconfig) ;;
+        *.swift|*.sh|*.yml|*.yaml|*.plist|*.md|*.py|*.strings|*.stringsdict|*.xcconfig) ;;
         *) continue ;;
     esac
     if ! head -n 12 "$file" | grep -q "Copyright 2026 Artise\." ||

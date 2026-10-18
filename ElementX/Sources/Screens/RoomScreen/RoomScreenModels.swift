@@ -82,6 +82,9 @@ struct RoomScreenViewState: BindableState {
     
     var hasSuccessor: Bool
     
+    /// Artise: the room the notes button opens.
+    var artiseRoomID: String?
+    
     var displayedKnockRequests: [KnockRequestInfo] {
         unseenKnockRequests.filter { !handledEventIDs.contains($0.eventID) }
     }

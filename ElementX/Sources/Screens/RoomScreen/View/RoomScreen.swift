@@ -316,6 +316,9 @@ struct RoomScreen: View {
             }
         }
         
+        // Artise: the chat's notes, next to the call button.
+        ArtiseNotesToolbarItem(roomID: context.viewState.artiseRoomID)
+        
         if !ProcessInfo.processInfo.isiOSAppOnMac {
             if context.viewState.shouldShowCallButton {
                 RoomCallControlsToolbar(viewState: context.viewState) { isVoiceCall in

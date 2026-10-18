@@ -73,6 +73,9 @@ struct HomeScreen: View {
         }
         .backportSharedBackgroundVisibility(.hidden)
         
+        // Artise: notes, next to the new chat button.
+        ArtiseNotesToolbarItem(roomID: nil)
+        
         ToolbarItem(placement: .primaryAction) {
             if #available(iOS 26, *) {
                 newRoomButton

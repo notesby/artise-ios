@@ -169,6 +169,9 @@ struct RoomDetailsScreen: View {
                         context.send(viewAction: .processTapPolls)
                     })
                     .accessibilityIdentifier(A11yIdentifiers.roomDetailsScreen.pollsHistory)
+            
+            // Artise: the chat's notes.
+            ArtiseNotesListRow(roomID: context.viewState.details.id)
         }
     }
     
