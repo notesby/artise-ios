@@ -6,6 +6,7 @@
 // Please see LICENSE files in the repository root for full details.
 //
 
+import ArtiseCore
 import Foundation
 import Intents
 import MatrixRustSDK
@@ -50,6 +51,9 @@ nonisolated struct NotificationContentBuilder {
         
         MXLog.info("isNoisy: \(notificationItem.isNoisy)")
         notificationContent.sound = notificationItem.isNoisy ? .init(named: notificationSoundName) : nil
+        // Artise: Ari's important and critical posts are Time Sensitive; critical ones always make a sound.
+        notificationContent.applyArtiseAutomationLevel(ArtiseAutomationLevel(rawEvent: (notificationItem as? NotificationItemProxy)?.notificationItem.rawEvent),
+                                                       sound: .init(named: notificationSoundName))
         
         switch notificationItem.event {
         case .none:

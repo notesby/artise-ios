@@ -6,6 +6,7 @@
 // Please see LICENSE files in the repository root for full details.
 //
 
+import ArtiseCore
 import CallKit
 import MatrixRustSDK
 import Synchronization
@@ -61,7 +62,9 @@ nonisolated class NotificationHandler {
         case .processedShouldDiscard, .unsupportedShouldDiscard:
             discardNotification()
         case .shouldDisplay:
-            if settings.hideQuietNotificationAlerts, !notificationItemProxy.isNoisy {
+            // Artise: Ari's reminders show even when quiet notifications are hidden.
+            if settings.hideQuietNotificationAlerts, !notificationItemProxy.isNoisy,
+               ArtiseAutomationLevel(rawEvent: (notificationItemProxy as? NotificationItemProxy)?.notificationItem.rawEvent)?.isReminder != true {
                 discardNotification()
                 return
             }
