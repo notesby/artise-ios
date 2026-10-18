@@ -1647,6 +1647,7 @@
 		F99FB21EFC6D99D247FE7CBE /* SwiftState in Frameworks */ = {isa = PBXBuildFile; productRef = 19CD5B074D7DD44AF4C58BB6 /* SwiftState */; };
 		F9E5FF20B50705EB13137778 /* SpaceAddRoomsScreenViewModelProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59EBB553F8EFDD149742DC70 /* SpaceAddRoomsScreenViewModelProtocol.swift */; };
 		F9EA79092C18A8CFE4922DD2 /* PollFormScreenViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F64A8582F65567AC38C2976A /* PollFormScreenViewModel.swift */; };
+		FA094751B7B5A1A702218F4B /* ArtiseQuietHoursScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 971814DA8E1A261B1F8DD4C6 /* ArtiseQuietHoursScreen.swift */; };
 		FA2BBAE9FC5E2E9F960C0980 /* NavigationCoordinators.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8F28602AC7AC881AED37EBA /* NavigationCoordinators.swift */; };
 		FA53FA227FFBE469AFF32F71 /* TimelineControllerProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6C585CE1F721A2770C70D47 /* TimelineControllerProtocol.swift */; };
 		FA5A7E32B1920FCB4EEDC1BA /* RoomDetailsScreenCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6493AC9979CEB1410302BFE3 /* RoomDetailsScreenCoordinator.swift */; };
@@ -2758,6 +2759,7 @@
 		964093C7CA8823CAB7FFD88E /* UserIdentityProxy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserIdentityProxy.swift; sourceTree = "<group>"; };
 		969694F67E844FCA51F7E051 /* sv */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sv; path = sv.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		96C4762F8D6112E43117DB2F /* CustomStringConvertible.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomStringConvertible.swift; sourceTree = "<group>"; };
+		971814DA8E1A261B1F8DD4C6 /* ArtiseQuietHoursScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArtiseQuietHoursScreen.swift; sourceTree = "<group>"; };
 		97287090CA64DAA95386ECED /* ResolveVerifiedUserSendFailureScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResolveVerifiedUserSendFailureScreen.swift; sourceTree = "<group>"; };
 		974AEAF3FE0C577A6C04AD6E /* RoomPermissions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomPermissions.swift; sourceTree = "<group>"; };
 		976ED77B772F50C4BAD757E7 /* MediaEventsTimelineScreenViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaEventsTimelineScreenViewModel.swift; sourceTree = "<group>"; };
@@ -5155,6 +5157,7 @@
 		5C3D7D07072B17FD4B79F8AF /* Settings */ = {
 			isa = PBXGroup;
 			children = (
+				971814DA8E1A261B1F8DD4C6 /* ArtiseQuietHoursScreen.swift */,
 				247399D280D57C6A0929AF84 /* ArtiseSecurityScreen.swift */,
 				F70CE73212EE10D98643B114 /* ArtiseSettingsSection.swift */,
 			);
@@ -9122,6 +9125,7 @@
 				B2B35A129DCBAA72A8D04BD6 /* ArtiseNotesFileSupport.swift in Sources */,
 				FB97FD795EAFEE572582DB5B /* ArtiseNotesL10n.swift in Sources */,
 				22A7CB516C2A39DBC901ADB3 /* ArtiseNotesService.swift in Sources */,
+				FA094751B7B5A1A702218F4B /* ArtiseQuietHoursScreen.swift in Sources */,
 				7A962087BE5D357B5A35BBED /* ArtiseSecurityScreen.swift in Sources */,
 				2833794F1855F4AA75FF72FB /* ArtiseSettingsSection.swift in Sources */,
 				0F2636E7273DF93D128E0CF4 /* ArtiseSignOutText.swift in Sources */,

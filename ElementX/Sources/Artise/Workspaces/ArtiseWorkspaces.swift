@@ -126,11 +126,17 @@ final class ArtiseWorkspaces {
         if let serverName = WorkspaceHosts.serverName(userID: userID) {
             store.remove(serverName: serverName)
         }
+        ArtiseQuietHoursScreen.store.remove(userID: userID)
         current = nil
         userSession = nil
         foregroundObserver = nil
         // Artise signs in to one workspace at a time, so this was the last one.
         ArtiseIDSession.shared.forget()
+    }
+    
+    /// The signed-in account, for settings kept per workspace (quiet hours).
+    var userID: String? {
+        userSession?.clientProxy.userID
     }
     
     /// "Prueba MAS isn't answering. Your messages will go out when it's back."; `nil` without a workspace name.

@@ -85,3 +85,12 @@
 "screen_artise_whats_new_2" = "O Ari fica fixo no topo das suas conversas, e as Configurações têm Ajuda e Segurança.";
 "screen_artise_whats_new_3" = "As notas se atualizam sozinhas quando você abre o app, e agora dá para pesquisá-las.";
 "screen_artise_whats_new_done" = "Entendi";
+
+/* Settings → Quiet hours */
+"screen_artise_quiet_hours_title" = "Horário silencioso";
+"screen_artise_quiet_hours_description" = "Nesse horário, os avisos deste espaço de trabalho chegam sem som e sem acender a tela. Eles ficam na Central de Notificações.";
+"screen_artise_quiet_hours_from" = "Das";
+"screen_artise_quiet_hours_to" = "Até";
+"screen_artise_quiet_hours_days" = "Começa nos dias";
+"screen_artise_quiet_hours_mentions" = "Tocar mesmo assim quando me mencionarem";
+"screen_artise_quiet_hours_reminders" = "Tocar mesmo assim nos lembretes do Ari";

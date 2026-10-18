@@ -85,3 +85,12 @@
 "screen_artise_whats_new_2" = "Ari aparece fijo arriba en tus chats, y en Ajustes tienes Ayuda y Seguridad.";
 "screen_artise_whats_new_3" = "Las notas se actualizan solas al abrir la app, y ahora puedes buscarlas.";
 "screen_artise_whats_new_done" = "Entendido";
+
+/* Settings → Quiet hours */
+"screen_artise_quiet_hours_title" = "Horario silencioso";
+"screen_artise_quiet_hours_description" = "En este horario, los avisos de este espacio de trabajo llegan sin sonido y sin encender la pantalla. Los encuentras en el Centro de notificaciones.";
+"screen_artise_quiet_hours_from" = "Desde";
+"screen_artise_quiet_hours_to" = "Hasta";
+"screen_artise_quiet_hours_days" = "Empieza los días";
+"screen_artise_quiet_hours_mentions" = "Avisar con sonido si me mencionan";
+"screen_artise_quiet_hours_reminders" = "Avisar con sonido los recordatorios de Ari";
