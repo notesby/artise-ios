@@ -91,6 +91,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 | `UserSessionFlowCoordinator.swift` (reachability) | "{workspace} isn't answering. Your messages will go out when it's back." instead of Element's server message. |
 | `SettingsScreenViewModel.swift` (`showLinkNewDeviceButton`) | Link new device shows where the workspace's server supports QR sign-in (MSC4108), not only with the developer flag. |
 | `AppCoordinator.swift` (`handleBackgroundAppRefresh`) | Element's background refresh also syncs the notes of the chats on the phone (`ArtiseNotes.syncKnownChats`). |
+| `AppCoordinator.swift` (init) | Starts `ArtiseKeyboardAppearance`: after the app comes back, the keyboard's window gets the app's forced light or dark appearance, so it isn't half light and half dark. |
 | `AppCoordinator.swift` (`setupSentry`) | Crash reports without breadcrumbs, performance traces or failed-request capture (`ArtiseCrashReports`). |
 | `NotificationManager.swift`, `ClientProxy.swift` (`setPusher`) | The pusher goes to the workspace's push gateway (default `push.artise.co`), with `append: true` so other accounts' pushers on the phone stay. |
 | `AppCoordinator.swift` (`handleDeepLink`), `UserSessionStore.swift`, `SettingsScreenViewModel.swift` | Invite links (`join.artise.co`), forgetting the workspace's look on sign-out, and Delete account on the workspace's `links.delete_account` page (hidden without one). |
