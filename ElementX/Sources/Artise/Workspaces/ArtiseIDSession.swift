@@ -17,6 +17,8 @@ final class ArtiseIDSession {
     
     /// Artise ID's security page, once the sign-in answer has been read; Settings → Security shows only with it.
     private(set) var securityURL: URL?
+    /// Whether Artise ID tokens are kept on this phone: signing out then also signs out of Artise ID.
+    private(set) var isSignedIn = false
     
     @ObservationIgnored let client: ArtiseIDClient
     /// The tokens, kept to read the list and the security settings again; given back when the person signs out.
@@ -39,7 +41,9 @@ final class ArtiseIDSession {
     
     /// Whether the person signed in with Artise ID on this phone and it's still usable without a new sign-in.
     func hasTokens() async -> Bool {
-        await tokens.hasTokens
+        let hasTokens = await tokens.hasTokens
+        isSignedIn = hasTokens
+        return hasTokens
     }
     
     /// The browser sign-in (straight to a provider, or Artise ID's own page), then the person's workspaces.
@@ -77,6 +81,7 @@ final class ArtiseIDSession {
         switch await client.tokens(code: code, authorization: authorization, configuration: configuration, endpoints: endpoints) {
         case .success(let received):
             await tokens.keep(received)
+            isSignedIn = true
             return .success(received.accessToken)
         case .failure(let error):
             MXLog.error("Artise ID tokens failed: \(error)")
@@ -106,6 +111,7 @@ final class ArtiseIDSession {
     
     /// Called when the person signs out of their last workspace, or picks another way to sign in.
     func forget() {
+        isSignedIn = false
         Task { await tokens.forget() }
     }
     

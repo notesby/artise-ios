@@ -24,15 +24,15 @@
 "screen_workspace_invite_sign_out_first" = "Iniciaste sesión en %1$@. Para unirte a %2$@, primero cierra sesión y luego abre de nuevo el enlace de invitación.";
 
 "screen_artise_id_title" = "Artise";
-"screen_artise_id_subtitle" = "Inicia sesión una vez y elige tu espacio.";
+"screen_artise_id_subtitle" = "Inicia sesión una vez y elige tu espacio de trabajo.";
 "screen_artise_id_apple" = "Continuar con Apple";
 "screen_artise_id_google" = "Continuar con Google";
 "screen_artise_id_microsoft" = "Continuar con Microsoft";
 "screen_artise_id_email" = "Continuar con correo";
-"screen_artise_id_type_workspace" = "¿Tienes el nombre de tu espacio? Escríbelo";
+"screen_artise_id_type_workspace" = "¿Tienes el nombre de tu espacio de trabajo? Escríbelo";
 "screen_artise_id_qr_code" = "¿Ya entraste en otro teléfono? Escanea su código";
-"screen_artise_id_pick_workspace" = "Elige tu espacio";
-"screen_artise_id_no_workspaces" = "Todavía no estás en ningún espacio. Pídele a quien te invitó el enlace de invitación.";
+"screen_artise_id_pick_workspace" = "Elige tu espacio de trabajo";
+"screen_artise_id_no_workspaces" = "Todavía no estás en ningún espacio de trabajo. Pídele a quien te invitó el enlace de invitación.";
 "screen_artise_id_other_account" = "Iniciar sesión de otra forma";
 "screen_artise_id_error" = "No se pudo iniciar sesión con Artise ID. Inténtalo de nuevo.";
 
@@ -65,3 +65,10 @@
 "screen_artise_assistant_hint" = "Pídele a Ari recordatorios, notas o que avise a alguien";
 "screen_artise_help" = "Ayuda";
 "screen_artise_contact_admin" = "Escribirle al administrador";
+
+/* Signing out */
+"screen_artise_sign_out_from" = "Cerrar sesión en %1$@";
+"screen_artise_sign_out_title" = "¿Cerrar sesión en %1$@?";
+"screen_artise_sign_out_content" = "Tus chats de %1$@ dejarán de verse en este teléfono. Podrás volver a entrar cuando quieras.";
+"screen_artise_sign_out_content_unnamed" = "Tus chats dejarán de verse en este teléfono. Podrás volver a entrar cuando quieras.";
+"screen_artise_sign_out_artise_id" = "También cerrarás tu sesión de Artise ID en este teléfono.";

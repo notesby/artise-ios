@@ -607,9 +607,10 @@ class UserSessionFlowCoordinator: FlowCoordinatorProtocol {
         }
         
         guard isLastDevice else {
+            // Artise: names the workspace and says Artise ID signs out too (ArtiseSignOutText).
             navigationRootCoordinator.alertInfo = .init(id: .init(),
-                                                        title: L10n.screenSignoutConfirmationDialogTitle,
-                                                        message: L10n.screenSignoutConfirmationDialogContent,
+                                                        title: ArtiseSignOutText.confirmationTitle,
+                                                        message: ArtiseSignOutText.confirmationMessage,
                                                         primaryButton: .init(title: L10n.screenSignoutConfirmationDialogSubmit, role: .destructive) { [weak self] in
                                                             self?.actionsSubject.send(.logout)
                                                         })

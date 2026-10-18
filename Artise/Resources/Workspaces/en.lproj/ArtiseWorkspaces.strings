@@ -65,3 +65,10 @@
 "screen_artise_assistant_hint" = "Ask Ari for reminders, notes, or to let someone know";
 "screen_artise_help" = "Help";
 "screen_artise_contact_admin" = "Write to your workspace's admin";
+
+/* Signing out */
+"screen_artise_sign_out_from" = "Sign out of %1$@";
+"screen_artise_sign_out_title" = "Sign out of %1$@?";
+"screen_artise_sign_out_content" = "Your chats in %1$@ will no longer show on this phone. You can sign back in anytime.";
+"screen_artise_sign_out_content_unnamed" = "Your chats will no longer show on this phone. You can sign back in anytime.";
+"screen_artise_sign_out_artise_id" = "You’ll also be signed out of Artise ID on this phone.";

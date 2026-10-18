@@ -24,15 +24,15 @@
 "screen_workspace_invite_sign_out_first" = "Você entrou em %1$@. Para entrar em %2$@, saia primeiro e depois abra o link de convite de novo.";
 
 "screen_artise_id_title" = "Artise";
-"screen_artise_id_subtitle" = "Entre uma vez e escolha seu espaço.";
+"screen_artise_id_subtitle" = "Entre uma vez e escolha seu espaço de trabalho.";
 "screen_artise_id_apple" = "Continuar com a Apple";
 "screen_artise_id_google" = "Continuar com o Google";
 "screen_artise_id_microsoft" = "Continuar com a Microsoft";
 "screen_artise_id_email" = "Continuar com e-mail";
-"screen_artise_id_type_workspace" = "Tem o nome do seu espaço? Digite-o";
+"screen_artise_id_type_workspace" = "Tem o nome do seu espaço de trabalho? Digite-o";
 "screen_artise_id_qr_code" = "Já entrou em outro celular? Escaneie o código dele";
-"screen_artise_id_pick_workspace" = "Escolha seu espaço";
-"screen_artise_id_no_workspaces" = "Você ainda não está em nenhum espaço. Peça o link de convite a quem convidou você.";
+"screen_artise_id_pick_workspace" = "Escolha seu espaço de trabalho";
+"screen_artise_id_no_workspaces" = "Você ainda não está em nenhum espaço de trabalho. Peça o link de convite a quem convidou você.";
 "screen_artise_id_other_account" = "Entrar de outra forma";
 "screen_artise_id_error" = "Não foi possível entrar com o Artise ID agora. Tente de novo.";
 
@@ -65,3 +65,10 @@
 "screen_artise_assistant_hint" = "Peça ao Ari lembretes, notas ou que avise alguém";
 "screen_artise_help" = "Ajuda";
 "screen_artise_contact_admin" = "Escrever para o administrador";
+
+/* Signing out */
+"screen_artise_sign_out_from" = "Sair de %1$@";
+"screen_artise_sign_out_title" = "Sair de %1$@?";
+"screen_artise_sign_out_content" = "Suas conversas de %1$@ deixarão de aparecer neste celular. Você pode entrar de novo quando quiser.";
+"screen_artise_sign_out_content_unnamed" = "Suas conversas deixarão de aparecer neste celular. Você pode entrar de novo quando quiser.";
+"screen_artise_sign_out_artise_id" = "Você também vai sair do Artise ID neste celular.";
