@@ -10,6 +10,7 @@
 import EmbeddedElementCall
 #endif
 
+import ArtiseCore
 import Combine
 import Foundation
 import Macros
@@ -239,10 +240,11 @@ final nonisolated class AppSettings: @unchecked Sendable {
     // MARK: - Notifications
     
     var pusherAppID: String {
+        // Artise: the app IDs configured in Artise's Sygnal.
         #if DEBUG
-        InfoPlistReader.main.baseBundleIdentifier + ".ios.dev"
+        ArtiseConfiguration.pushAppID(isDebugBuild: true)
         #else
-        InfoPlistReader.main.baseBundleIdentifier + ".ios.prod"
+        ArtiseConfiguration.pushAppID(isDebugBuild: false)
         #endif
     }
     
