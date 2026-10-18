@@ -79,6 +79,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 | `SettingsScreen.swift` | Artise's own Settings rows (`ArtiseSettingsSection`): Security, for Artise ID's two-step verification, and Help (the workspace's help page, writing to its admin). |
 | `HomeScreenContent.swift` | Ari pinned at the top of the chat list (`ArtiseAssistantRow`), when the workspace file names Ari's account. |
 | `SettingsScreenViewModel.swift` (`showLinkNewDeviceButton`) | Link new device shows where the workspace's server supports QR sign-in (MSC4108), not only with the developer flag. |
+| `AppCoordinator.swift` (`setupSentry`) | Crash reports without breadcrumbs, performance traces or failed-request capture (`ArtiseCrashReports`). |
 | `NotificationManager.swift`, `ClientProxy.swift` (`setPusher`) | The pusher goes to the workspace's push gateway (default `push.artise.co`), with `append: true` so other accounts' pushers on the phone stay. |
 | `AppCoordinator.swift` (`handleDeepLink`), `UserSessionStore.swift`, `SettingsScreenViewModel.swift` | Invite links (`join.artise.co`), forgetting the workspace's look on sign-out, and Delete account on the workspace's `links.delete_account` page (hidden without one). |
 
@@ -120,7 +121,9 @@ on this repository.
 | `DIST_CERT_P12` | The distribution certificate and its private key, as a base64-encoded `.p12` |
 | `DIST_CERT_PASSWORD` | The `.p12`'s password |
 | `GOOGLE_SERVICE_INFO_PLIST` | Firebase's `GoogleService-Info.plist` for `co.artise.app`, base64-encoded (analytics are off in TestFlight builds without it) |
-| `MAPLIBRE_API_KEY` | MapTiler key for maps (location sharing is off in TestFlight builds without it). The same step sets Element's Sentry, rageshake and PostHog values to `nil`: no crash reporting or bug reports, as on Android |
+| `MAPLIBRE_API_KEY` | MapTiler key for maps (location sharing is off in TestFlight builds without it). The same step leaves Element's Rust SDK Sentry and PostHog off |
+| `SENTRY_DSN_IOS` | Artise's Sentry DSN for iOS (crashes.artise.co). Crash reports are sent only after "Help improve Artise" is accepted; without the secret they're off |
+| `RAGESHAKE_URL` | `https://reports.artise.co/api/submit`, for Settings → Report a problem (app name `artise-ios`); without it the row is hidden |
 | `PROFILE_APP`, `PROFILE_NSE`, `PROFILE_SHARE`, `PROFILE_STICKER` | The App Store profiles (app, notification extension, share extension, "Artise sticker" extension), base64-encoded |
 | `BETA_CONTACT_*`, `BETA_REVIEW_*` | Beta App Review's contact and reviewer account, for the public beta (see `Artise/store/README.md`) |
 

@@ -1052,6 +1052,9 @@ class AppCoordinator: AppCoordinatorProtocol, AuthenticationFlowCoordinatorDeleg
         // remove them and start over, otherwise the app will crash if finishTransaction is used.
         analytics.signpost.resetTransactions()
         
+        // Artise: crashes only, without breadcrumbs or traces (ArtiseCrashReports).
+        ArtiseCrashReports.limit(options)
+        
         SentrySDK.start(options: options) // Swift
         enableSentryLogging(enabled: options.enabled) // Rust
         

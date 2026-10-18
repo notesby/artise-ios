@@ -18,8 +18,8 @@ Everything App Store Connect asks for, ready to copy. It matches the Android app
   share, "Artise sticker"), and uploaded with the App Store Connect API key. All of them are repository secrets (see
   `Artise/README.md`); local copies are in `~/.artise-keys/`. **Back them up** in a password manager: the certificate
   can be made again, but every profile then has to be made again too.
-- What a TestFlight build adds that isn't in git: MapTiler's key, Firebase's file, and Element's crash reporting and
-  bug reports turned off (their committed values are placeholders).
+- What a TestFlight build adds that isn't in git: MapTiler's key, Firebase's file, and Artise's crash report and bug
+  report addresses (repository secrets).
 
 ## 2. TestFlight
 
@@ -125,10 +125,12 @@ Export compliance needs nothing per build: `ITSAppUsesNonExemptEncryption` is `N
 | Location → Precise Location | App Functionality | Only when someone shares their location in a chat (optional). |
 | Identifiers → User ID | App Functionality | The Matrix account ID. |
 | Identifiers → Device ID | App Functionality | The push token that routes notifications to this iPhone. |
+| Diagnostics → Crash Data | App Functionality | **Optional**, only after "Help improve Artise": the crash, the iPhone model and the iOS and app version, sent to Artise's own server in the EU (crashes.artise.co). No messages, names or breadcrumbs. **Not linked** to the account. |
+| Diagnostics → Other Diagnostic Data | App Functionality | Only when the person sends Settings → Report a problem: the app's logs (no message text), to reports.artise.co in the EU. Kept 90 days. |
 | Usage Data → Product Interaction | Analytics | **Optional**, only after "Help improve Artise": which screens are opened and which actions are used, never content or names. **Not linked** to the account (Firebase's app instance ID, no user ID). |
 
-**Not collected:** contacts, health, financial info, browsing or search history, purchases, crash data, performance
-data, other diagnostics, advertising data. There's no crash reporting.
+**Not collected:** contacts, health, financial info, browsing or search history, purchases, performance data,
+advertising data.
 
 **Differences from Android's Data safety form:**
 - Notifications use Apple's push service through Artise's own push gateway (Sygnal), not Firebase Cloud Messaging.
@@ -173,8 +175,12 @@ English text):
 >   don't contact the website, and the Artise server never sees the link.
 >
 > Stickers are made from your photos on your iPhone; the photo isn't sent anywhere until you send the sticker. The
-> app uses your location only when you share it in a chat, once or live. It has no ads, no tracking and sends no crash
-> reports.
+> app uses your location only when you share it in a chat, once or live. It has no ads and no tracking.
+>
+> **Crash reports and problem reports (optional).** Only if you say yes on "Help improve Artise", a crash sends
+> Artise's own server (in the EU) what crashed, with your iPhone model and the iOS and app version; never your messages
+> or names. If you send Settings → Report a problem, the app's logs go with it (no message text). Both are kept 90 days
+> and only Artise's admins can see them.
 >
 > **Usage statistics (optional).** Only if you say yes on "Help improve Artise", the app sends Google Analytics for
 > Firebase which screens you open and which features you use, with your iPhone model, the iOS and app version, and an
