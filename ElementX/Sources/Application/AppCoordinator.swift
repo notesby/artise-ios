@@ -7,6 +7,7 @@
 //
 
 import AnalyticsEvents
+import ArtiseCore
 import BackgroundTasks
 import Combine
 import Intents
@@ -927,7 +928,9 @@ class AppCoordinator: AppCoordinatorProtocol, AuthenticationFlowCoordinatorDeleg
                 guard let self else { return }
                 switch callback {
                 case .didReceiveAuthError(let isSoftLogout):
-                    stateMachine.processEvent(.signOut(isSoft: isSoftLogout, disableAppLock: false))
+                    // Artise: right after deleting the account, go straight to sign-in, not "you were signed out".
+                    let isAccountDeletion = ArtiseAccountDeletion().consumeStarted()
+                    stateMachine.processEvent(.signOut(isSoft: isSoftLogout && !isAccountDeletion, disableAppLock: false))
                 }
             }
     }
