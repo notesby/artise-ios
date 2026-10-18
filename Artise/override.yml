@@ -108,6 +108,7 @@ targets:
     - path: ArtiseStickerShare/Sources
     - path: ArtiseStickerShare/SupportingFiles/en.lproj
     - path: ArtiseStickerShare/SupportingFiles/es.lproj
+    - path: ArtiseStickerShare/SupportingFiles/pt.lproj
 
     info:
       path: ArtiseStickerShare/SupportingFiles/Info.plist
