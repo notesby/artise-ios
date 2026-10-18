@@ -1,0 +1,22 @@
+/*
+ Copyright 2026 Artise.
+
+ SPDX-License-Identifier: AGPL-3.0-only
+
+ Artise wording that replaces Element's, applied to the built app by Artise/Scripts/apply-string-overrides.sh.
+ Brazilian Portuguese; the pt folder also covers pt-BR phones.
+*/
+
+"screen_onboarding_welcome_title" = "A conversa privada da sua família";
+"screen_onboarding_welcome_message" = "Boas-vindas ao %1$@. Privado, criptografado e simples.";
+"screen_notification_settings_sound_element_default" = "Artise";
+"screen_notification_settings_sound_element_fade" = "Artise (suave)";
+"screen_room_timeline_legacy_call" = "Chamada não compatível. Peça para quem está ligando usar o app do Artise.";
+"screen_advanced_settings_element_call_base_url" = "URL base personalizada para chamadas";
+"screen_advanced_settings_element_call_base_url_description" = "Defina uma URL base personalizada para as chamadas.";
+
+/* Usage statistics: the consent texts, as in the Android app. */
+"screen_analytics_prompt_help_us_improve" = "Compartilhe quais telas e botões você usa, e os relatórios de falhas, para nos ajudar a melhorar o Artise. O uso vai para o Google Analytics para Firebase; os relatórios de falhas, para os servidores do Artise na UE.";
+"screen_analytics_prompt_data_usage" = "Nunca enviamos suas mensagens, notas, nomes ou contatos";
+"screen_analytics_prompt_third_party_sharing" = "Nada é usado para anúncios nem vendido";
+"screen_analytics_settings_help_us_improve" = "Compartilhe quais telas e botões você usa, e os relatórios de falhas, para nos ajudar a melhorar o Artise. O uso vai para o Google Analytics para Firebase; os relatórios de falhas, para os servidores do Artise na UE.";

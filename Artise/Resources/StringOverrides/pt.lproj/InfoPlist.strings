@@ -1,0 +1,13 @@
+/*
+ Copyright 2026 Artise.
+
+ SPDX-License-Identifier: AGPL-3.0-only
+
+ Artise wording that replaces Element's, applied to the built app by Artise/Scripts/apply-string-overrides.sh.
+ Brazilian Portuguese; the pt folder also covers pt-BR phones.
+*/
+
+"NSCameraUsageDescription" = "Para tirar fotos ou gravar vídeos e enviá-los numa conversa, o Artise precisa acessar a câmera.";
+"NSMicrophoneUsageDescription" = "Para gravar e enviar mensagens de voz, o Artise precisa acessar o microfone.";
+"NSPhotoLibraryUsageDescription" = "Permite salvar fotos e vídeos na sua galeria.";
+"NSLocationAlwaysAndWhenInUseUsageDescription" = "Para compartilhar sua localização em tempo real nas conversas, o Artise precisa acessar sua localização também quando o app está em segundo plano.";
