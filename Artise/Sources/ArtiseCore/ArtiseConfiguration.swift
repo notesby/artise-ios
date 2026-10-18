@@ -38,6 +38,14 @@ public enum ArtiseConfiguration {
     public static func pushAppID(isDebugBuild: Bool) -> String {
         isDebugBuild ? "co.artise.app.ios.debug" : "co.artise.app.ios"
     }
+    
+    /// Maps come from MapTiler with its standard styles, as in the Android app. The key is added at build time
+    /// (`MAPLIBRE_API_KEY`) and never committed.
+    public enum Maps {
+        public static let baseURL = URL(staticString: "https://api.maptiler.com/maps")
+        public static let lightStyleID = "basic-v2"
+        public static let darkStyleID = "basic-v2-dark"
+    }
 }
 
 public extension URL {

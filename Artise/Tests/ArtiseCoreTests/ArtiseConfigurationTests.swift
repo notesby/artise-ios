@@ -8,6 +8,14 @@
 import Testing
 
 struct ArtiseConfigurationTests {
+    /// Maps use MapTiler's standard styles, as in the Android app, over HTTPS.
+    @Test
+    func mapsUseMapTilersStandardStyles() {
+        #expect(ArtiseConfiguration.Maps.lightStyleID == "basic-v2")
+        #expect(ArtiseConfiguration.Maps.darkStyleID == "basic-v2-dark")
+        #expect(ArtiseConfiguration.Maps.baseURL.absoluteString == "https://api.maptiler.com/maps")
+    }
+    
     /// Sygnal routes pushes by app ID, so release and debug builds must use the IDs registered on the server.
     @Test
     func pushAppIDMatchesSygnal() {
