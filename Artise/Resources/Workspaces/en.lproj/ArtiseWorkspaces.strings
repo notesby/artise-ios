@@ -30,6 +30,7 @@
 "screen_artise_id_microsoft" = "Continue with Microsoft";
 "screen_artise_id_email" = "Continue with email";
 "screen_artise_id_type_workspace" = "Have your workspace’s name? Type it";
+"screen_artise_id_qr_code" = "Signed in on another phone? Scan its code";
 "screen_artise_id_pick_workspace" = "Choose your workspace";
 "screen_artise_id_no_workspaces" = "You’re not in any workspace yet. Ask the person who invited you for the invite link.";
 "screen_artise_id_other_account" = "Sign in another way";

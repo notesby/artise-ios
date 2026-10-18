@@ -43,6 +43,11 @@ workspace name.
    - When the person signs out, or taps "Sign in another way", the tokens are deleted and the refresh token is
      revoked (`revocation_endpoint` from the discovery document).
 
+Signing in with a QR code: "Signed in on another phone? Scan its code" on the first screen opens Element's QR
+scanner. The phone that's already signed in shows the code from Settings → Link new device, which appears when its
+workspace's server reports `org.matrix.msc4108` in `/_matrix/client/versions` (mas-k8s today; artise.co once it's
+approved). The new phone signs in with the device-code grant and gets the chats' keys over the encrypted channel.
+
 "Update Artise" (`ArtiseUpdateNotice`) covers the app, and can't be closed, when `min_app_version.ios` in
 `/v1/sign-in` or in the workspace file is newer than the app. It's checked on the first screen, when the session
 starts and when the app comes back. Versions compare as numbers, part by part; an empty object means no minimum.
