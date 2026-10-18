@@ -1,0 +1,1 @@
+Sign in with your workspace's name, then chat with Ari, open a chat's notes and try the stickers. Check that notifications arrive when the app is closed. If something doesn't work or is hard to understand, send us feedback from TestFlight.

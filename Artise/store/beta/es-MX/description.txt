@@ -1,0 +1,5 @@
+Artise es un chat privado y cifrado para tu familia o tu equipo, con Ari, un asistente que recuerda. Cada chat tiene notas compartidas, y puedes enviar stickers y hacer llamadas de voz y video.
+
+Para iniciar sesión necesitas una cuenta de Artise: pide una invitación al administrador de tu espacio de trabajo. Luego abre la app, toca "Iniciar sesión manualmente" y escribe el nombre de tu espacio de trabajo.
+
+Esta es una versión de prueba de Artise, así que cambia seguido. Cuéntanos qué te parece: toma una captura de pantalla en la app, o abre TestFlight, elige Artise y envíanos tus comentarios.
