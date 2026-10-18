@@ -1,0 +1,15 @@
+//
+// Copyright 2026 Artise.
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+//
+// Release builds for devices sign with Artise's distribution certificate and the App Store profile made for each
+// target (see Artise/README.md, "Building without a Mac"). Attached to the Release configuration in app.yml.
+
+CODE_SIGN_STYLE = Manual
+CODE_SIGN_IDENTITY[sdk=iphoneos*] = Apple Distribution
+PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*] = $(ARTISE_PROFILE_$(PRODUCT_NAME))
+
+ARTISE_PROFILE_ElementX = Artise App Store
+ARTISE_PROFILE_NSE = Artise NSE App Store
+ARTISE_PROFILE_ShareExtension = Artise Share App Store
