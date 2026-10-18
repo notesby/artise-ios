@@ -34,8 +34,14 @@ workspace name.
    - The list is never kept on disk.
 5. Opening a workspace is the workspace sign-in below (`ArtiseWorkspaceSignInStarter`), with its own app client.
    Artise ID's session is already open, so no page should show.
-6. The Artise ID tokens are kept in the Keychain (this device only), only to read the list again. They're deleted
-   when the person signs out, or taps "Sign in another way".
+6. The Artise ID tokens are kept in the Keychain (this device only), to read the list and the security settings
+   again (`ArtiseIDTokenKeeper`).
+   - `offline_access` in the scopes brings a refresh token; access tokens last 12 hours.
+   - Artise ID rotates refresh tokens: each refresh returns a new one and refuses the old one. So only one refresh
+     runs at a time, and the new tokens are stored before they're used.
+   - Refused tokens are deleted (sign in again); offline keeps them.
+   - When the person signs out, or taps "Sign in another way", the tokens are deleted and the refresh token is
+     revoked (`revocation_endpoint` from the discovery document).
 
 "Have your workspace's name? Type it" opens "Your workspace". Invite links work as before.
 
@@ -117,6 +123,8 @@ The notes API and the account deletion page come from the workspace file's `link
 Each server sets its own web host, so the app never builds these URLs from the server name. Without
 `links`, the notes buttons and the Delete account row are hidden.
 
-The one exception is temporary. Until the server deploy that adds `links` is live, artise.co (and only
-artise.co) falls back to `https://chat.artise.co` (`WorkspaceLinks.artiseFallback`). Remove the fallback
-once that deploy is live.
+- `links.help` is Settings → Help.
+
+The file can also name Ari's account (`assistant_user_id`), the person to write to for help (`contact_user_id`),
+the oldest app version it works with (`min_app_version`, `{"ios": "26.9.10"}`; empty means none) and the App Store
+link (`store_links.ios`). Unknown or invalid values are ignored.

@@ -20,6 +20,10 @@ struct ArtiseIDTests {
     {"issuer":"https://id.artise.co","authorization_endpoint":"https://id.artise.co/oauth/v2/authorize",
      "token_endpoint":"https://id.artise.co/oauth/v2/token"}
     """
+    static let discoveryWithRevocation = """
+    {"issuer":"https://id.artise.co","authorization_endpoint":"https://id.artise.co/oauth/v2/authorize",
+     "token_endpoint":"https://id.artise.co/oauth/v2/token","revocation_endpoint":"https://id.artise.co/oauth/v2/revoke"}
+    """
     static let tokens = #"{"access_token":"at-1","token_type":"Bearer","expires_in":43199,"refresh_token":"rt-1","id_token":"x"}"#
     static let list = """
     {"workspaces":[{"slug":"mas-k8s","name":"MAS test","server_name":"mas-k8s.artise.co","homeserver_url":"https://matrix.mas-k8s.artise.co"},
@@ -49,6 +53,50 @@ struct ArtiseIDTests {
         #expect(configuration.scopes(for: .apple).last == "urn:zitadel:iam:org:idp:id:395419033345720907")
         let endpoints = try #require(ArtiseIDEndpoints.parse(Data(Self.discovery.utf8), issuer: configuration.issuer))
         #expect(endpoints.token.absoluteString == "https://id.artise.co/oauth/v2/token")
+    }
+    
+    /// The answer with this deploy's fields: refresh tokens asked for, the security page on Artise ID's host,
+    /// and no minimum version yet. A security page on another host is ignored.
+    @Test
+    func readsTheNewSignInFields() throws {
+        let answer = #"{"issuer": "https://id.artise.co", "client_id": "395423549856219219", "redirect_uri": "https://join.artise.co/oauth", "scopes": ["openid", "profile", "email", "offline_access"], "providers": {}, "security_url": "https://id.artise.co/ui/console/users/me?id=security", "min_app_version": {}, "store_links": {"android": "https://play.google.com/store/apps/details?id=co.artise.app"}}"#
+        let configuration = try #require(ArtiseIDConfiguration.parse(Data(answer.utf8)))
+        #expect(configuration.asksForRefreshTokens)
+        #expect(configuration.securityURL?.absoluteString == "https://id.artise.co/ui/console/users/me?id=security")
+        #expect(configuration.minimumAppVersion == MinimumAppVersion(ios: nil))
+        #expect(configuration.storeLinks == StoreLinks(ios: nil))
+        
+        let elsewhere = try #require(ArtiseIDConfiguration.parse(Data(Self.signIn.replacingOccurrences(of: #""scopes""#, with: #""security_url":"https://evil.example/x","scopes""#).utf8)))
+        #expect(elsewhere.securityURL == nil)
+        #expect(!elsewhere.asksForRefreshTokens)
+    }
+    
+    /// The revocation endpoint is kept only on the issuer's host.
+    @Test
+    func revocationEndpoint() throws {
+        let issuer = try #require(URL(string: "https://id.artise.co"))
+        #expect(ArtiseIDEndpoints.parse(Data(Self.discoveryWithRevocation.utf8), issuer: issuer)?.revocation?.absoluteString
+            == "https://id.artise.co/oauth/v2/revoke")
+        #expect(ArtiseIDEndpoints.parse(Data(Self.discovery.utf8), issuer: issuer)?.revocation == nil)
+        let other = Self.discoveryWithRevocation.replacingOccurrences(of: "id.artise.co/oauth/v2/revoke", with: "evil.example/revoke")
+        #expect(ArtiseIDEndpoints.parse(Data(other.utf8), issuer: issuer)?.revocation == nil)
+    }
+    
+    /// Two-step and the sign-in provider from `/v1/me/security`; 404 means not offered, 502 try again.
+    @Test
+    func security() async throws {
+        let url = "https://api.artise.co/v1/me/security"
+        let transport = FakeTransport([url: .init(body: #"{"two_step": false, "methods": ["passkey", "totp", "email"], "provider": null}"#)])
+        let security = try await ArtiseIDClient(transport: transport).security(accessToken: "at-1").get()
+        #expect(security == ArtiseIDSecurity(twoStep: false, methods: ["passkey", "totp", "email"], provider: nil))
+        #expect(transport.requests.first?.value(forHTTPHeaderField: "Authorization") == "Bearer at-1")
+        
+        let google = FakeTransport([url: .init(body: #"{"two_step": true, "methods": ["totp"], "provider": "google"}"#)])
+        #expect(await ArtiseIDClient(transport: google).security(accessToken: "x") == .success(ArtiseIDSecurity(twoStep: true, methods: ["totp"], provider: .google)))
+        #expect(await ArtiseIDClient(transport: FakeTransport([url: .init(status: 404, body: "{}")])).security(accessToken: "x") == .failure(.notAvailable))
+        #expect(await ArtiseIDClient(transport: FakeTransport([url: .init(status: 502, body: "")])).security(accessToken: "x") == .failure(.unreachable))
+        #expect(await ArtiseIDClient(transport: FakeTransport([url: .init(status: 401, body: "{}")])).security(accessToken: "x") == .failure(.unauthorized))
+        #expect(await ArtiseIDClient(transport: FakeTransport([url: .init(body: #"{"methods": []}"#)])).security(accessToken: "x") == .failure(.unreachable))
     }
     
     @Test
