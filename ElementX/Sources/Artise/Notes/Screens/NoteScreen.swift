@@ -63,6 +63,16 @@ struct NoteScreen: View {
                 Button(L10n.actionEdit) { isEditing = true }
                     .disabled(hasLoaded && file?.content == nil && !startsEditing)
             }
+            ToolbarItem(placement: .primaryAction) {
+                Menu {
+                    Button { route = .noteHistory(roomID: roomID, path: path) } label: {
+                        Label(ArtiseNotesL10n.text("screen_notes_history_menu"), icon: \.history)
+                    }
+                } label: {
+                    CompoundIcon(\.overflowHorizontal)
+                }
+                .accessibilityLabel(ArtiseNotesL10n.text("screen_notes_more"))
+            }
         }
         .alert(missingTarget.map { String(format: ArtiseNotesL10n.text("screen_notes_missing_note_create"), $0) } ?? "",
                isPresented: Binding(get: { missingTarget != nil }, set: {

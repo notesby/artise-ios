@@ -71,6 +71,15 @@ public protocol NotesRepository: Sendable {
     /// Deletes a photo or file; fails with `.inUse` when notes use it, unless `removeFromNotes`.
     func deleteMedia(roomID: String, path: String, removeFromNotes: Bool) async throws
     
+    // MARK: - History (needs a connection)
+    
+    /// A note's last 50 versions, newest first.
+    func history(roomID: String, path: String) async throws -> [NoteVersion]
+    /// The chat's latest changes, newest first; with `before` (the last commit of a page), the next older page.
+    func changeHistory(roomID: String, before: String?) async throws -> NotesChangesPage
+    /// A note as it was at a commit from `history`. To restore it, save its text as a normal edit.
+    func noteAt(roomID: String, path: String, commit: String) async throws -> Note
+    
     // MARK: - Files and folders (need a connection)
     
     /// Renames or moves a note, photo or file; the server updates the links to it.

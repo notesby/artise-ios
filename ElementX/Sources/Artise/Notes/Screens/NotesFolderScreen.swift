@@ -84,6 +84,9 @@ struct NotesFolderScreen: View {
                     Button { route = .media(roomID: roomID) } label: {
                         Label(ArtiseNotesL10n.text("screen_notes_media_title"), icon: \.image)
                     }
+                    Button { route = .changes(roomID: roomID) } label: {
+                        Label(ArtiseNotesL10n.text("screen_notes_history_menu"), icon: \.history)
+                    }
                 } label: {
                     CompoundIcon(\.overflowHorizontal)
                 }

@@ -182,6 +182,21 @@ public struct NotesAPIClient: Sendable {
         }
     }
     
+    /// The chat's latest changes, newest first; `before` is the last commit of the previous page.
+    public func changes(roomID: String, before: String?, limit: Int = 50) async throws(NotesError) -> NotesChangesPage {
+        var query = [("limit", String(limit))]
+        if let before {
+            query.append(("before", before))
+        }
+        let dto: ChangesDTO = try await json(request(url(roomID: roomID, "changes", query: query)))
+        let changes = dto.changes.map { change in
+            NotesChange(commit: change.commit, at: change.at, message: change.message,
+                        author: ChangeAuthor(who: change.who, how: change.how, detail: change.detail ?? "", by: change.by),
+                        files: change.files.map { ChangedFile(path: $0.path, change: FileChange(serverValue: $0.change), from: $0.from) })
+        }
+        return NotesChangesPage(changes: changes, more: dto.more ?? false)
+    }
+    
     // MARK: - URLs
     
     /// Percent-encodes everything but RFC 3986's unreserved characters, as the contract wants for
