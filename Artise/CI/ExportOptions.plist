@@ -28,6 +28,8 @@
         <string>Artise NSE App Store</string>
         <key>co.artise.app.shareextension</key>
         <string>Artise Share App Store</string>
+        <key>co.artise.app.stickershare</key>
+        <string>Artise Sticker App Store</string>
     </dict>
     <key>manageAppVersionAndBuildNumber</key>
     <false/>

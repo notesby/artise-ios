@@ -17,10 +17,16 @@ final class ArtiseStickers {
     static let shared = ArtiseStickers()
     
     private(set) var service: ArtiseStickerService?
+    /// A picture shared with "Artise sticker" while the app was still starting, shown once the session is ready.
+    private var pendingShare: PendingShare?
     
     /// Called when an account's session is ready, and with `nil` when it's gone.
     func configure(with userSession: UserSessionProtocol?) {
         service = userSession.flatMap(ArtiseStickerService.init)
+        if service != nil, let pending = pendingShare {
+            pendingShare = nil
+            presentAddSticker(pending.picture)
+        }
     }
     
     /// Opens the sticker picker for a chat; a tapped sticker is sent there and the picker closes.
@@ -52,6 +58,100 @@ final class ArtiseStickers {
             MXLog.error("Stickers: couldn't send a keyboard sticker, sending it as a picture: \(error)")
             return false
         }
+    }
+    
+    // MARK: - Saving others' stickers
+    
+    /// "Save to my stickers" is offered for stickers whose picture is plain on the server, which is how Matrix apps
+    /// send them; an encrypted picture can't go in a pack other devices read.
+    func canSave(_ item: StickerRoomTimelineItem) -> Bool {
+        service != nil && !item.imageInfo.source.underlyingSource.toJson().contains("\"key\"")
+    }
+    
+    /// The sticker actions for a message's menu: Save to my stickers, for a sticker that can be saved.
+    func menuActions(for item: RoomTimelineItemProtocol) -> [TimelineItemMenuAction] {
+        guard let sticker = item as? StickerRoomTimelineItem, canSave(sticker) else { return [] }
+        return [.artiseSaveSticker]
+    }
+    
+    /// Keeps a sticker someone sent in the person's own stickers, reusing its picture on the server. Returns what
+    /// to tell the person.
+    func save(_ item: StickerRoomTimelineItem) async -> String {
+        guard let service, let url = item.imageInfo.source.url else {
+            return ArtiseStickersL10n.text("screen_stickers_save_received_failed")
+        }
+        let info = item.imageInfo
+        let sticker = Sticker(id: "",
+                              description: item.body,
+                              source: .uploaded(mxcURL: url.absoluteString),
+                              width: Int(info.size?.width ?? 256),
+                              height: Int(info.size?.height ?? 256),
+                              mimeType: info.mimeType ?? "image/png",
+                              size: Int(info.fileSize ?? 0))
+        do {
+            _ = try await service.repository.addUploaded(sticker)
+            return ArtiseStickersL10n.text("screen_stickers_saved")
+        } catch {
+            MXLog.error("Stickers: couldn't save a received sticker: \(error)")
+            return ArtiseStickersL10n.text("screen_stickers_save_received_failed")
+        }
+    }
+    
+    // MARK: - Stickers from other apps
+    
+    /// The "Artise sticker" share extension opens `<bundle ID>:/artise-sticker?file=<name>`, with the picture in the
+    /// app group's `ArtiseStickers` folder.
+    static let shareURLPath = "artise-sticker"
+    static let shareFolder = "ArtiseStickers"
+    
+    /// Shows a picture shared with "Artise sticker" and offers to save it to the person's stickers. Returns `false`
+    /// for any other URL.
+    func handleURL(_ url: URL) -> Bool {
+        guard url.scheme == InfoPlistReader.main.baseBundleIdentifier,
+              url.pathComponents.last == Self.shareURLPath else {
+            return false
+        }
+        let name = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems?.first { $0.name == "file" }?.value
+        let picture = name.flatMap(Self.takeSharedPicture)
+        if service != nil {
+            presentAddSticker(picture)
+        } else {
+            // Opened from the share sheet, the app may still be restoring the session: wait for it a little.
+            pendingShare = PendingShare(picture: picture)
+            Task {
+                try? await Task.sleep(for: .seconds(10))
+                if let pending = pendingShare {
+                    pendingShare = nil
+                    presentAddSticker(pending.picture)
+                }
+            }
+        }
+        return true
+    }
+    
+    private func presentAddSticker(_ picture: Data?) {
+        guard let presenter = UIViewController.artiseTopViewController() else { return }
+        weak var host: UIViewController?
+        let model = AddStickerModel(service: service, picture: picture) {
+            host?.dismiss(animated: true)
+        }
+        let controller = UIHostingController(rootView: AddStickerScreen(model: model))
+        controller.sheetPresentationController?.detents = [.medium(), .large()]
+        host = controller
+        presenter.present(controller, animated: true)
+    }
+    
+    /// `picture` is `nil` when the shared file couldn't be read.
+    private struct PendingShare {
+        let picture: Data?
+    }
+    
+    /// The shared picture, taken out of the app group so it doesn't pile up there.
+    private static func takeSharedPicture(named name: String) -> Data? {
+        guard !name.contains("/"), !name.hasPrefix(".") else { return nil }
+        let file = URL.appGroupContainerDirectory.appending(path: shareFolder).appending(path: name)
+        defer { try? FileManager.default.removeItem(at: file) }
+        return try? Data(contentsOf: file)
     }
 }
 

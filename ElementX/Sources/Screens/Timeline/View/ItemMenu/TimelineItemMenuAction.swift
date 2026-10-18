@@ -78,6 +78,8 @@ enum TimelineItemMenuAction: Identifiable, Hashable {
     case unpin
     case viewInRoomTimeline
     case downloadMedia
+    /// Artise: keeps a sticker someone sent in your own stickers.
+    case artiseSaveSticker
     
     var id: Self {
         self
@@ -193,6 +195,8 @@ enum TimelineItemMenuAction: Identifiable, Hashable {
             Label(L10n.actionViewInTimeline, icon: \.visibilityOn)
         case .downloadMedia:
             Label(L10n.actionDownload, icon: \.downloadIos)
+        case .artiseSaveSticker:
+            Label(ArtiseStickersL10n.text("screen_stickers_save_received"), icon: \.sticker)
         }
     }
 }

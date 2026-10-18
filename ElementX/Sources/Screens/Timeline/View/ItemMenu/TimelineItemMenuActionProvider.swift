@@ -112,6 +112,9 @@ struct TimelineItemMenuActionProvider {
             actions.append(.viewSource)
         }
         
+        // Artise: Save to my stickers.
+        actions += ArtiseStickers.shared.menuActions(for: timelineItem)
+        
         if !item.isOutgoing {
             secondaryActions.append(.report)
         }

@@ -65,6 +65,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 | `SettingsScreenViewModel.swift`, `AppCoordinator.swift` | Settings → Delete account opens Artise's page (`?lang=es` in Spanish); a sign-out within an hour of that goes straight to sign-in (`ArtiseAccountDeletion`). |
 | `AppCoordinator.swift`, `AppSettings.swift` (analytics) | Usage statistics go to Google Analytics for Firebase (`ArtiseAnalyticsClient`) behind Element's consent screen, when the app has its `GoogleService-Info.plist`. |
 | `ComposerToolbar.swift`, `ComposerToolbarModels.swift`, `ComposerToolbarViewModel.swift` | The sticker button at the end of an empty message field, and pictures from sticker keyboards sent as stickers (`ArtiseStickers`). |
+| `TimelineItemMenuAction.swift`, `TimelineItemMenuActionProvider.swift`, `TimelineInteractionHandler.swift` | "Save to my stickers" in a received sticker's menu. |
+| `AppCoordinator.swift` (`handleDeepLink`) | Opens pictures shared with the "Artise sticker" extension (`ArtiseStickerShare/`, a target of `Artise/override.yml`). |
 | `NSE/SupportingFiles/target.yml` | Notification filtering entitlement off until Apple grants it to our team. |
 
 ## Branches
@@ -103,7 +105,7 @@ on this repository.
 | `DIST_CERT_P12` | The distribution certificate and its private key, as a base64-encoded `.p12` |
 | `DIST_CERT_PASSWORD` | The `.p12`'s password |
 | `GOOGLE_SERVICE_INFO_PLIST` | Firebase's `GoogleService-Info.plist` for `co.artise.app`, base64-encoded (analytics are off in TestFlight builds without it) |
-| `PROFILE_APP`, `PROFILE_NSE`, `PROFILE_SHARE` | The three App Store profiles, base64-encoded |
+| `PROFILE_APP`, `PROFILE_NSE`, `PROFILE_SHARE`, `PROFILE_STICKER` | The App Store profiles (app, notification extension, share extension, "Artise sticker" extension), base64-encoded |
 
 Local copies of the keys and the certificate live in `~/.artise-keys/` on the maintainer's machine.
 When an App ID's capabilities change, the profiles must be made again (they copy the App ID).
