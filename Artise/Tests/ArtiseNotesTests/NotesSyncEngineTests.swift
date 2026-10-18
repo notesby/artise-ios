@@ -426,6 +426,44 @@ extension NotesSyncEngineTests {
         #expect(NotesSyncEngine.secondsGroup(12) == "10-30")
         #expect(NotesSyncEngine.countGroup(25) == "21+")
     }
+    
+    /// Every sync logs one line with each step's time and counts, a `304` too; no note names or text.
+    @Test
+    func syncTimingIsLogged() async throws {
+        for index in 1...5 {
+            server.put("Nota secreta \(index).md", "texto privado \(index)")
+        }
+        let lines = LoggedLines()
+        let tokens = CountingTokenProvider()
+        server.setValidTokens(["token-1", "token-2", "token-3"])
+        let api = NotesAPIClient(transport: server, tokenSource: OpenIDNotesTokenSource { await tokens.next() })
+        let engine = NotesSyncEngine(api: api, directory: directory, cipher: ReversingCipher(), log: { lines.add($0) })
+        try await engine.sync(roomID: room)
+        try await engine.sync(roomID: room)
+        let logged = lines.all
+        #expect(logged.count == 2)
+        let first = try #require(logged.first)
+        #expect(first.hasPrefix("Notes sync timing: total "))
+        #expect(first.contains("(changed, 5 files)"))
+        #expect(first.contains("notes 5 (0 KB) in 2 batches"))
+        #expect(first.contains("sent 0"))
+        #expect(!first.contains("secreta") && !first.contains("privado"))
+        #expect(logged.last?.contains("(unchanged)") == true)
+        #expect(logged.last?.contains("notes 0 (0 KB) in 0 batches") == true)
+    }
+}
+
+private final class LoggedLines: @unchecked Sendable {
+    private let lock = NSLock()
+    private var lines: [String] = []
+    
+    var all: [String] {
+        lock.withLock { lines }
+    }
+    
+    func add(_ line: String) {
+        lock.withLock { lines.append(line) }
+    }
 }
 
 private final class TrackedEvents: @unchecked Sendable {

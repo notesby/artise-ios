@@ -27,19 +27,24 @@ public final class NotesSyncEngine: NotesRepository {
     let activityTracker = SyncActivityTracker()
     /// Counts what's done with notes, for people who said yes to usage statistics; never names or text.
     let track: @Sendable (NotesAnalyticsEvent) -> Void
+    /// One line per sync with each step's time and counts, for the app's logs; never names or text.
+    let log: @Sendable (String) -> Void
     
     /// - Parameters:
     ///   - directory: where this account's encrypted notes live.
     ///   - cipher: encrypts everything written there.
     ///   - files: where photos and files live on the phone, and how they're prepared.
     ///   - track: receives notes events for usage statistics; it decides whether they're sent.
+    ///   - log: receives each sync's timing line.
     public init(api: NotesAPIClient, directory: URL, cipher: NotesCipher, files: NotesFileOptions? = nil,
                 track: @escaping @Sendable (NotesAnalyticsEvent) -> Void = { _ in },
+                log: @escaping @Sendable (String) -> Void = { _ in },
                 now: @escaping @Sendable () -> Date = Date.init) {
         self.api = api
         store = NotesStore(directory: directory, cipher: cipher)
         self.files = files ?? NotesFileOptions(directory: directory.appendingPathComponent("files"))
         self.track = track
+        self.log = log
         self.now = now
     }
     
@@ -107,20 +112,24 @@ public final class NotesSyncEngine: NotesRepository {
             let push: PushResult
             let pull: PullResult
             let started = now()
+            var timing = SyncTiming()
             do {
                 // Text edits, then what others changed, then photos and files: a big upload never hides others' changes.
-                let edits = try await pushQueue(roomID, step: .edits)
-                pull = try await pullTree(roomID)
+                let edits = try await timing.measure(\.editsMillis) { try await pushQueue(roomID, step: .edits) }
+                pull = try await pullTree(roomID, timing: &timing)
                 if pull.updated + pull.removed > 0 {
                     await changeCenter.notify(roomID)
                 }
-                push = try await edits + pushQueue(roomID, step: .uploads)
+                push = try await edits + timing.measure(\.uploadsMillis) { try await pushQueue(roomID, step: .uploads) }
             } catch {
+                log(timing.line(failed: true))
                 await activityTracker.finish(roomID)
                 await changeCenter.notify(roomID)
                 throw error
             }
             let report = SyncReport(sent: push.sent, needChoice: push.needChoice, updated: pull.updated, removed: pull.removed, failed: push.failed)
+            timing.sent = push.sent
+            log(timing.line(failed: false))
             trackTiming(report, seconds: now().timeIntervalSince(started))
             if report.changedAnything {
                 await changeCenter.notify(roomID)
@@ -453,8 +462,16 @@ public final class NotesSyncEngine: NotesRepository {
     /// Pulls the tree with the cached ETag and updates what changed, never touching files with local edits.
     @discardableResult
     func pullTree(_ roomID: String) async throws -> PullResult {
-        let response = try await api.tree(roomID: roomID, etag: store.chat(roomID)?.etag)
+        var timing = SyncTiming()
+        return try await pullTree(roomID, timing: &timing)
+    }
+    
+    private func pullTree(_ roomID: String, timing: inout SyncTiming) async throws -> PullResult {
+        let etag = try await store.chat(roomID)?.etag
+        let response = try await timing.measure(\.treeMillis) { try await api.tree(roomID: roomID, etag: etag) }
         guard case let .changed(tree, etag) = response else { return PullResult() }
+        timing.treeChanged = true
+        timing.treeFiles = tree.files.count
         
         var result = PullResult()
         let local = try await store.chat(roomID)
@@ -476,11 +493,16 @@ public final class NotesSyncEngine: NotesRepository {
         for start in stride(from: 0, to: notes.count, by: Self.downloadBatch) {
             let batch = Array(notes[start..<min(start + Self.downloadBatch, notes.count)])
             // Anything but "deleted meanwhile" stops the pull without saving the ETag, so the next sync tries again.
-            let downloaded = try await download(roomID, batch)
+            let downloaded = try await timing.measure(\.downloadMillis) { try await download(roomID, batch) }
+            timing.batches += 1
+            timing.notes += downloaded.count
+            timing.noteBytes += downloaded.reduce(0) { $0 + $1.size }
             if !downloaded.isEmpty {
-                try await store.updateChat(roomID) { record in
-                    for stored in downloaded {
-                        record.files[stored.path] = stored
+                try await timing.measure(\.saveMillis) {
+                    try await store.updateChat(roomID) { record in
+                        for stored in downloaded {
+                            record.files[stored.path] = stored
+                        }
                     }
                 }
             }
