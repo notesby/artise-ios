@@ -13,8 +13,12 @@ struct NoteScreen: View {
     let service: ArtiseNotesService
     let roomID: String
     let path: String
+    /// Opens the editor right away, for a note just created.
+    var startsEditing = false
     
     @State private var file: LocalFile?
+    @State private var isEditing = false
+    @State private var missingTarget: String?
     @State private var document = NoteDocument(markdown: "")
     @State private var paths: [String] = []
     @State private var notePaths: Set<String> = []
@@ -50,7 +54,30 @@ struct NoteScreen: View {
         .navigationDestination(item: $route) { route in
             NotesDestination(service: service, route: route)
         }
-        .task { await load() }
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button(L10n.actionEdit) { isEditing = true }
+                    .disabled(hasLoaded && file?.content == nil && !startsEditing)
+            }
+        }
+        .alert(missingTarget.map { String(format: ArtiseNotesL10n.text("screen_notes_missing_note_create"), $0) } ?? "",
+               isPresented: Binding(get: { missingTarget != nil }, set: {
+                   if !$0 {
+                       missingTarget = nil
+                   }
+               })) {
+            Button(ArtiseNotesL10n.text("screen_notes_create")) { createMissingNote() }
+            Button(L10n.actionCancel, role: .cancel) { }
+        }
+        .fullScreenCover(isPresented: $isEditing) {
+            NoteEditorScreen(service: service, roomID: roomID, path: path) { isEditing = false }
+        }
+        .task {
+            await load()
+            if startsEditing {
+                isEditing = true
+            }
+        }
         .task {
             for await _ in await service.repository.changes(roomID: roomID) {
                 await load()
@@ -72,11 +99,31 @@ struct NoteScreen: View {
         switch link {
         case .note(let target):
             // Photos and files embedded as links open with the attachments feature; notes open here.
-            guard let resolved = NoteLinkResolver.resolve(target, in: paths), notePaths.contains(resolved) else { return }
-            route = .note(roomID: roomID, path: resolved)
+            guard let resolved = NoteLinkResolver.resolve(target, in: paths) else {
+                // A link to a note that doesn't exist yet: offer to create it.
+                if !NoteLinkResolver.hasExtension(target) {
+                    missingTarget = target
+                }
+                return
+            }
+            if notePaths.contains(resolved) {
+                route = .note(roomID: roomID, path: resolved)
+            }
         case .web(let address):
             guard let url = URL(string: address) else { return }
             UIApplication.shared.open(url)
+        }
+    }
+    
+    /// Creates the note a link points to, next to this one (or at the path the link names), and opens it.
+    private func createMissingNote() {
+        guard let target = missingTarget else { return }
+        let folder = target.contains("/") ? "" : NotesFolderEntries.parentFolder(of: path)
+        let newPath = NoteNames.path(for: target, in: folder)
+        let repository = service.repository
+        Task {
+            try? await repository.createNote(roomID: roomID, path: newPath, content: "")
+            route = .newNote(roomID: roomID, path: newPath)
         }
     }
     

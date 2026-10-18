@@ -13,6 +13,10 @@ enum NotesRoute: Hashable {
     case chat(roomID: String, name: String)
     case folder(roomID: String, path: String)
     case note(roomID: String, path: String)
+    /// A note just created: it opens in the editor.
+    case newNote(roomID: String, path: String)
+    /// "Choose a version" for the chat's changes that need a choice.
+    case choices(roomID: String)
 }
 
 /// The notes screens, presented over the app: the chats with notes, or one chat's notes.
@@ -74,6 +78,10 @@ struct NotesDestination: View {
             NotesFolderScreen(service: service, roomID: roomID, folder: path, title: nil)
         case .note(let roomID, let path):
             NoteScreen(service: service, roomID: roomID, path: path)
+        case .newNote(let roomID, let path):
+            NoteScreen(service: service, roomID: roomID, path: path, startsEditing: true)
+        case .choices(let roomID):
+            NotesChoicesScreen(service: service, roomID: roomID)
         }
     }
 }

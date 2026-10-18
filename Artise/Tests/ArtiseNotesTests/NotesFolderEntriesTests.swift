@@ -48,3 +48,12 @@ struct NotesFolderEntriesTests {
         #expect(!NotesFolderEntries.isImage("factura.pdf"))
     }
 }
+
+struct ParentFolderTests {
+    /// A note's folder, for creating a linked note next to it.
+    @Test
+    func parentFolders() {
+        #expect(NotesFolderEntries.parentFolder(of: "Recetas/Postres/Flan.md") == "Recetas/Postres")
+        #expect(NotesFolderEntries.parentFolder(of: "Súper.md") == "")
+    }
+}

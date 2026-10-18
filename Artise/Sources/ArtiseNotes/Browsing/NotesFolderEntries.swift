@@ -58,6 +58,12 @@ public enum NotesFolderEntries {
         return name.hasSuffix(".md") ? String(name.dropLast(3)) : name
     }
     
+    /// "Recetas/Postres/Flan.md" → "Recetas/Postres"; "" at the top level.
+    public static func parentFolder(of path: String) -> String {
+        guard let slash = path.range(of: "/", options: .backwards) else { return "" }
+        return String(path[..<slash.lowerBound])
+    }
+    
     public static func fileName(_ path: String) -> String {
         path.split(separator: "/").last.map(String.init) ?? path
     }

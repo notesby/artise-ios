@@ -280,7 +280,7 @@ public enum EditState: String, Sendable, Codable {
 }
 
 /// An edit made on this phone that hasn't reached the server yet.
-public struct PendingEdit: Equatable, Sendable {
+public struct PendingEdit: Equatable, Sendable, Identifiable {
     public let id: Int64
     public let path: String
     public let kind: EditKind
