@@ -38,6 +38,11 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         callbacks.send(.failedToRegisteredNotifications(error: error))
     }
     
+    // Artise: the server's silent push when a chat's notes change updates that chat (ArtiseNotes).
+    func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any]) async -> UIBackgroundFetchResult {
+        await ArtiseNotes.shared.handlePush(userInfo)
+    }
+    
     func application(_ application: UIApplication, supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
         orientationLock
     }
