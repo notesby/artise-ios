@@ -126,7 +126,7 @@ final class ArtiseWorkspaces {
         if let serverName = WorkspaceHosts.serverName(userID: userID) {
             store.remove(serverName: serverName)
         }
-        ArtiseQuietHoursScreen.store.remove(userID: userID)
+        ArtiseNotificationHoursScreen.store.remove(userID: userID)
         ArtiseChatSounds.removeAll(userID: userID)
         current = nil
         userSession = nil
