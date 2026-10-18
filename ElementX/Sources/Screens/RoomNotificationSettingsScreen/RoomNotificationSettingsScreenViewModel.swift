@@ -31,7 +31,8 @@ class RoomNotificationSettingsScreenViewModel: RoomNotificationSettingsScreenVie
         super.init(initialViewState: RoomNotificationSettingsScreenViewState(bindings: bindings,
                                                                              displayAsUserDefinedRoomSettings: displayAsUserDefinedRoomSettings,
                                                                              navigationTitle: navigationTitle ?? L10n.screenRoomDetailsNotificationTitle,
-                                                                             customSettingsSectionHeader: customSettingsSectionHeader))
+                                                                             customSettingsSectionHeader: customSettingsSectionHeader,
+                                                                             artiseRoomID: roomProxy.id)) // Artise
         
         setupNotificationSettingsSubscription()
         fetchNotificationSettings()

@@ -127,6 +127,7 @@ final class ArtiseWorkspaces {
             store.remove(serverName: serverName)
         }
         ArtiseQuietHoursScreen.store.remove(userID: userID)
+        ArtiseChatSounds.removeAll(userID: userID)
         current = nil
         userSession = nil
         foregroundObserver = nil

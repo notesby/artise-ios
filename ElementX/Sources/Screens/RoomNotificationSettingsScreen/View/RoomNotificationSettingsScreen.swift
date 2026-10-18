@@ -21,6 +21,11 @@ struct RoomNotificationSettingsScreen: View {
             } else {
                 customSettingsSection
             }
+            
+            // Artise: the chat's own sound, on this phone.
+            if let roomID = context.viewState.artiseRoomID {
+                ArtiseChatSoundSection(roomID: roomID)
+            }
         }
         .compoundList()
         .navigationTitle(context.viewState.navigationTitle)

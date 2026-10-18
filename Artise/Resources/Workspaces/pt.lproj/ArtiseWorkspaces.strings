@@ -94,3 +94,17 @@
 "screen_artise_quiet_hours_days" = "Começa nos dias";
 "screen_artise_quiet_hours_mentions" = "Tocar mesmo assim quando me mencionarem";
 "screen_artise_quiet_hours_reminders" = "Tocar mesmo assim nos lembretes do Ari";
+
+/* A chat's own sound */
+"screen_artise_chat_sound" = "Som";
+"screen_artise_chat_sound_footer" = "Só neste celular.";
+"screen_artise_chat_sound_default" = "Padrão";
+"screen_artise_chat_sound_none" = "Sem som";
+"screen_artise_chat_sound_yours" = "Seus sons";
+"screen_artise_chat_sound_pick_file" = "Escolher um arquivo de áudio";
+"screen_artise_chat_sound_long_title" = "O som dura %1$@";
+"screen_artise_chat_sound_long_message" = "Serão usados os primeiros 30 segundos.";
+"screen_artise_chat_sound_long_use" = "Usar";
+"screen_artise_chat_sound_long_other" = "Escolher outro";
+"screen_artise_chat_sound_too_big" = "Este arquivo é grande demais para um som de aviso. Escolha um com menos de 10 MB.";
+"screen_artise_chat_sound_error" = "Não conseguimos usar esse som. Tente outro.";

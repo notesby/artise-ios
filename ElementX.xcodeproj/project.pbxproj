@@ -88,6 +88,7 @@
 		0AE0AB1952F186EB86719B4F /* HomeScreenRoomCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED044D00F2176681CC02CD54 /* HomeScreenRoomCell.swift */; };
 		0B05A35FF5D1ED9E8A0B41A7 /* AuthenticationStartScreenViewModelProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65DDCF8E41759890355ACBC /* AuthenticationStartScreenViewModelProtocol.swift */; };
 		0B9436A91CFA658202400465 /* WaitingConfirmation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E21DC54FCC2A7F78532923F /* WaitingConfirmation.swift */; };
+		0B948D544060AF4AF0CF8E40 /* ArtiseChatSounds.swift in Sources */ = {isa = PBXBuildFile; fileRef = B747EE1324CF7F5D5BBFE724 /* ArtiseChatSounds.swift */; };
 		0BDA19079FD6E17C5AC62E22 /* RoomDetailsEditScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB06F22CFA34885B40976061 /* RoomDetailsEditScreen.swift */; };
 		0BFA67AFD757EE2BA569836A /* ScrollViewAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53482ECA4B6633961EC224F5 /* ScrollViewAdapter.swift */; };
 		0C1E537A49ABB386F7554D4A /* HighlightedTimelineItemModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59B7CC77B82C6C67DE3AD869 /* HighlightedTimelineItemModifier.swift */; };
@@ -358,6 +359,7 @@
 		358290C2E4574456FE0C2DF6 /* LocationSharingScreenViewModelProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B73675A21580971E9ADF66A /* LocationSharingScreenViewModelProtocol.swift */; };
 		35E975CFDA60E05362A7CF79 /* target.yml in Resources */ = {isa = PBXBuildFile; fileRef = 1222DB76B917EB8A55365BA5 /* target.yml */; };
 		36206F74DDEBF9BEAF6A6A1F /* ExtensionLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41A8571A8A071FB41778C016 /* ExtensionLogger.swift */; };
+		363717CA779094394553EE36 /* ArtiseChatSoundSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBD5A685C3601EA472EB5AFA /* ArtiseChatSoundSection.swift */; };
 		3683C4C0DBFA397BE0105B0D /* NotificationTone.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF08D6FC1919CB804A9191E8 /* NotificationTone.swift */; };
 		3684AD01C5FCB7616B28F629 /* TimelineMediaPreviewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CDE60FEE95039CCCEEEE3B0 /* TimelineMediaPreviewController.swift */; };
 		36926D795D6D19177C7812F8 /* EncryptionResetPasswordScreenCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6935A55AB3B0C94BC566DD6 /* EncryptionResetPasswordScreenCoordinator.swift */; };
@@ -2973,6 +2975,7 @@
 		B707676F9EB213653DF91854 /* ManageAuthorizedSpacesScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManageAuthorizedSpacesScreen.swift; sourceTree = "<group>"; };
 		B73587C2E3CF5998361AE516 /* HomeScreenRoomTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeScreenRoomTests.swift; sourceTree = "<group>"; };
 		B746EFA112532A7B701FB914 /* RoomNotificationSettingsCustomSectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomNotificationSettingsCustomSectionView.swift; sourceTree = "<group>"; };
+		B747EE1324CF7F5D5BBFE724 /* ArtiseChatSounds.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArtiseChatSounds.swift; sourceTree = "<group>"; };
 		B7728AA8046D460145EAC740 /* RoomTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomTests.swift; sourceTree = "<group>"; };
 		B7884BD256C091EB511B2EDF /* AppLockSetupPINScreenViewModelProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLockSetupPINScreenViewModelProtocol.swift; sourceTree = "<group>"; };
 		B7F0192CE2F891141A25B49F /* UITestsSignalling.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UITestsSignalling.swift; sourceTree = "<group>"; };
@@ -3096,6 +3099,7 @@
 		CB7B588A06911B455AC0B4C9 /* ManageRoomMemberSheetViewModelProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManageRoomMemberSheetViewModelProtocol.swift; sourceTree = "<group>"; };
 		CB98BFD8E93C7FCCEDEC46F9 /* SpacesScreenViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpacesScreenViewModel.swift; sourceTree = "<group>"; };
 		CBBCC6E74774E79B599625D0 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Localizable.strings; sourceTree = "<group>"; };
+		CBD5A685C3601EA472EB5AFA /* ArtiseChatSoundSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArtiseChatSoundSection.swift; sourceTree = "<group>"; };
 		CBF9AEA706926DD0DA2B954C /* JoinedRoomSize+MemberCount.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JoinedRoomSize+MemberCount.swift"; sourceTree = "<group>"; };
 		CC03209FDE8CE0810617BFFF /* RoomMembersListScreenMemberCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomMembersListScreenMemberCell.swift; sourceTree = "<group>"; };
 		CC1DDB2293A51EA4C2739351 /* RoomListFiltersEmptyStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomListFiltersEmptyStateView.swift; sourceTree = "<group>"; };
@@ -6014,6 +6018,7 @@
 				75523D30A91769D7F5B6608F /* Analytics */,
 				EC02D624FAD77BAFD576DB54 /* LinkPreviews */,
 				61A23FCB44A197347B9602A8 /* Notes */,
+				EBEFCC9C61B731B387D034DE /* Notifications */,
 				5C3D7D07072B17FD4B79F8AF /* Settings */,
 				F3C9820365EF77C5F5D3DA65 /* Stickers */,
 				F179D1B8E36F1DCBBCA88089 /* Workspaces */,
@@ -7606,6 +7611,15 @@
 			path = Sources;
 			sourceTree = "<group>";
 		};
+		EBEFCC9C61B731B387D034DE /* Notifications */ = {
+			isa = PBXGroup;
+			children = (
+				B747EE1324CF7F5D5BBFE724 /* ArtiseChatSounds.swift */,
+				CBD5A685C3601EA472EB5AFA /* ArtiseChatSoundSection.swift */,
+			);
+			path = Notifications;
+			sourceTree = "<group>";
+		};
 		EC02D624FAD77BAFD576DB54 /* LinkPreviews */ = {
 			isa = PBXGroup;
 			children = (
@@ -9115,6 +9129,8 @@
 				AA9A15655F2F294CC2F6BD92 /* ArtiseAppHooks.swift in Sources */,
 				1FC9E53A65DECB58CA0EF6C9 /* ArtiseAppSettingsHook.swift in Sources */,
 				323C4A738D9769E95A5A4921 /* ArtiseAssistantRow.swift in Sources */,
+				363717CA779094394553EE36 /* ArtiseChatSoundSection.swift in Sources */,
+				0B948D544060AF4AF0CF8E40 /* ArtiseChatSounds.swift in Sources */,
 				CAD547A1958E4F4F365C238C /* ArtiseComposerLinkPreview.swift in Sources */,
 				D01C1874B2C61A93842B520C /* ArtiseCrashReports.swift in Sources */,
 				7B9B07AD1692EAAF219CE961 /* ArtiseIDSession.swift in Sources */,
