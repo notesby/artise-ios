@@ -94,6 +94,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 | `UserSessionFlowCoordinator.swift` (reachability) | "{workspace} isn't answering. Your messages will go out when it's back." instead of Element's server message. |
 | `SettingsScreenViewModel.swift` (`showLinkNewDeviceButton`) | Link new device shows where the workspace's server supports QR sign-in (MSC4108), not only with the developer flag. |
 | `AppCoordinator.swift` (`handleBackgroundAppRefresh`) | Element's background refresh also syncs the notes of the chats on the phone, on the connections chosen in Settings → Update notes in the background, and waits for them before finishing (`ArtiseNotes.syncInBackground`). |
+| `AppDelegate.swift`, `ElementX/SupportingFiles/target.yml` (`remote-notification`) | The server's silent push when a chat's notes change wakes the app to update that chat, on the connections chosen in Settings (`ArtiseNotes.handlePush`). |
 | `AppCoordinator.swift` (init) | Starts `ArtiseKeyboardAppearance`: after the app comes back, the keyboard's window gets the app's forced light or dark appearance, so it isn't half light and half dark. |
 | `AppCoordinator.swift` (`setupSentry`) | Crash reports without breadcrumbs, performance traces or failed-request capture (`ArtiseCrashReports`). |
 | `NotificationManager.swift`, `ClientProxy.swift` (`setPusher`) | The pusher goes to the workspace's push gateway (default `push.artise.co`), with `append: true` so other accounts' pushers on the phone stay. |

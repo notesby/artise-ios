@@ -92,12 +92,14 @@ targets:
         NSLocationWhenInUseUsageDescription: Grant location access so that $(APP_DISPLAY_NAME) can share your location.
         NSLocationAlwaysAndWhenInUseUsageDescription: To share your live location, $(APP_DISPLAY_NAME) needs location access when the app is in the background.
         NSFaceIDUsageDescription: Face ID is used to access your app.
+        # Artise: remote-notification, for the server's silent push when a chat's notes change.
         UIBackgroundModes: [
           audio,
           fetch,
           processing,
           voip,
-          location
+          location,
+          remote-notification
         ]
         BGTaskSchedulerPermittedIdentifiers: [
           io.element.elementx.background.refresh

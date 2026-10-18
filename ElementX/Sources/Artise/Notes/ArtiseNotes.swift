@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 //
 
+import ArtiseNotes
 import Network
 import SwiftUI
 
@@ -116,6 +117,29 @@ final class ArtiseNotes {
         let task = UIApplication.shared.beginBackgroundTask(withName: "Artise notes") { }
         await syncKnownChats()
         UIApplication.shared.endBackgroundTask(task)
+    }
+    
+    /// The server's silent push for a chat whose notes changed: updates that chat if its notes are on this phone,
+    /// on the connections the person chose. After a launch in the background, waits a little for the account.
+    func handlePush(_ userInfo: [AnyHashable: Any]) async -> UIBackgroundFetchResult {
+        guard let roomID = NotesPush.roomID(from: userInfo) else { return .noData }
+        for _ in 0..<20 where service == nil {
+            try? await Task.sleep(for: .milliseconds(500))
+        }
+        guard let service else { return .noData }
+        guard NotesPrefetchPolicy.shared.canSyncInBackground else {
+            MXLog.info("Notes: push skipped on this connection")
+            return .noData
+        }
+        guard await service.repository.knownRoomIDs().contains(roomID) else { return .noData }
+        do {
+            let report = try await service.repository.sync(roomID: roomID)
+            MXLog.info("Notes: push synced \(roomID)")
+            return report.changedAnything ? .newData : .noData
+        } catch {
+            MXLog.error("Notes: push sync failed: \(error)")
+            return .failed
+        }
     }
     
     /// Syncs the chats this phone holds notes for (an unchanged one costs a `304`); also run by background refresh.
