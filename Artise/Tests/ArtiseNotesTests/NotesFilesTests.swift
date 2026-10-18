@@ -31,6 +31,37 @@ struct NotesFilesTests {
     
     // MARK: - Uploads
     
+    /// Text edits go first, then what others changed comes down, and photos upload last: a big photo doesn't hold
+    /// back the rest. A note that shows a photo still waits for that photo.
+    @Test
+    func uploadsGoAfterThePull() async throws {
+        server.put("Otra.md", "de alguien")
+        let engine = makeEngine()
+        try await engine.sync(roomID: room)
+        server.put("Nueva.md", "de otra persona")
+        try await engine.createNote(roomID: room, path: "Lista.md", content: "- pan")
+        let path = try await engine.addAttachment(roomID: room, fileName: "luna.png", data: Data("png".utf8), contentType: "image/png")
+        try await engine.createNote(roomID: room, path: "Hoy.md", content: "![[luna.png]]")
+        let before = server.requests.count
+        
+        try await engine.sync(roomID: room)
+        
+        let order = server.requests.dropFirst(before).compactMap { request -> String? in
+            if request.method == "PUT" {
+                return request.path.hasSuffix("/raw") ? "photo" : request.json?["path"] as? String
+            }
+            return request.path.hasSuffix("/tree") ? "tree" : nil
+        }
+        let tree = try #require(order.firstIndex(of: "tree"))
+        let photo = try #require(order.firstIndex(of: "photo"))
+        let note = try #require(order.firstIndex(of: "Hoy.md"))
+        #expect(order.first == "Lista.md")
+        #expect(tree < photo)
+        #expect(photo < note)
+        #expect(path == "attachments/luna.png")
+        #expect(try await engine.file(roomID: room, path: "Nueva.md")?.content == "de otra persona")
+    }
+    
     /// A photo added offline shows at once from the phone, and goes up before the note that embeds it.
     @Test
     func attachmentsUploadBeforeTheNotesThatShowThem() async throws {

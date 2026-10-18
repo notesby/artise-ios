@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 //
 
+import Network
 import SwiftUI
 
 /// Notes for the signed-in account, and the one place the app opens them from.
@@ -16,6 +17,9 @@ final class ArtiseNotes {
     
     private(set) var service: ArtiseNotesService?
     private var foregroundObserver: NSObjectProtocol?
+    private var backgroundObserver: NSObjectProtocol?
+    private var pathMonitor: NWPathMonitor?
+    private var wasOffline = false
     
     var isAvailable: Bool {
         service != nil
@@ -35,7 +39,39 @@ final class ArtiseNotes {
                                                                                           object: nil, queue: .main) { _ in
             Task { @MainActor in await ArtiseNotes.shared.syncKnownChats() }
         }
+        // Leaving the app gives a sync in progress (a photo going up) up to iOS's background time to finish.
+        backgroundObserver = backgroundObserver ?? NotificationCenter.default.addObserver(forName: UIApplication.didEnterBackgroundNotification,
+                                                                                          object: nil, queue: .main) { _ in
+            Task { @MainActor in await ArtiseNotes.shared.finishInBackground() }
+        }
+        startWatchingTheConnection()
         Task { await syncKnownChats() }
+    }
+    
+    /// Edits and photos waiting offline go out as soon as the connection is back.
+    private func startWatchingTheConnection() {
+        guard pathMonitor == nil else { return }
+        let monitor = NWPathMonitor()
+        monitor.pathUpdateHandler = { path in
+            let isOnline = path.status == .satisfied
+            Task { @MainActor in ArtiseNotes.shared.connectionChanged(isOnline: isOnline) }
+        }
+        monitor.start(queue: DispatchQueue(label: "co.artise.notes.connection"))
+        pathMonitor = monitor
+    }
+    
+    private func connectionChanged(isOnline: Bool) {
+        defer { wasOffline = !isOnline }
+        guard isOnline, wasOffline else { return }
+        MXLog.info("Notes: back online, sending what waited")
+        Task { await syncKnownChats() }
+    }
+    
+    private func finishInBackground() async {
+        guard service != nil else { return }
+        let task = UIApplication.shared.beginBackgroundTask(withName: "Artise notes") { }
+        await syncKnownChats()
+        UIApplication.shared.endBackgroundTask(task)
     }
     
     /// Syncs the chats this phone holds notes for (an unchanged one costs a `304`); also run by background refresh.
