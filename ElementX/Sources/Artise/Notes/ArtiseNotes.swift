@@ -51,10 +51,11 @@ final class ArtiseNotes {
     }
 }
 
-/// Starts and stops notes and stickers with the account's session.
+/// Starts and stops notes, stickers and link previews with the account's session.
 nonisolated struct ArtiseUserSessionHook: UserSessionHookProtocol {
     func configure(with userSession: UserSessionProtocol?) async {
         await ArtiseNotes.shared.configure(with: userSession)
         await ArtiseStickers.shared.configure(with: userSession)
+        await ArtiseLinkPreviews.shared.configure(with: userSession)
     }
 }

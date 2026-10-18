@@ -37,6 +37,11 @@ struct ComposerToolbar: View {
     
     var body: some View {
         VStack(spacing: 8) {
+            // Artise: the preview of the link being typed.
+            if let linkPreview = context.viewState.artiseLinkPreview {
+                ArtiseComposerLinkPreviewView(model: linkPreview)
+            }
+            
             topBar
             
             if context.composerFormattingEnabled {

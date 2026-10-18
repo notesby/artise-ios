@@ -37,6 +37,8 @@ targets:
       product: ArtiseNotes
     - package: Artise
       product: ArtiseStickers
+    - package: Artise
+      product: ArtiseLinkPreview
     - package: Firebase
       product: FirebaseAnalytics
 

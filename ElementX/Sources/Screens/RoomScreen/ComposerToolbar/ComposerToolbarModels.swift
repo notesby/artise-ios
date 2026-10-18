@@ -74,6 +74,8 @@ struct ComposerToolbarViewState: BindableState {
     var composerEmpty = true
     /// Artise: the room the sticker button sends to.
     var artiseRoomID: String?
+    /// Artise: the preview of the link being typed.
+    var artiseLinkPreview: ArtiseComposerLinkPreview?
     /// Could be false if sending is disabled in the room
     var canSend = true
     var suggestions: [SuggestionItem] = []
