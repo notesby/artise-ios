@@ -23,6 +23,7 @@ enum NotesRoute: Hashable {
     case map(roomID: String)
     /// Every change to the chat's notes.
     case changes(roomID: String)
+    case search(roomID: String)
     /// A note's saved versions, and one of them read-only.
     case noteHistory(roomID: String, path: String)
     case noteVersion(roomID: String, path: String, commit: String, at: String)
@@ -97,6 +98,8 @@ struct NotesDestination: View {
             NotesMapScreen(service: service, roomID: roomID)
         case .changes(let roomID):
             NotesChangesScreen(service: service, roomID: roomID)
+        case .search(let roomID):
+            NotesSearchScreen(service: service, roomID: roomID)
         case .noteHistory(let roomID, let path):
             NoteHistoryScreen(service: service, roomID: roomID, path: path)
         case .noteVersion(let roomID, let path, let commit, let at):
