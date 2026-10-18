@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 //
 
+import ArtiseNotes
 import ArtiseWorkspaces
 import Compound
 import SwiftUI
@@ -15,6 +16,7 @@ struct ArtiseSettingsSection: View {
     private let workspaces = ArtiseWorkspaces.shared
     @State private var isPresentingSecurity = false
     @State private var isPresentingNotificationHours = false
+    @State private var notesBackgroundSync = NotesBackgroundSyncStore().setting
     @Environment(\.openURL) private var openURL
     
     var body: some View {
@@ -36,6 +38,17 @@ struct ArtiseSettingsSection: View {
                 ArtiseNotificationHoursScreen(userID: userID)
             }
         }
+        if ArtiseNotes.shared.isAvailable {
+            Section {
+                ListRow(label: .default(title: ArtiseWorkspacesL10n.text("screen_artise_notes_background_title"), icon: \.download),
+                        kind: .picker(selection: $notesBackgroundSync,
+                                      items: NotesBackgroundSync.allCases.map { (title: Self.title($0), tag: $0) }))
+            } footer: {
+                Text(ArtiseWorkspacesL10n.text("screen_artise_notes_background_footer"))
+                    .compoundListSectionFooter()
+            }
+            .onChange(of: notesBackgroundSync) { NotesBackgroundSyncStore().setting = notesBackgroundSync }
+        }
         if workspaces.helpURL != nil || workspaces.contactURL != nil {
             Section {
                 if let helpURL = workspaces.helpURL {
@@ -47,6 +60,13 @@ struct ArtiseSettingsSection: View {
                             kind: .button { openURL(contactURL) })
                 }
             }
+        }
+    }
+    
+    private static func title(_ setting: NotesBackgroundSync) -> String {
+        switch setting {
+        case .wifiOnly: ArtiseWorkspacesL10n.text("screen_artise_notes_background_wifi")
+        case .wifiAndMobile: ArtiseWorkspacesL10n.text("screen_artise_notes_background_mobile")
         }
     }
 }

@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 //
 
+import ArtiseNotes
 import Foundation
 import ImageIO
 import Network
@@ -50,6 +51,7 @@ nonisolated enum NotesPhotoConverter {
 
 /// Whether photos may download ahead of time: only on Wi-Fi or another connection that isn't expensive, and not
 /// in Low Data Mode. Many families are on prepaid mobile data, so the app never spends it on photos nobody asked to see.
+/// Notes nobody is looking at update on the connections the person chose (`NotesBackgroundSync`).
 final nonisolated class NotesPrefetchPolicy: Sendable {
     static let shared = NotesPrefetchPolicy()
     
@@ -60,7 +62,15 @@ final nonisolated class NotesPrefetchPolicy: Sendable {
     }
     
     var canPrefetch: Bool {
+        NotesBackgroundSync.wifiOnly.allows(connection)
+    }
+    
+    var canSyncInBackground: Bool {
+        NotesBackgroundSyncStore().setting.allows(connection)
+    }
+    
+    private var connection: NotesBackgroundSync.Connection {
         let path = monitor.currentPath
-        return path.status == .satisfied && !path.isExpensive && !path.isConstrained
+        return .init(isOnline: path.status == .satisfied, isExpensive: path.isExpensive, isConstrained: path.isConstrained)
     }
 }

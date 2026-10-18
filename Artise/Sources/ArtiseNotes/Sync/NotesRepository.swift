@@ -33,6 +33,8 @@ public protocol NotesRepository: Sendable {
     /// Syncs the chats this phone already holds notes for, a few at a time; returns how many synced.
     @discardableResult
     func syncKnownChats(concurrency: Int) async -> Int
+    /// The chats this phone already holds notes for.
+    func knownRoomIDs() async -> [String]
     /// What a sync in progress is doing, for the folder's progress line.
     func activity(roomID: String) async -> SyncActivity
     /// A live `co.artise.notes` state event said the chat's tree is now `tree`: syncs only if that differs from ours.

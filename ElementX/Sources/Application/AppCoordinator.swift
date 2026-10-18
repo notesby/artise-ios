@@ -1311,8 +1311,8 @@ class AppCoordinator: AppCoordinatorProtocol, AuthenticationFlowCoordinatorDeleg
         
         await resumeClientServices()
         
-        // Artise: the notes of the chats on this phone sync too (ArtiseNotes).
-        Task { await ArtiseNotes.shared.syncKnownChats() }
+        // Artise: the notes of the chats on this phone sync too, and the refresh waits for them (ArtiseNotes).
+        let artiseNotesSync = Task { await ArtiseNotes.shared.syncInBackground() }
         
         // Be a good citizen, run for a max of 10 SS responses or 10 seconds
         // An SS request will time out after 30 seconds if no new data is available
@@ -1328,6 +1328,7 @@ class AppCoordinator: AppCoordinatorProtocol, AuthenticationFlowCoordinatorDeleg
                 // Make sure we stop the sync loop, otherwise the ongoing request is immediately
                 // handled the next time the app refreshes, which can trigger timeout failures.
                 Task {
+                    await artiseNotesSync.value
                     await self.pauseClientServices(isBackgroundTask: true)
                     MXLog.info("Marking Background app refresh task as complete.")
                     task.setTaskCompleted(success: true)

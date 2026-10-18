@@ -124,3 +124,9 @@
 "screen_artise_keep_key_card" = "Keep your recovery key or create a passkey, in case you change phones.";
 "screen_artise_keep_key_card_show" = "Show my key";
 "screen_artise_keep_key_card_later" = "Not now";
+
+/* Settings → Update notes in the background */
+"screen_artise_notes_background_title" = "Update notes in the background";
+"screen_artise_notes_background_wifi" = "Only on Wi-Fi";
+"screen_artise_notes_background_mobile" = "Wi-Fi and mobile data";
+"screen_artise_notes_background_footer" = "Keeps notes up to date before you open them. Opening Notes always updates them, and Low Data Mode waits for that.";
