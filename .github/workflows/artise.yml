@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: AGPL-3.0-only
 #
 # Artise's CI. There is no Mac in the team, so this workflow is the Mac:
-# - checks: Artise file headers (Linux, fast).
+# - checks: Artise file headers and script tests (Linux, fast).
 # - tests: upstream SwiftFormat lint and unit tests, plus the Artise package tests.
 # - testflight (on demand): archives, signs with Artise's distribution certificate and uploads to TestFlight.
 # Upstream's own workflows are disabled on this repository.
@@ -26,7 +26,7 @@ concurrency:
 
 jobs:
   checks:
-    name: Headers
+    name: Checks
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -36,6 +36,9 @@ jobs:
 
       - name: Check Artise file headers
         run: Artise/Scripts/check-headers.sh
+
+      - name: Artise script tests
+        run: python3 -m unittest discover -s Artise/Scripts/tests -v
 
   tests:
     name: Tests

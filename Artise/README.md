@@ -21,6 +21,25 @@ To keep upstream merges cheap, Artise code goes in:
 Upstream files change only where a hook is needed. Each one is listed below and marked
 with an `Artise:` comment.
 
+Artise plugs into upstream's own extension points:
+
+- `Artise/override.yml` is an XcodeGen include. It adds our package, the app icon and the
+  string override build step to the ElementX target.
+- `ElementX/Sources/Artise/ArtiseAppHooks.swift` registers our `AppHooks` (`AppSettingsHook`:
+  server lock, links, push gateway).
+- Rules that touch upstream screens live in `ArtiseCore`, so the upstream edit stays a one-line
+  call and the rule has its own tests.
+
+### Look and wording
+
+- **Icon:** `Artise/Resources/AppIcon/make_app_icon.py` draws the icon with the same geometry as
+  the Android app and writes `ArtiseAppIcon` (default, dark and tinted). Edit the script, not the PNGs.
+- **Wording:** upstream's string files are rewritten by their translation tool, so we never
+  edit them. A build step (`Artise/Scripts/apply-string-overrides.sh`) changes "Element X" to
+  "Artise" in every language and applies `Artise/Resources/StringOverrides/<language>.lproj`
+  (English and Spanish, written by hand). Its tests fail if upstream renames an overridden key.
+- **Spanish:** Artise ships `es` (written for Mexico), so every Spanish-speaking region uses it.
+
 Every file we add starts with:
 
 ```
@@ -35,6 +54,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 | File | Why |
 |---|---|
 | `app.yml` | App name, bundle ID `co.artise.app`, app group, team. Element Classic import pointed at our own group. |
+| `project.yml` | Includes `Artise/override.yml` (our package, app icon and build steps). |
 | `NSE/SupportingFiles/target.yml` | Notification filtering entitlement off until Apple grants it to our team. |
 
 ## Branches

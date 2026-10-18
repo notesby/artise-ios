@@ -1,0 +1,10 @@
+/*
+ Copyright 2026 Artise.
+
+ SPDX-License-Identifier: AGPL-3.0-only
+
+ Artise wording that replaces Element's, applied to the built app by Artise/Scripts/apply-string-overrides.sh.
+*/
+
+"NSCameraUsageDescription" = "To take photos or videos and send them in a chat, Artise needs access to the camera.";
+"NSMicrophoneUsageDescription" = "To record and send voice messages, Artise needs access to the microphone.";

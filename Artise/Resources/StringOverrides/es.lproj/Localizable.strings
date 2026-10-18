@@ -1,0 +1,15 @@
+/*
+ Copyright 2026 Artise.
+
+ SPDX-License-Identifier: AGPL-3.0-only
+
+ Artise wording that replaces Element's, applied to the built app by Artise/Scripts/apply-string-overrides.sh.
+*/
+
+"screen_onboarding_welcome_title" = "El chat privado de tu familia";
+"screen_onboarding_welcome_message" = "Te damos la bienvenida a %1$@. Privado, cifrado y sencillo.";
+"screen_notification_settings_sound_element_default" = "Artise";
+"screen_notification_settings_sound_element_fade" = "Artise (suave)";
+"screen_room_timeline_legacy_call" = "Llamada no compatible. Pide a quien llama que llame desde la app de Artise.";
+"screen_advanced_settings_element_call_base_url" = "URL base personalizada para llamadas";
+"screen_advanced_settings_element_call_base_url_description" = "Define una URL base personalizada para las llamadas.";

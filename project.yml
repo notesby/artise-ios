@@ -70,6 +70,9 @@ include:
 - path: Components/MapLibre/MapLibreShim/SupportingFiles/target.yml
 - path: Components/SDKMocks/SupportingFiles/target.yml
 # - path: MyAppVariant/override.yml
+# Artise: our targets, packages and resources (see Artise/README.md).
+- path: Artise/override.yml
+  relativePaths: false
 
 packages:
   # Element/Matrix dependencies
