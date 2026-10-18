@@ -164,6 +164,10 @@ public final class NotesSyncEngine: NotesRepository {
         return synced
     }
     
+    public func knownRoomIDs() async -> [String] {
+        await store.storedRoomIDs()
+    }
+    
     /// What a sync in progress is doing, for "Actualizando 12 notas…".
     public func activity(roomID: String) async -> SyncActivity {
         await activityTracker.activity(roomID)

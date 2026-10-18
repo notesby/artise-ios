@@ -124,3 +124,9 @@
 "screen_artise_keep_key_card" = "Guarda tu clave de recuperación o crea una llave de acceso, por si cambias de teléfono.";
 "screen_artise_keep_key_card_show" = "Ver mi clave";
 "screen_artise_keep_key_card_later" = "Ahora no";
+
+/* Settings → Update notes in the background */
+"screen_artise_notes_background_title" = "Actualizar notas en segundo plano";
+"screen_artise_notes_background_wifi" = "Solo con Wi-Fi";
+"screen_artise_notes_background_mobile" = "Wi-Fi y datos móviles";
+"screen_artise_notes_background_footer" = "Mantiene las notas al día antes de que las abras. Al abrir Notas siempre se actualizan, y el modo de datos bajos espera a eso.";

@@ -20,6 +20,10 @@ final class ArtiseNotes {
     private var backgroundObserver: NSObjectProtocol?
     private var pathMonitor: NWPathMonitor?
     private var wasOffline = false
+    private var checks: Task<Void, Never>?
+    
+    /// While the app is open, notes nobody is looking at are checked this often (an unchanged chat costs a `304`).
+    static let checkInterval = Duration.seconds(5 * 60)
     
     var isAvailable: Bool {
         service != nil
@@ -29,23 +33,63 @@ final class ArtiseNotes {
     /// API changes. A workspace without one has no notes.
     func configure(with userSession: UserSessionProtocol?) {
         service?.unfollowAll()
+        service?.stopWatching()
         guard let userSession, let notesAPIURL = ArtiseWorkspaces.shared.notesAPIURL else {
             service = nil
+            stopChecking()
             return
         }
         service = ArtiseNotesService(clientProxy: userSession.clientProxy, notesAPIURL: notesAPIURL)
         // Notas is already current when opened: the chats on this phone sync now and each time the app comes back.
         foregroundObserver = foregroundObserver ?? NotificationCenter.default.addObserver(forName: UIApplication.willEnterForegroundNotification,
                                                                                           object: nil, queue: .main) { _ in
-            Task { @MainActor in await ArtiseNotes.shared.syncKnownChats() }
+            Task { @MainActor in
+                ArtiseNotes.shared.startChecking()
+                await ArtiseNotes.shared.syncKnownChats()
+            }
         }
         // Leaving the app gives a sync in progress (a photo going up) up to iOS's background time to finish.
         backgroundObserver = backgroundObserver ?? NotificationCenter.default.addObserver(forName: UIApplication.didEnterBackgroundNotification,
                                                                                           object: nil, queue: .main) { _ in
-            Task { @MainActor in await ArtiseNotes.shared.finishInBackground() }
+            Task { @MainActor in
+                ArtiseNotes.shared.stopChecking()
+                await ArtiseNotes.shared.finishInBackground()
+            }
         }
         startWatchingTheConnection()
+        startChecking()
         Task { await syncKnownChats() }
+    }
+    
+    /// Every few minutes while the app is open: syncs the chats on this phone and follows any new ones live, when the
+    /// background setting allows the connection.
+    private func startChecking() {
+        checks?.cancel()
+        checks = Task { [weak self] in
+            await self?.service?.watchKnownChats()
+            while !Task.isCancelled {
+                try? await Task.sleep(for: Self.checkInterval)
+                guard !Task.isCancelled else { return }
+                await self?.syncInBackground()
+            }
+        }
+    }
+    
+    private func stopChecking() {
+        checks?.cancel()
+        checks = nil
+    }
+    
+    /// A sync nobody asked for (while the app is open on another screen, or when iOS wakes it): only on the connections
+    /// the person chose, and never in Low Data Mode.
+    func syncInBackground() async {
+        guard let service else { return }
+        guard NotesPrefetchPolicy.shared.canSyncInBackground else {
+            MXLog.info("Notes: background update skipped on this connection")
+            return
+        }
+        await syncKnownChats()
+        await service.watchKnownChats()
     }
     
     /// Edits and photos waiting offline go out as soon as the connection is back.
@@ -84,6 +128,8 @@ final class ArtiseNotes {
     
     /// The account signed out: stops its notes and forgets them on this phone (files and key).
     func signOut(userID: String) {
+        stopChecking()
+        service?.stopWatching()
         service?.unfollowAll()
         service = nil
         ArtiseNotesService.removeData(forUserID: userID)

@@ -93,7 +93,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 | `HomeScreenContent.swift` | Ari pinned at the top of the chat list (`ArtiseAssistantRow`), when the workspace file names Ari's account, and the "What's new" card after an update (`ArtiseWhatsNew`). |
 | `UserSessionFlowCoordinator.swift` (reachability) | "{workspace} isn't answering. Your messages will go out when it's back." instead of Element's server message. |
 | `SettingsScreenViewModel.swift` (`showLinkNewDeviceButton`) | Link new device shows where the workspace's server supports QR sign-in (MSC4108), not only with the developer flag. |
-| `AppCoordinator.swift` (`handleBackgroundAppRefresh`) | Element's background refresh also syncs the notes of the chats on the phone (`ArtiseNotes.syncKnownChats`). |
+| `AppCoordinator.swift` (`handleBackgroundAppRefresh`) | Element's background refresh also syncs the notes of the chats on the phone, on the connections chosen in Settings → Update notes in the background, and waits for them before finishing (`ArtiseNotes.syncInBackground`). |
 | `AppCoordinator.swift` (init) | Starts `ArtiseKeyboardAppearance`: after the app comes back, the keyboard's window gets the app's forced light or dark appearance, so it isn't half light and half dark. |
 | `AppCoordinator.swift` (`setupSentry`) | Crash reports without breadcrumbs, performance traces or failed-request capture (`ArtiseCrashReports`). |
 | `NotificationManager.swift`, `ClientProxy.swift` (`setPusher`) | The pusher goes to the workspace's push gateway (default `push.artise.co`), with `append: true` so other accounts' pushers on the phone stay. |

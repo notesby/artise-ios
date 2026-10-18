@@ -17,6 +17,8 @@ final class ArtiseNotesService {
     let repository: NotesRepository
     private let clientProxy: ClientProxyProtocol
     private var followed: [String: TaskHandle] = [:]
+    /// The chats with notes on this phone, followed while the app is open so Notas is current when opened.
+    private var watched: [String: TaskHandle] = [:]
     
     /// `nil` when the account's notes can't be opened on this phone (no key in the Keychain).
     init?(clientProxy: ClientProxyProtocol, notesAPIURL: URL) {
@@ -99,6 +101,29 @@ final class ArtiseNotesService {
     func unfollowAll() {
         followed.values.forEach { $0.cancel() }
         followed = [:]
+    }
+    
+    /// Follows the `co.artise.notes` state of every chat with notes on this phone, whatever screen is open. A change
+    /// syncs that chat when the background setting allows the connection; otherwise it waits for Notas to open.
+    func watchKnownChats() async {
+        let repository = repository
+        for roomID in await repository.knownRoomIDs() where watched[roomID] == nil {
+            guard case let .joined(roomProxy) = await clientProxy.roomForIdentifier(roomID),
+                  let room = (roomProxy as? JoinedRoomProxy)?.room else { continue }
+            let listener = NotesTreeListener { tree in
+                guard let tree else { return }
+                Task {
+                    guard NotesPrefetchPolicy.shared.canSyncInBackground else { return }
+                    _ = try? await repository.onTreeChanged(roomID: roomID, tree: tree)
+                }
+            }
+            watched[roomID] = room.subscribeToStateEvents(eventType: stateEventTypeFromString(s: Self.stateEventType), listener: listener)
+        }
+    }
+    
+    func stopWatching() {
+        watched.values.forEach { $0.cancel() }
+        watched = [:]
     }
 }
 
