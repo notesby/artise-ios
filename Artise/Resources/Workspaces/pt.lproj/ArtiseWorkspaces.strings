@@ -1,0 +1,36 @@
+/*
+ Copyright 2026 Artise.
+
+ SPDX-License-Identifier: AGPL-3.0-only
+
+ Written for iOS first. The Android app uses the same keys and texts.
+*/
+
+"screen_workspace_title" = "Seu espaço de trabalho";
+"screen_workspace_subtitle" = "Digite o nome que sua empresa usa no Artise.";
+"screen_workspace_field_label" = "Espaço de trabalho";
+"screen_workspace_placeholder" = "acme";
+"screen_workspace_field_footer" = "Você também pode digitar o endereço do seu servidor, como artise.co.";
+"screen_workspace_error_invalid" = "Esse nome de espaço de trabalho não é válido. Use de 3 a 30 letras, números ou hifens.";
+"screen_workspace_error_not_found" = "Não há nenhum espaço de trabalho chamado %1$@. Confira o nome e tente de novo.";
+"screen_workspace_error_paused" = "Este espaço de trabalho está pausado. Fale com o administrador.";
+"screen_workspace_error_rate_limited" = "Muitas tentativas. Espere um minuto e tente de novo.";
+"screen_workspace_error_unreachable" = "Não foi possível conectar ao Artise agora. Confira sua conexão e tente de novo.";
+"screen_workspace_error_sign_in_unavailable" = "Não foi possível conectar a %1$@ agora. Tente de novo em instantes.";
+"screen_workspace_welcome_action" = "Começar";
+"screen_workspace_invite_error_expired" = "Este link de convite não funciona mais. Peça um novo.";
+"screen_workspace_invite_error_unreachable" = "Não foi possível abrir o convite agora. Confira sua conexão e tente de novo.";
+"screen_workspace_invite_already_member" = "Você já está em %1$@.";
+"screen_workspace_invite_sign_out_first" = "Você entrou em %1$@. Para entrar em %2$@, saia primeiro e depois abra o link de convite de novo.";
+
+"screen_artise_id_title" = "Artise";
+"screen_artise_id_subtitle" = "Entre uma vez e escolha seu espaço.";
+"screen_artise_id_apple" = "Continuar com a Apple";
+"screen_artise_id_google" = "Continuar com o Google";
+"screen_artise_id_microsoft" = "Continuar com a Microsoft";
+"screen_artise_id_email" = "Continuar com e-mail";
+"screen_artise_id_type_workspace" = "Tem o nome do seu espaço? Digite-o";
+"screen_artise_id_pick_workspace" = "Escolha seu espaço";
+"screen_artise_id_no_workspaces" = "Você ainda não está em nenhum espaço. Peça o link de convite a quem convidou você.";
+"screen_artise_id_other_account" = "Entrar de outra forma";
+"screen_artise_id_error" = "Não foi possível entrar com o Artise ID agora. Tente de novo.";

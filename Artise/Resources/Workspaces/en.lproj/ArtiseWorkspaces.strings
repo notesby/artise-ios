@@ -22,3 +22,15 @@
 "screen_workspace_invite_error_unreachable" = "Can’t open the invite right now. Check your connection and try again.";
 "screen_workspace_invite_already_member" = "You’re already in %1$@.";
 "screen_workspace_invite_sign_out_first" = "You’re signed in to %1$@. To join %2$@, sign out first, then open the invite link again.";
+
+"screen_artise_id_title" = "Artise";
+"screen_artise_id_subtitle" = "Sign in once and pick your workspace.";
+"screen_artise_id_apple" = "Continue with Apple";
+"screen_artise_id_google" = "Continue with Google";
+"screen_artise_id_microsoft" = "Continue with Microsoft";
+"screen_artise_id_email" = "Continue with email";
+"screen_artise_id_type_workspace" = "Have your workspace’s name? Type it";
+"screen_artise_id_pick_workspace" = "Choose your workspace";
+"screen_artise_id_no_workspaces" = "You’re not in any workspace yet. Ask the person who invited you for the invite link.";
+"screen_artise_id_other_account" = "Sign in another way";
+"screen_artise_id_error" = "Can’t sign in with Artise ID right now. Try again.";
