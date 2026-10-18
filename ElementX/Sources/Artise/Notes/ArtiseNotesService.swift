@@ -45,7 +45,8 @@ final class ArtiseNotesService {
                                      directory: Self.directory(for: userID),
                                      cipher: AESGCMNotesCipher(keyData: keyData),
                                      files: files,
-                                     track: { event in Task { @MainActor in ArtiseAnalyticsClient.shared.track(event) } })
+                                     track: { event in Task { @MainActor in ArtiseAnalyticsClient.shared.track(event) } },
+                                     log: { MXLog.info($0) })
         self.clientProxy = clientProxy
     }
     
