@@ -75,3 +75,13 @@
 
 /* Notas (iOS first; to move to the notes table once Android has it) */
 "screen_notes_updating" = "Actualizando %1$d notas…";
+
+/* The workspace isn't answering */
+"screen_artise_workspace_unreachable" = "%1$@ no responde. Tus mensajes se enviarán cuando vuelva.";
+
+/* What's new (change with ArtiseWhatsNew.edition) */
+"screen_artise_whats_new_title" = "Novedades";
+"screen_artise_whats_new_1" = "Inicia sesión una vez con Apple, Google, Microsoft o tu correo, y elige tu espacio de trabajo.";
+"screen_artise_whats_new_2" = "Ari aparece fijo arriba en tus chats, y en Ajustes tienes Ayuda y Seguridad.";
+"screen_artise_whats_new_3" = "Las notas se actualizan solas al abrir la app, y ahora puedes buscarlas.";
+"screen_artise_whats_new_done" = "Entendido";

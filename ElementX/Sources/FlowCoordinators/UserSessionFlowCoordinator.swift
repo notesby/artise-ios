@@ -291,8 +291,9 @@ class UserSessionFlowCoordinator: FlowCoordinatorProtocol {
                                                                                  title: L10n.commonOffline,
                                                                                  persistent: true))
                 case (.reachable, .unreachable):
+                    // Artise: names the workspace and says messages will go out (ArtiseWorkspaces.unreachableText).
                     flowParameters.userIndicatorController.submitIndicator(.init(id: reachabilityNotificationID,
-                                                                                 title: L10n.commonServerUnreachable,
+                                                                                 title: ArtiseWorkspaces.shared.unreachableText ?? L10n.commonServerUnreachable,
                                                                                  persistent: true))
                 // Don't alarm the user while we've intentionally suspended the client.
                 case (.reachable, .reachable), (.reachable, .suspended):

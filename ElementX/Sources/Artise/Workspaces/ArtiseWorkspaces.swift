@@ -133,6 +133,11 @@ final class ArtiseWorkspaces {
         ArtiseIDSession.shared.forget()
     }
     
+    /// "Prueba MAS isn't answering. Your messages will go out when it's back."; `nil` without a workspace name.
+    var unreachableText: String? {
+        current?.displayName.map { String(format: ArtiseWorkspacesL10n.text("screen_artise_workspace_unreachable"), $0) }
+    }
+    
     // MARK: - Ari and help
     
     /// Ari's chat, opened from the pinned row: the direct chat when there is one, else Ari's profile (with "Message").
