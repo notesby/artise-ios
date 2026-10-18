@@ -77,10 +77,17 @@ struct NotesFolderScreen: View {
         }
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
-                Button { route = .media(roomID: roomID) } label: {
-                    CompoundIcon(\.image)
+                Menu {
+                    Button { route = .map(roomID: roomID) } label: {
+                        Label(ArtiseNotesL10n.text("screen_notes_map"), icon: \.share)
+                    }
+                    Button { route = .media(roomID: roomID) } label: {
+                        Label(ArtiseNotesL10n.text("screen_notes_media_title"), icon: \.image)
+                    }
+                } label: {
+                    CompoundIcon(\.overflowHorizontal)
                 }
-                .accessibilityLabel(ArtiseNotesL10n.text("screen_notes_media_title"))
+                .accessibilityLabel(ArtiseNotesL10n.text("screen_notes_more"))
             }
             ToolbarItem(placement: .primaryAction) {
                 Menu {
