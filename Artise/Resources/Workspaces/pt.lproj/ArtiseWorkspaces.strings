@@ -60,3 +60,8 @@
 "screen_artise_update_message_generic" = "Esta versão do Artise não funciona mais. Atualize para continuar.";
 "screen_artise_update_action" = "Atualizar";
 "screen_artise_update_no_link" = "Atualize pela App Store, ou pelo TestFlight se estiver testando.";
+
+/* Ari pinned, Settings → Help */
+"screen_artise_assistant_hint" = "Peça ao Ari lembretes, notas ou que avise alguém";
+"screen_artise_help" = "Ajuda";
+"screen_artise_contact_admin" = "Escrever para o administrador";

@@ -76,7 +76,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 | `AppSettings.swift` (`artiseUseOAuthClient`, `oAuthStaticRegistrations` settable) | A workspace with its own app client (`co.artise.workspace.oauth`) signs in with it and returns to `https://join.artise.co/oauth`, so its sign-in page skips the consent screen. |
 | `AuthenticationFlowCoordinator.swift` (start screen) | The first screen is `ArtiseStartScreenCoordinator`: Artise ID (Apple, Google, Microsoft, email) and the person's workspaces. It shows Element's start screen when Artise ID isn't available or for a provisioning link. |
 | `LoginScreen.swift`, `HomeScreen.swift` | The workspace's logo and name on the sign-in screen and in the home top bar (`ArtiseWorkspaces`). |
-| `SettingsScreen.swift` | Artise's own Settings rows (`ArtiseSettingsSection`): Security, for Artise ID's two-step verification. |
+| `SettingsScreen.swift` | Artise's own Settings rows (`ArtiseSettingsSection`): Security, for Artise ID's two-step verification, and Help (the workspace's help page, writing to its admin). |
+| `HomeScreenContent.swift` | Ari pinned at the top of the chat list (`ArtiseAssistantRow`), when the workspace file names Ari's account. |
 | `SettingsScreenViewModel.swift` (`showLinkNewDeviceButton`) | Link new device shows where the workspace's server supports QR sign-in (MSC4108), not only with the developer flag. |
 | `NotificationManager.swift`, `ClientProxy.swift` (`setPusher`) | The pusher goes to the workspace's push gateway (default `push.artise.co`), with `append: true` so other accounts' pushers on the phone stay. |
 | `AppCoordinator.swift` (`handleDeepLink`), `UserSessionStore.swift`, `SettingsScreenViewModel.swift` | Invite links (`join.artise.co`), forgetting the workspace's look on sign-out, and Delete account on the workspace's `links.delete_account` page (hidden without one). |
