@@ -72,3 +72,6 @@
 "screen_artise_sign_out_content" = "Tus chats de %1$@ dejarán de verse en este teléfono. Podrás volver a entrar cuando quieras.";
 "screen_artise_sign_out_content_unnamed" = "Tus chats dejarán de verse en este teléfono. Podrás volver a entrar cuando quieras.";
 "screen_artise_sign_out_artise_id" = "También cerrarás tu sesión de Artise ID en este teléfono.";
+
+/* Notas (iOS first; to move to the notes table once Android has it) */
+"screen_notes_updating" = "Actualizando %1$d notas…";

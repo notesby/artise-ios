@@ -72,3 +72,6 @@
 "screen_artise_sign_out_content" = "Your chats in %1$@ will no longer show on this phone. You can sign back in anytime.";
 "screen_artise_sign_out_content_unnamed" = "Your chats will no longer show on this phone. You can sign back in anytime.";
 "screen_artise_sign_out_artise_id" = "You’ll also be signed out of Artise ID on this phone.";
+
+/* Notas (iOS first; to move to the notes table once Android has it) */
+"screen_notes_updating" = "Updating %1$d notes…";

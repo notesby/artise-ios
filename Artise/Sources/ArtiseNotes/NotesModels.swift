@@ -303,6 +303,16 @@ public struct PendingEdit: Equatable, Sendable, Identifiable {
 }
 
 /// What a sync did.
+/// What a sync in progress is doing.
+public struct SyncActivity: Equatable, Sendable {
+    /// Notes still to download in this sync; 0 when nothing is coming down.
+    public var downloadingNotes: Int
+    
+    public init(downloadingNotes: Int = 0) {
+        self.downloadingNotes = downloadingNotes
+    }
+}
+
 public struct SyncReport: Equatable, Sendable {
     /// Edits the server accepted.
     public var sent: Int

@@ -30,6 +30,11 @@ public protocol NotesRepository: Sendable {
     /// Sends queued edits in order, then pulls what changed. An unchanged chat costs one `304`.
     @discardableResult
     func sync(roomID: String) async throws -> SyncReport
+    /// Syncs the chats this phone already holds notes for, a few at a time; returns how many synced.
+    @discardableResult
+    func syncKnownChats(concurrency: Int) async -> Int
+    /// What a sync in progress is doing, for the folder's progress line.
+    func activity(roomID: String) async -> SyncActivity
     /// A live `co.artise.notes` state event said the chat's tree is now `tree`: syncs only if that differs from ours.
     @discardableResult
     func onTreeChanged(roomID: String, tree: String) async throws -> SyncReport?

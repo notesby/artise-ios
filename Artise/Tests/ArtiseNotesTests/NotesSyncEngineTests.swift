@@ -367,3 +367,76 @@ struct NotesSyncEngineTests {
         #expect(NotesSyncEngine.parentFolders(of: "c.md").isEmpty)
     }
 }
+
+extension NotesSyncEngineTests {
+    // MARK: - Syncing on open
+    
+    /// Only chats this phone holds notes for sync on open, and an unchanged one costs one `304`.
+    @Test
+    func knownChatsSyncOnOpen() async throws {
+        server.put("Súper.md", "- leche")
+        let engine = makeEngine()
+        #expect(await engine.syncKnownChats() == 0)
+        #expect(server.requests(to: "tree").isEmpty)
+        
+        try await engine.sync(roomID: room)
+        server.put("Nueva.md", "hola")
+        #expect(await engine.syncKnownChats() == 1)
+        #expect(try await engine.file(roomID: room, path: "Nueva.md")?.content == "hola")
+        
+        let before = server.requests.count
+        #expect(await engine.syncKnownChats() == 1)
+        #expect(server.requests.count == before + 1)
+    }
+    
+    /// The folder says how many notes are coming only from 3 on, counts down to 0, and a finished sync shows nothing.
+    @Test
+    func downloadCount() async throws {
+        let tracker = SyncActivityTracker()
+        #expect(await !tracker.setDownloading(room, 2))
+        #expect(await tracker.activity(room) == SyncActivity())
+        #expect(await tracker.setDownloading(room, 4))
+        #expect(await tracker.setDownloading(room, 1))
+        #expect(await tracker.activity(room) == SyncActivity(downloadingNotes: 1))
+        #expect(await tracker.setDownloading(room, 0))
+        #expect(await tracker.activity(room) == SyncActivity())
+        
+        for index in 1...4 {
+            server.put("Nota \(index).md", "texto \(index)")
+        }
+        let engine = makeEngine()
+        try await engine.sync(roomID: room)
+        #expect(await engine.activity(roomID: room) == SyncActivity())
+    }
+    
+    /// A sync that downloaded notes is counted in coarse groups; a quick `304` isn't counted at all.
+    @Test
+    func syncTimingIsCountedInGroups() async throws {
+        server.put("Súper.md", "- leche")
+        let events = TrackedEvents()
+        let tokens = CountingTokenProvider()
+        server.setValidTokens(["token-1", "token-2", "token-3"])
+        let api = NotesAPIClient(transport: server, tokenSource: OpenIDNotesTokenSource { await tokens.next() })
+        let engine = NotesSyncEngine(api: api, directory: directory, cipher: ReversingCipher(), track: { events.add($0) })
+        try await engine.sync(roomID: room)
+        try await engine.sync(roomID: room)
+        let synced = events.all.filter { $0.action == .syncFinished }
+        #expect(synced.count == 1)
+        #expect(synced.first?.properties == ["seconds": "0-1", "downloaded": "1-5", "sent": "0"])
+        #expect(NotesSyncEngine.secondsGroup(12) == "10-30")
+        #expect(NotesSyncEngine.countGroup(25) == "21+")
+    }
+}
+
+private final class TrackedEvents: @unchecked Sendable {
+    private let lock = NSLock()
+    private var events: [NotesAnalyticsEvent] = []
+    
+    var all: [NotesAnalyticsEvent] {
+        lock.withLock { events }
+    }
+    
+    func add(_ event: NotesAnalyticsEvent) {
+        lock.withLock { events.append(event) }
+    }
+}
