@@ -13,3 +13,9 @@
 "screen_room_timeline_legacy_call" = "Unsupported call. Ask the caller to call from the Artise app.";
 "screen_advanced_settings_element_call_base_url" = "Custom calls base URL";
 "screen_advanced_settings_element_call_base_url_description" = "Set a custom base URL for calls.";
+
+/* Usage statistics: the consent texts, as in the Android app. */
+"screen_analytics_prompt_help_us_improve" = "Share which screens and buttons you use, to help us improve Artise. It goes to Google Analytics for Firebase.";
+"screen_analytics_prompt_data_usage" = "We never send your messages, notes, names or contacts";
+"screen_analytics_prompt_third_party_sharing" = "Nothing is used for ads or sold";
+"screen_analytics_settings_help_us_improve" = "Share which screens and buttons you use, to help us improve Artise. It goes to Google Analytics for Firebase.";

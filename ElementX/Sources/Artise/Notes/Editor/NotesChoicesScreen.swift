@@ -43,6 +43,7 @@ struct NotesChoicesScreen: View {
             }
         }
         .compoundList()
+        .onAppear { ArtiseAnalyticsClient.shared.screen(.notesChoices) }
         .navigationTitle(ArtiseNotesL10n.text("screen_notes_choices_title"))
         .navigationBarTitleDisplayMode(.inline)
         .fullScreenCover(item: $combining) { edit in

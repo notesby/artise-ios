@@ -44,6 +44,7 @@ struct NotesMapScreen: View {
             }
         }
         .background(.compound.bgCanvasDefault)
+        .onAppear { ArtiseAnalyticsClient.shared.screen(.notesMap) }
         .navigationTitle(ArtiseNotesL10n.text("screen_notes_map"))
         .navigationBarTitleDisplayMode(.inline)
         .navigationDestination(item: $route) { route in

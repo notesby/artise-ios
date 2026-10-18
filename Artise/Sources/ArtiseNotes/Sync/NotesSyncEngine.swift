@@ -24,16 +24,21 @@ public final class NotesSyncEngine: NotesRepository {
     let now: @Sendable () -> Date
     let files: NotesFileOptions
     let uploads = UploadTracker()
+    /// Counts what's done with notes, for people who said yes to usage statistics; never names or text.
+    let track: @Sendable (NotesAnalyticsEvent) -> Void
     
     /// - Parameters:
     ///   - directory: where this account's encrypted notes live.
     ///   - cipher: encrypts everything written there.
     ///   - files: where photos and files live on the phone, and how they're prepared.
+    ///   - track: receives notes events for usage statistics; it decides whether they're sent.
     public init(api: NotesAPIClient, directory: URL, cipher: NotesCipher, files: NotesFileOptions? = nil,
+                track: @escaping @Sendable (NotesAnalyticsEvent) -> Void = { _ in },
                 now: @escaping @Sendable () -> Date = Date.init) {
         self.api = api
         store = NotesStore(directory: directory, cipher: cipher)
         self.files = files ?? NotesFileOptions(directory: directory.appendingPathComponent("files"))
+        self.track = track
         self.now = now
     }
     
@@ -129,6 +134,7 @@ public final class NotesSyncEngine: NotesRepository {
     // MARK: - Editing
     
     public func editNote(roomID: String, path: String, content: String) async throws {
+        track(NotesAnalyticsEvent(.noteSaved))
         let seconds = nowSeconds
         let millis = nowMillis
         try await store.updateChat(roomID) { record in
@@ -151,6 +157,7 @@ public final class NotesSyncEngine: NotesRepository {
     }
     
     public func createNote(roomID: String, path: String, content: String) async throws {
+        track(NotesAnalyticsEvent(.noteCreated))
         let seconds = nowSeconds
         let millis = nowMillis
         try await store.updateChat(roomID) { record in
@@ -164,6 +171,7 @@ public final class NotesSyncEngine: NotesRepository {
     }
     
     public func deleteFile(roomID: String, path: String) async throws {
+        track(NotesAnalyticsEvent(.noteDeleted))
         let millis = nowMillis
         try await store.updateChat(roomID) { record in
             guard let file = record.files[path] else { return }
@@ -186,6 +194,7 @@ public final class NotesSyncEngine: NotesRepository {
     // MARK: - Choices
     
     public func resolveConflict(roomID: String, editID: Int64, content: String) async throws {
+        track(NotesAnalyticsEvent(.choiceMade, kind: "combined"))
         let seconds = nowSeconds
         try await store.updateChat(roomID) { record in
             guard let index = record.edits.firstIndex(where: { $0.id == editID }),
@@ -200,6 +209,7 @@ public final class NotesSyncEngine: NotesRepository {
     }
     
     public func keepDeletedNote(roomID: String, editID: Int64) async throws {
+        track(NotesAnalyticsEvent(.choiceMade, kind: "kept_deleted"))
         try await store.updateChat(roomID) { record in
             guard let index = record.edits.firstIndex(where: { $0.id == editID }) else { return }
             let edit = record.edits[index]
@@ -210,6 +220,7 @@ public final class NotesSyncEngine: NotesRepository {
     }
     
     public func saveUnderNewName(roomID: String, editID: Int64, newPath: String) async throws {
+        track(NotesAnalyticsEvent(.choiceMade, kind: "new_name"))
         let seconds = nowSeconds
         try await store.updateChat(roomID) { record in
             guard let index = record.edits.firstIndex(where: { $0.id == editID }) else { return }
@@ -231,6 +242,7 @@ public final class NotesSyncEngine: NotesRepository {
     }
     
     public func discardEdit(roomID: String, editID: Int64) async throws {
+        track(NotesAnalyticsEvent(.choiceMade, kind: "discarded"))
         let seconds = nowSeconds
         try await store.updateChat(roomID) { record in
             guard let index = record.edits.firstIndex(where: { $0.id == editID }) else { return }

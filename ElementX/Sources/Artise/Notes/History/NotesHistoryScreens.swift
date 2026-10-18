@@ -46,6 +46,7 @@ struct NotesChangesScreen: View {
             }
         }
         .compoundList()
+        .onAppear { ArtiseAnalyticsClient.shared.screen(.notesHistory) }
         .navigationTitle(ArtiseNotesL10n.text("screen_notes_history_title"))
         .navigationBarTitleDisplayMode(.inline)
         .navigationDestination(item: $route) { route in
@@ -131,6 +132,7 @@ struct NoteHistoryScreen: View {
             }
         }
         .compoundList()
+        .onAppear { ArtiseAnalyticsClient.shared.screen(.noteHistory) }
         .navigationTitle(String(format: ArtiseNotesL10n.text("screen_notes_note_history_title"), NotesFolderEntries.noteName(path)))
         .navigationBarTitleDisplayMode(.inline)
         .navigationDestination(item: $route) { route in
@@ -185,6 +187,7 @@ struct NoteVersionScreen: View {
             .padding(16)
         }
         .background(.compound.bgCanvasDefault)
+        .onAppear { ArtiseAnalyticsClient.shared.screen(.noteVersion) }
         .navigationTitle(NotesFolderEntries.noteName(path))
         .navigationBarTitleDisplayMode(.inline)
         .task { await load() }

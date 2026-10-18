@@ -69,6 +69,7 @@ struct NotesFolderScreen: View {
             }
         }
         .compoundList()
+        .onAppear { ArtiseAnalyticsClient.shared.screen(.notesFolder) }
         .navigationTitle(navigationTitle)
         .navigationBarTitleDisplayMode(.inline)
         .refreshable { await sync() }

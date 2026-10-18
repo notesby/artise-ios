@@ -318,6 +318,10 @@ final nonisolated class AppSettings: @unchecked Sendable {
     }
     
     private static func makeAnalyticsConfiguration() -> AnalyticsConfiguration? {
+        // Artise: analytics go to Firebase when the app has Artise's Firebase file (see ArtiseAnalyticsClient).
+        if Bundle.main.url(forResource: "GoogleService-Info", withExtension: "plist") != nil {
+            return AnalyticsConfiguration(host: "firebase", apiKey: "")
+        }
         guard let host = Secrets.postHogHost, let apiKey = Secrets.postHogAPIKey else { return nil }
         return AnalyticsConfiguration(host: host, apiKey: apiKey)
     }

@@ -41,6 +41,7 @@ struct NotesChatsScreen: View {
             }
         }
         .compoundList()
+        .onAppear { ArtiseAnalyticsClient.shared.screen(.notesChats) }
         .navigationTitle(ArtiseNotesL10n.title)
         .navigationBarTitleDisplayMode(.inline)
         .refreshable { await refresh() }

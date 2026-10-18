@@ -105,6 +105,7 @@ public extension NotesSyncEngine {
     /// yet. It's kept on the phone at once (so it shows offline) and uploaded with the next sync, before the note
     /// edits that embed it. Returns the attachment's path.
     func addAttachment(roomID: String, fileName: String, data: Data, contentType: String) async throws -> String {
+        track(NotesAnalyticsEvent(.attachmentAdded, kind: contentType.hasPrefix("image/") ? "photo" : "document"))
         let waitingName = UUID().uuidString + Self.extensionWithDot(fileName)
         try FileManager.default.createDirectory(at: files.pendingDirectory, withIntermediateDirectories: true)
         try data.write(to: files.pendingDirectory.appendingPathComponent(waitingName), options: .atomic)
@@ -180,6 +181,7 @@ public extension NotesSyncEngine {
     
     /// Tries a waiting, failing or refused upload again now.
     func retryUpload(roomID: String, path: String) async throws {
+        track(NotesAnalyticsEvent(.uploadRetried))
         let editID = try await store.updateChat(roomID) { record -> Int64? in
             guard let index = record.edits.firstIndex(where: { $0.kind == .upload && $0.path == path }) else { return nil }
             record.edits[index].state = .pending
@@ -195,6 +197,7 @@ public extension NotesSyncEngine {
     
     /// Drops an upload not sent yet, and takes it out of the notes that embed it.
     func cancelUpload(roomID: String, path: String) async throws {
+        track(NotesAnalyticsEvent(.uploadCancelled))
         // Waits for a push in progress: an upload is never dropped halfway through.
         try await locks.withLock(roomID) { () async throws in
             let millis = nowMillis
@@ -242,6 +245,7 @@ public extension NotesSyncEngine {
                 try await editNote(roomID: roomID, path: note, content: updated)
             }
         }
+        track(NotesAnalyticsEvent(.mediaDeleted))
         // Queued after the notes' changes, so the server sees those first.
         try await deleteFile(roomID: roomID, path: path)
         syncInBackground(roomID: roomID)
@@ -259,6 +263,7 @@ public extension NotesSyncEngine {
                 throw NotesError.conflict("\(from) has changes that haven't been sent yet. Sync first.", current: nil)
             }
             let moved = try await api.move(roomID: roomID, from: from, to: to, baseVersion: file.version)
+            track(NotesAnalyticsEvent(.noteRenamed))
             try await store.updateChat(roomID) { record in
                 if var renamed = record.files.removeValue(forKey: from) {
                     renamed.path = to

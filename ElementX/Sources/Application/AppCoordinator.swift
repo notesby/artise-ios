@@ -108,9 +108,8 @@ class AppCoordinator: AppCoordinatorProtocol, AuthenticationFlowCoordinatorDeleg
         
         appRouteURLParser = AppRouteURLParser(appSettings: appSettings)
         
-        let posthogAnalyticsClient = PostHogAnalyticsClient()
-        posthogAnalyticsClient.updateSuperProperties(AnalyticsEvent.SuperProperties(appPlatform: .EXI, cryptoSDK: .Rust, cryptoSDKVersion: sdkGitSha()))
-        analyticsService = AnalyticsService(client: posthogAnalyticsClient, appSettings: appSettings)
+        // Artise: usage statistics go to Google Analytics for Firebase, and only after consent (ArtiseAnalyticsClient).
+        analyticsService = AnalyticsService(client: ArtiseAnalyticsClient.shared, appSettings: appSettings)
         
         userIndicatorController = UserIndicatorController()
         

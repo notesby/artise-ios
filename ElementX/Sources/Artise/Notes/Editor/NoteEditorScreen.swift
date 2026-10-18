@@ -69,6 +69,7 @@ struct NoteEditorScreen: View {
             }
         }
         .interactiveDismissDisabled(model.hasChanges)
+        .onAppear { ArtiseAnalyticsClient.shared.screen(.noteEditor) }
         .task { await load() }
     }
     

@@ -381,6 +381,7 @@
 		3A0D1A201E2CD209A04CE89B /* SearchScreenModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CD63A653BCA2C8112654B19 /* SearchScreenModels.swift */; };
 		3A164187907DA43B7858F9EC /* CompletionSuggestionServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5EA0312A6262484AA393AC9 /* CompletionSuggestionServiceTests.swift */; };
 		3A2640C52505BAB3D983A92A /* RemotePreference.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69A05E85E4872C3221C5C287 /* RemotePreference.swift */; };
+		3A2657075EE9E51D902D85FA /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 7FE0C34BC418FA5DAC1B01EA /* FirebaseAnalytics */; };
 		3A363617757E6838AC3D15FB /* AccountProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A67BCEFE35F8D00CADF108C9 /* AccountProvider.swift */; };
 		3A64A93A651A3CB8774ADE8E /* SwiftOGG in Frameworks */ = {isa = PBXBuildFile; productRef = 3FE40E79C36E7903121E6E3B /* SwiftOGG */; };
 		3A68752BB9D51B8713C0FC2C /* AuthenticationStartScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A768CA51A59B8A5D8C8FD599 /* AuthenticationStartScreen.swift */; };
@@ -528,6 +529,7 @@
 		51A075328D68FB4AE65C43B5 /* SearchServiceProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AD6FFE581238BD30B53BA0A /* SearchServiceProxy.swift */; };
 		51B3B19FA5F91B455C807BA7 /* RoomPollsHistoryScreenModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E964AF2DFEB31E2B799999F /* RoomPollsHistoryScreenModels.swift */; };
 		51B9A943F6764C1E59E739A2 /* ArtiseNotes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D6B5F5D790D3AFED7872D7A /* ArtiseNotes.swift */; };
+		520A3FEC8669DBEDD3EE83FC /* ArtiseAnalyticsClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C7DF3B7B65E8E5141A1C2FD /* ArtiseAnalyticsClient.swift */; };
 		522269133E6F65F68482F4F4 /* RemotePreferenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 181CF280BC8E3F335AFCB4B8 /* RemotePreferenceTests.swift */; };
 		52473A4D7B1FBD4CD1E770C8 /* MatrixEntityRegex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AD1A853D605C2146B0DC028 /* MatrixEntityRegex.swift */; };
 		52511848C094F3097F858F00 /* AvatarSettingsButtonLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D3DA6F684A8FD5A70644CDA /* AvatarSettingsButtonLabel.swift */; };
@@ -2541,6 +2543,7 @@
 		7C1AF829F12FDC99717082D9 /* RoomRolesAndPermissionsScreenViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomRolesAndPermissionsScreenViewModel.swift; sourceTree = "<group>"; };
 		7C28B70BEFD3676F11D5D51F /* RoomRolesAndPermissionsScreenCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomRolesAndPermissionsScreenCoordinator.swift; sourceTree = "<group>"; };
 		7C71B9802433F1B4252291BB /* IdentityConfirmationScreenViewModelProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentityConfirmationScreenViewModelProtocol.swift; sourceTree = "<group>"; };
+		7C7DF3B7B65E8E5141A1C2FD /* ArtiseAnalyticsClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArtiseAnalyticsClient.swift; sourceTree = "<group>"; };
 		7C9ACDD96F36510C1FC0836B /* ThreadTimelineScreenViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThreadTimelineScreenViewModel.swift; sourceTree = "<group>"; };
 		7CF4BC6D41585235BDFF4DE6 /* TextFieldAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextFieldAdapter.swift; sourceTree = "<group>"; };
 		7D0CBC76C80E04345E11F2DB /* Application.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Application.swift; sourceTree = "<group>"; };
@@ -3477,6 +3480,7 @@
 				CAEE1AF71E8C13756D572CF4 /* DSWaveformImageViews in Frameworks */,
 				A79140FE1320D1973CF71ACB /* ArtiseCore in Frameworks */,
 				74D3ACEC0A0540B07050F46A /* ArtiseNotes in Frameworks */,
+				3A2657075EE9E51D902D85FA /* FirebaseAnalytics in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -5528,6 +5532,14 @@
 			path = View;
 			sourceTree = "<group>";
 		};
+		75523D30A91769D7F5B6608F /* Analytics */ = {
+			isa = PBXGroup;
+			children = (
+				7C7DF3B7B65E8E5141A1C2FD /* ArtiseAnalyticsClient.swift */,
+			);
+			path = Analytics;
+			sourceTree = "<group>";
+		};
 		7583EAC171059A86B767209F /* MediaProvider */ = {
 			isa = PBXGroup;
 			children = (
@@ -5874,6 +5886,7 @@
 			children = (
 				72E4AB98C9D94325B130BEDD /* ArtiseAppHooks.swift */,
 				BD3A26FF1E1D478C9AE3893A /* ArtiseAppSettingsHook.swift */,
+				75523D30A91769D7F5B6608F /* Analytics */,
 				61A23FCB44A197347B9602A8 /* Notes */,
 			);
 			path = Artise;
@@ -7930,6 +7943,7 @@
 				2A4106A0A96DC4C273128AA5 /* DSWaveformImageViews */,
 				AE590865F85D2C66AE1E8985 /* ArtiseCore */,
 				A71BF5545EFA0FEEFA177C95 /* ArtiseNotes */,
+				7FE0C34BC418FA5DAC1B01EA /* FirebaseAnalytics */,
 			);
 			productName = ElementX;
 			productReference = 4CD6AC7546E8D7E5C73CEA48 /* ElementX.app */;
@@ -8104,6 +8118,7 @@
 				24D50023D92B93BBFF6E14FD /* XCRemoteSwiftPackageReference "element-call-ios" */,
 				8213398B60F9B660D9216ADF /* XCRemoteSwiftPackageReference "element-call-swift" */,
 				821C67C9A7F8CC3FD41B28B4 /* XCRemoteSwiftPackageReference "emojibase-bindings" */,
+				44E6EB3E4006DD8AC44994A9 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 				701C7BEF8F70F7A83E852DCC /* XCRemoteSwiftPackageReference "GZIP" */,
 				395DE6AE429B7ACC7C7FE31D /* XCRemoteSwiftPackageReference "KZFileWatchers" */,
 				61916C63E3F5BD900F08DA0C /* XCRemoteSwiftPackageReference "KeychainAccess" */,
@@ -8871,6 +8886,7 @@
 				4EAC427267424192964B16B3 /* AppSettingsHook.swift in Sources */,
 				9462C62798F47E39DCC182D2 /* Application.swift in Sources */,
 				61A36B9BB2ADE36CEFF5E98C /* Array.swift in Sources */,
+				520A3FEC8669DBEDD3EE83FC /* ArtiseAnalyticsClient.swift in Sources */,
 				AA9A15655F2F294CC2F6BD92 /* ArtiseAppHooks.swift in Sources */,
 				1FC9E53A65DECB58CA0EF6C9 /* ArtiseAppSettingsHook.swift in Sources */,
 				51B9A943F6764C1E59E739A2 /* ArtiseNotes.swift in Sources */,
@@ -11131,6 +11147,14 @@
 				version = 1.2.0;
 			};
 		};
+		44E6EB3E4006DD8AC44994A9 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = exactVersion;
+				version = 13.0.1;
+			};
+		};
 		4A8D3ABF18EABB8066BBD46E /* XCRemoteSwiftPackageReference "swift-async-algorithms" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/apple/swift-async-algorithms";
@@ -11519,6 +11543,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 0CBF57301AA172C21F76CE86 /* XCRemoteSwiftPackageReference "maplibre-gl-native-distribution" */;
 			productName = MapLibre;
+		};
+		7FE0C34BC418FA5DAC1B01EA /* FirebaseAnalytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 44E6EB3E4006DD8AC44994A9 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalytics;
 		};
 		800631D7250B7F93195035F1 /* KeychainAccess */ = {
 			isa = XCSwiftPackageProductDependency;

@@ -63,6 +63,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 | `HomeScreen.swift`, `RoomScreen.swift` (+ `RoomScreenModels`/`ViewModel`: `artiseRoomID`), `RoomDetailsScreen.swift` | The notes entry points: a top-bar button, a button next to the call button, and a "Notes" row. |
 | `ElementX/Sources/Screens/Timeline/View/Style/LongPressWithFeedback.swift` | Holding a message opens its actions after 250 ms, as on Android (`ArtiseTimeline`). |
 | `SettingsScreenViewModel.swift`, `AppCoordinator.swift` | Settings → Delete account opens Artise's page (`?lang=es` in Spanish); a sign-out within an hour of that goes straight to sign-in (`ArtiseAccountDeletion`). |
+| `AppCoordinator.swift`, `AppSettings.swift` (analytics) | Usage statistics go to Google Analytics for Firebase (`ArtiseAnalyticsClient`) behind Element's consent screen, when the app has its `GoogleService-Info.plist`. |
 | `NSE/SupportingFiles/target.yml` | Notification filtering entitlement off until Apple grants it to our team. |
 
 ## Branches
@@ -100,6 +101,7 @@ on this repository.
 | `ASC_KEY_P8` | The `.p8` file, base64-encoded: `base64 -w0 AuthKey_XXXX.p8` |
 | `DIST_CERT_P12` | The distribution certificate and its private key, as a base64-encoded `.p12` |
 | `DIST_CERT_PASSWORD` | The `.p12`'s password |
+| `GOOGLE_SERVICE_INFO_PLIST` | Firebase's `GoogleService-Info.plist` for `co.artise.app`, base64-encoded (analytics are off in TestFlight builds without it) |
 | `PROFILE_APP`, `PROFILE_NSE`, `PROFILE_SHARE` | The three App Store profiles, base64-encoded |
 
 Local copies of the keys and the certificate live in `~/.artise-keys/` on the maintainer's machine.

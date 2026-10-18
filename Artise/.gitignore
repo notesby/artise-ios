@@ -6,3 +6,5 @@
 __pycache__/
 .build/
 .swiftpm/
+# Firebase's file comes from a repository secret at build time.
+Resources/Firebase/
