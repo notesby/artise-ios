@@ -440,3 +440,24 @@ private final class TrackedEvents: @unchecked Sendable {
         lock.withLock { events.append(event) }
     }
 }
+
+extension NotesSyncEngineTests {
+    /// Many changed notes all come down, a few at a time; one deleted between the tree and its download is skipped.
+    @Test
+    func manyNotesDownloadInBatches() async throws {
+        for index in 1...10 {
+            server.put("Nota \(index).md", "texto \(index)")
+        }
+        server.put("attachments/foto.jpg", "jpeg bytes", isNote: false)
+        server.failNext("note", status: 404, error: "not_found")
+        let engine = makeEngine()
+        
+        let report = try await engine.sync(roomID: room)
+        
+        #expect(report.updated == 10)
+        #expect(server.requests(to: "note").count == 10)
+        let files = try await engine.files(roomID: room)
+        #expect(files.count { $0.content != nil } == 9)
+        #expect(files.contains { $0.path == "attachments/foto.jpg" })
+    }
+}

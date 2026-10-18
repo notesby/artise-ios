@@ -496,6 +496,8 @@ extension NotesSyncEngine {
     
     /// Downloads the photos embedded in the chat's notes that aren't on the phone yet, so notes show them offline.
     /// Photos only (documents download when opened), none over `maxPrefetchBytes`, and only while prefetching is allowed.
+    static let prefetchConcurrency = 3
+    
     func prefetchPhotos(_ roomID: String) async {
         guard let record = try? await store.chat(roomID) else { return }
         let paths = Array(record.files.keys)
@@ -507,10 +509,20 @@ extension NotesSyncEngine {
             NotesFolderEntries.isImage(file.path) && !file.version.isEmpty && file.size <= NotesFileOptions.maxPrefetchBytes
                 && !FileManager.default.fileExists(atPath: cacheURL(roomID: roomID, path: file.path, version: file.version).path)
         }
-        for photo in photos.sorted(by: { $0.path < $1.path }) {
-            guard files.canPrefetch() else { return }
-            // A failure just means it downloads when the note is opened.
-            _ = try? await attachment(roomID: roomID, path: photo.path)
+        // Three at a time; a failure just means it downloads when the note is opened.
+        let queue = photos.sorted { $0.path < $1.path }
+        await withTaskGroup(of: Void.self) { group in
+            var pending = queue[...]
+            func startNext() {
+                guard files.canPrefetch(), let photo = pending.popFirst() else { return }
+                group.addTask { _ = try? await self.attachment(roomID: roomID, path: photo.path) }
+            }
+            for _ in 0..<Self.prefetchConcurrency {
+                startNext()
+            }
+            for await _ in group {
+                startNext()
+            }
         }
     }
     
