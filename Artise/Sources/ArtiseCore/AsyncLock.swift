@@ -5,11 +5,13 @@
 //
 
 /// A lock that waits without blocking a thread, held across `await`s. Waiters go in order.
-actor AsyncLock {
+public actor AsyncLock {
     private var isLocked = false
     private var waiters: [CheckedContinuation<Void, Never>] = []
     
-    func lock() async {
+    public init() { }
+    
+    public func lock() async {
         if !isLocked {
             isLocked = true
             return
@@ -17,7 +19,7 @@ actor AsyncLock {
         await withCheckedContinuation { waiters.append($0) }
     }
     
-    func unlock() {
+    public func unlock() {
         if waiters.isEmpty {
             isLocked = false
         } else {
@@ -27,30 +29,16 @@ actor AsyncLock {
     }
 }
 
-/// One lock per chat, so a chat's queue is never sent twice at once, while different chats don't wait for each other.
-actor RoomLocks {
-    private var locks: [String: AsyncLock] = [:]
-    
-    func lock(for roomID: String) -> AsyncLock {
-        if let lock = locks[roomID] {
-            return lock
-        }
-        let lock = AsyncLock()
-        locks[roomID] = lock
-        return lock
-    }
-}
-
-extension RoomLocks {
-    func withLock<T: Sendable, E: Error>(_ roomID: String, _ body: () async throws(E) -> T) async throws(E) -> T {
-        let lock = lock(for: roomID)
-        await lock.lock()
+public extension AsyncLock {
+    /// Runs `body` holding the lock, and lets go whether it finishes or throws.
+    nonisolated(nonsending) func withLock<T: Sendable, E: Error>(_ body: () async throws(E) -> T) async throws(E) -> T {
+        await lock()
         do {
             let result = try await body()
-            await lock.unlock()
+            await unlock()
             return result
         } catch {
-            await lock.unlock()
+            await unlock()
             throw error
         }
     }

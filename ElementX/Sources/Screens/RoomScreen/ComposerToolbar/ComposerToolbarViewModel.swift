@@ -84,6 +84,8 @@ final class ComposerToolbarViewModel: ComposerToolbarViewModelType, ComposerTool
                                                               bindings: .init()),
                    mediaProvider: mediaProvider)
         
+        state.artiseRoomID = roomProxy.id // Artise: for the sticker button.
+        
         state.keyCommands = [
             .enter { [weak self] in
                 self?.process(viewAction: .sendMessage)
@@ -232,7 +234,13 @@ final class ComposerToolbarViewModel: ComposerToolbarViewModelType, ComposerTool
             state.bindings.composerFocused = false
             actionsSubject.send(.attach(attachment))
         case .handlePasteOrDrop(let providers):
-            actionsSubject.send(.handlePasteOrDrop(providers: providers))
+            // Artise: a picture from a sticker keyboard goes as a sticker; replies and edits keep the usual way.
+            Task {
+                if state.composerMode == .default, await ArtiseStickers.shared.sendKeyboardSticker(providers, roomID: roomProxy.id) {
+                    return
+                }
+                actionsSubject.send(.handlePasteOrDrop(providers: providers))
+            }
         case .enableTextFormatting:
             state.bindings.composerFormattingEnabled = true
             state.bindings.composerFocused = true

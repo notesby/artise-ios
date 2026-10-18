@@ -35,7 +35,7 @@ final class ArtiseNotes {
     
     /// Opens the notes: a chat's notes with `roomID`, otherwise the list of chats with notes.
     func open(roomID: String?) {
-        guard let service, let presenter = Self.topViewController() else {
+        guard let service, let presenter = UIViewController.artiseTopViewController() else {
             MXLog.error("Artise notes can't open right now")
             return
         }
@@ -49,23 +49,12 @@ final class ArtiseNotes {
         host = controller
         presenter.present(controller, animated: true)
     }
-    
-    /// The screen on top of the main window, which notes are presented over.
-    private static func topViewController() -> UIViewController? {
-        let windows = UIApplication.shared.connectedScenes
-            .compactMap { $0 as? UIWindowScene }
-            .flatMap(\.windows)
-        var top = windows.first(where: \.isKeyWindow)?.rootViewController
-        while let presented = top?.presentedViewController {
-            top = presented
-        }
-        return top
-    }
 }
 
-/// Starts and stops notes with the account's session.
+/// Starts and stops notes and stickers with the account's session.
 nonisolated struct ArtiseUserSessionHook: UserSessionHookProtocol {
     func configure(with userSession: UserSessionProtocol?) async {
         await ArtiseNotes.shared.configure(with: userSession)
+        await ArtiseStickers.shared.configure(with: userSession)
     }
 }

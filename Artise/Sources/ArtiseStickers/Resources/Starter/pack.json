@@ -1,0 +1,390 @@
+{
+ "pack": "starter",
+ "source": "Microsoft Fluent Emoji 3D (MIT License), https://github.com/microsoft/fluentui-emoji",
+ "stickers": [
+  {
+   "id": "grinning_squinting",
+   "en": "Grinning squinting face",
+   "es": "Riendo",
+   "w": 256,
+   "h": 256,
+   "size": 6288
+  },
+  {
+   "id": "tears_of_joy",
+   "en": "Face with tears of joy",
+   "es": "Llorando de risa",
+   "w": 256,
+   "h": 256,
+   "size": 7094
+  },
+  {
+   "id": "rofl",
+   "en": "Rolling on the floor laughing",
+   "es": "Muerto de risa",
+   "w": 256,
+   "h": 256,
+   "size": 8002
+  },
+  {
+   "id": "smiling_hearts",
+   "en": "Smiling face with hearts",
+   "es": "Con amor",
+   "w": 256,
+   "h": 256,
+   "size": 7928
+  },
+  {
+   "id": "heart_eyes",
+   "en": "Smiling face with heart-eyes",
+   "es": "Enamorado",
+   "w": 256,
+   "h": 256,
+   "size": 6394
+  },
+  {
+   "id": "kissing_heart",
+   "en": "Face blowing a kiss",
+   "es": "Beso",
+   "w": 256,
+   "h": 256,
+   "size": 7516
+  },
+  {
+   "id": "hugging",
+   "en": "Hugging face",
+   "es": "Abrazo",
+   "w": 256,
+   "h": 256,
+   "size": 7760
+  },
+  {
+   "id": "thinking",
+   "en": "Thinking face",
+   "es": "Pensando",
+   "w": 256,
+   "h": 256,
+   "size": 7846
+  },
+  {
+   "id": "sleeping",
+   "en": "Sleeping face",
+   "es": "Dormido",
+   "w": 256,
+   "h": 256,
+   "size": 7488
+  },
+  {
+   "id": "partying",
+   "en": "Partying face",
+   "es": "De fiesta",
+   "w": 256,
+   "h": 256,
+   "size": 8650
+  },
+  {
+   "id": "star_struck",
+   "en": "Star-struck",
+   "es": "Emocionado",
+   "w": 256,
+   "h": 256,
+   "size": 7126
+  },
+  {
+   "id": "pleading",
+   "en": "Pleading face",
+   "es": "Por favor",
+   "w": 256,
+   "h": 256,
+   "size": 7446
+  },
+  {
+   "id": "crying",
+   "en": "Crying face",
+   "es": "Triste",
+   "w": 256,
+   "h": 256,
+   "size": 7472
+  },
+  {
+   "id": "loudly_crying",
+   "en": "Loudly crying face",
+   "es": "Llorando",
+   "w": 256,
+   "h": 256,
+   "size": 6066
+  },
+  {
+   "id": "angry",
+   "en": "Angry face",
+   "es": "Enojado",
+   "w": 256,
+   "h": 256,
+   "size": 7182
+  },
+  {
+   "id": "exploding_head",
+   "en": "Exploding head",
+   "es": "Mente explotada",
+   "w": 256,
+   "h": 256,
+   "size": 8454
+  },
+  {
+   "id": "rolling_eyes",
+   "en": "Face with rolling eyes",
+   "es": "Ojos en blanco",
+   "w": 256,
+   "h": 256,
+   "size": 5804
+  },
+  {
+   "id": "zany",
+   "en": "Zany face",
+   "es": "Loco",
+   "w": 256,
+   "h": 256,
+   "size": 8812
+  },
+  {
+   "id": "shushing",
+   "en": "Shushing face",
+   "es": "Shhh",
+   "w": 256,
+   "h": 256,
+   "size": 6860
+  },
+  {
+   "id": "sunglasses",
+   "en": "Smiling face with sunglasses",
+   "es": "Cool",
+   "w": 256,
+   "h": 256,
+   "size": 7408
+  },
+  {
+   "id": "nerd",
+   "en": "Nerd face",
+   "es": "Nerd",
+   "w": 256,
+   "h": 256,
+   "size": 8456
+  },
+  {
+   "id": "cowboy",
+   "en": "Cowboy hat face",
+   "es": "Vaquero",
+   "w": 256,
+   "h": 256,
+   "size": 8020
+  },
+  {
+   "id": "yawning",
+   "en": "Yawning face",
+   "es": "Bostezo",
+   "w": 256,
+   "h": 256,
+   "size": 6930
+  },
+  {
+   "id": "hot",
+   "en": "Hot face",
+   "es": "Qué calor",
+   "w": 256,
+   "h": 256,
+   "size": 7842
+  },
+  {
+   "id": "cold",
+   "en": "Cold face",
+   "es": "Qué frío",
+   "w": 256,
+   "h": 256,
+   "size": 7324
+  },
+  {
+   "id": "red_heart",
+   "en": "Red heart",
+   "es": "Corazón",
+   "w": 256,
+   "h": 256,
+   "size": 4910
+  },
+  {
+   "id": "sparkling_heart",
+   "en": "Sparkling heart",
+   "es": "Corazón brillante",
+   "w": 256,
+   "h": 256,
+   "size": 6360
+  },
+  {
+   "id": "thumbs_up",
+   "en": "Thumbs up",
+   "es": "Me gusta",
+   "w": 256,
+   "h": 256,
+   "size": 4544
+  },
+  {
+   "id": "clapping",
+   "en": "Clapping hands",
+   "es": "Aplausos",
+   "w": 256,
+   "h": 256,
+   "size": 6396
+  },
+  {
+   "id": "folded_hands",
+   "en": "Folded hands",
+   "es": "Gracias",
+   "w": 256,
+   "h": 256,
+   "size": 4154
+  },
+  {
+   "id": "waving",
+   "en": "Waving hand",
+   "es": "Hola",
+   "w": 256,
+   "h": 256,
+   "size": 7746
+  },
+  {
+   "id": "muscle",
+   "en": "Flexed biceps",
+   "es": "Fuerza",
+   "w": 256,
+   "h": 256,
+   "size": 5040
+  },
+  {
+   "id": "birthday_cake",
+   "en": "Birthday cake",
+   "es": "Pastel",
+   "w": 256,
+   "h": 256,
+   "size": 6638
+  },
+  {
+   "id": "party_popper",
+   "en": "Party popper",
+   "es": "Celebración",
+   "w": 256,
+   "h": 256,
+   "size": 10716
+  },
+  {
+   "id": "gift",
+   "en": "Wrapped gift",
+   "es": "Regalo",
+   "w": 256,
+   "h": 256,
+   "size": 4000
+  },
+  {
+   "id": "balloon",
+   "en": "Balloon",
+   "es": "Globo",
+   "w": 256,
+   "h": 256,
+   "size": 5006
+  },
+  {
+   "id": "coffee",
+   "en": "Hot beverage",
+   "es": "Café",
+   "w": 256,
+   "h": 256,
+   "size": 5310
+  },
+  {
+   "id": "pizza",
+   "en": "Pizza",
+   "es": "Pizza",
+   "w": 256,
+   "h": 256,
+   "size": 5124
+  },
+  {
+   "id": "taco",
+   "en": "Taco",
+   "es": "Taco",
+   "w": 256,
+   "h": 256,
+   "size": 4328
+  },
+  {
+   "id": "house",
+   "en": "House with garden",
+   "es": "Casa",
+   "w": 256,
+   "h": 256,
+   "size": 5130
+  },
+  {
+   "id": "dog",
+   "en": "Dog face",
+   "es": "Perrito",
+   "w": 256,
+   "h": 256,
+   "size": 5158
+  },
+  {
+   "id": "cat",
+   "en": "Cat face",
+   "es": "Gatito",
+   "w": 256,
+   "h": 256,
+   "size": 5860
+  },
+  {
+   "id": "sun",
+   "en": "Sun with face",
+   "es": "Sol",
+   "w": 256,
+   "h": 256,
+   "size": 7572
+  },
+  {
+   "id": "rainbow",
+   "en": "Rainbow",
+   "es": "Arcoíris",
+   "w": 256,
+   "h": 256,
+   "size": 6200
+  },
+  {
+   "id": "fire",
+   "en": "Fire",
+   "es": "Fuego",
+   "w": 256,
+   "h": 256,
+   "size": 4980
+  },
+  {
+   "id": "hundred",
+   "en": "Hundred points",
+   "es": "Cien",
+   "w": 256,
+   "h": 256,
+   "size": 10706
+  },
+  {
+   "id": "sparkles",
+   "en": "Sparkles",
+   "es": "Brillos",
+   "w": 256,
+   "h": 256,
+   "size": 7004
+  },
+  {
+   "id": "check",
+   "en": "Check mark button",
+   "es": "Listo",
+   "w": 256,
+   "h": 256,
+   "size": 3556
+  }
+ ]
+}
