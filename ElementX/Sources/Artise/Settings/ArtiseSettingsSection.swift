@@ -14,7 +14,7 @@ struct ArtiseSettingsSection: View {
     private let session = ArtiseIDSession.shared
     private let workspaces = ArtiseWorkspaces.shared
     @State private var isPresentingSecurity = false
-    @State private var isPresentingQuietHours = false
+    @State private var isPresentingNotificationHours = false
     @Environment(\.openURL) private var openURL
     
     var body: some View {
@@ -29,11 +29,11 @@ struct ArtiseSettingsSection: View {
         }
         if let userID = workspaces.userID {
             Section {
-                ListRow(label: .default(title: ArtiseWorkspacesL10n.text("screen_artise_quiet_hours_title"), icon: \.notificationsOff),
-                        kind: .navigationLink { isPresentingQuietHours = true })
+                ListRow(label: .default(title: ArtiseWorkspacesL10n.text("screen_artise_notification_hours_title"), icon: \.time),
+                        kind: .navigationLink { isPresentingNotificationHours = true })
             }
-            .sheet(isPresented: $isPresentingQuietHours) {
-                ArtiseQuietHoursScreen(userID: userID)
+            .sheet(isPresented: $isPresentingNotificationHours) {
+                ArtiseNotificationHoursScreen(userID: userID)
             }
         }
         if workspaces.helpURL != nil || workspaces.contactURL != nil {

@@ -86,13 +86,19 @@
 "screen_artise_whats_new_3" = "Notes update by themselves when you open the app, and you can search them.";
 "screen_artise_whats_new_done" = "Got it";
 
-/* Settings → Quiet hours */
-"screen_artise_quiet_hours_title" = "Quiet hours";
-"screen_artise_quiet_hours_description" = "This workspace’s notifications arrive without sound. Ari’s reminders still sound.";
-"screen_artise_quiet_hours_hours" = "Hours";
-"screen_artise_quiet_hours_window" = "From %1$@ to %2$@";
-"screen_artise_quiet_hours_weekend" = "All weekend";
-"screen_artise_quiet_hours_mentions" = "Let mentions and replies sound";
+/* Settings → Notification hours */
+"screen_artise_notification_hours_title" = "Notification hours";
+"screen_artise_notification_hours_description" = "Outside these hours, this workspace’s notifications arrive without sound. Ari’s reminders always sound.";
+"screen_artise_notification_hours_days" = "Days";
+"screen_artise_notification_hours_every_day" = "Every day";
+"screen_artise_notification_hours_weekdays" = "Monday to Friday";
+"screen_artise_notification_hours_custom" = "Custom";
+"screen_artise_notification_hours_weekdays_footer" = "On Saturday and Sunday, notifications arrive without sound.";
+"screen_artise_notification_hours_custom_footer" = "On a day that’s off, notifications arrive without sound. If Until is earlier than From, the hours go past midnight.";
+"screen_artise_notification_hours_hours" = "Hours";
+"screen_artise_notification_hours_from" = "From";
+"screen_artise_notification_hours_until" = "Until";
+"screen_artise_notification_hours_mentions" = "Mentions and replies always sound";
 
 /* A chat's own sound */
 "screen_artise_chat_sound" = "Sound";
