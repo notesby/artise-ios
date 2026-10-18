@@ -82,10 +82,11 @@ final class ArtiseStartScreenModel {
             return
         }
         Task {
-            guard await ArtiseIDSession.shared.configuration() != nil else {
+            guard let configuration = await ArtiseIDSession.shared.configuration() else {
                 phase = .fallback
                 return
             }
+            ArtiseUpdateNotice.check([configuration.minimumAppVersion], storeLink: configuration.storeLinks?.ios, workspaceName: nil)
             // Signed in to Artise ID earlier but not to a workspace yet: the list again, without a page.
             if case .success(let workspaces) = await ArtiseIDSession.shared.workspacesAgain(), !workspaces.isEmpty {
                 phase = .workspaces(workspaces)
