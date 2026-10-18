@@ -6,6 +6,7 @@
 
 import ArtiseNotes
 import Compound
+import QuickLook
 import SwiftUI
 
 /// One note, read from the phone's copy. Checklist items tick with a tap; links lead to other notes or the web.
@@ -19,9 +20,12 @@ struct NoteScreen: View {
     @State private var file: LocalFile?
     @State private var isEditing = false
     @State private var missingTarget: String?
+    @State private var previewURL: URL?
     @State private var document = NoteDocument(markdown: "")
     @State private var paths: [String] = []
     @State private var notePaths: Set<String> = []
+    @State private var sizes: [String: Int64] = [:]
+    @State private var uploads: [String: UploadStatus] = [:]
     @State private var hasLoaded = false
     @State private var route: NotesRoute?
     
@@ -42,7 +46,7 @@ struct NoteScreen: View {
                     NoteMarkdownView(document: document,
                                      onLink: open,
                                      onToggle: toggle,
-                                     embed: { AnyView(NoteEmbedCard(target: $0, paths: paths)) })
+                                     embed: { AnyView(embed($0)) })
                 }
             }
             .padding(16)
@@ -69,6 +73,7 @@ struct NoteScreen: View {
             Button(ArtiseNotesL10n.text("screen_notes_create")) { createMissingNote() }
             Button(L10n.actionCancel, role: .cancel) { }
         }
+        .quickLookPreview($previewURL)
         .fullScreenCover(isPresented: $isEditing) {
             NoteEditorScreen(service: service, roomID: roomID, path: path) { isEditing = false }
         }
@@ -91,14 +96,21 @@ struct NoteScreen: View {
         let files = await (try? repository.files(roomID: roomID)) ?? []
         paths = files.map(\.path)
         notePaths = Set(files.filter(\.isNote).map(\.path))
+        sizes = Dictionary(files.map { ($0.path, $0.size) }, uniquingKeysWith: { first, _ in first })
+        uploads = await (try? repository.uploads(roomID: roomID)) ?? [:]
         document = NoteDocument(markdown: file?.content ?? "")
         hasLoaded = true
+    }
+    
+    private func embed(_ target: String) -> some View {
+        let resolved = NoteLinkResolver.resolve(target, in: paths)
+        return NoteEmbedView(service: service, roomID: roomID, target: target, path: resolved,
+                             size: resolved.flatMap { sizes[$0] }, upload: resolved.flatMap { uploads[$0] })
     }
     
     private func open(_ link: NoteLink) {
         switch link {
         case .note(let target):
-            // Photos and files embedded as links open with the attachments feature; notes open here.
             guard let resolved = NoteLinkResolver.resolve(target, in: paths) else {
                 // A link to a note that doesn't exist yet: offer to create it.
                 if !NoteLinkResolver.hasExtension(target) {
@@ -108,6 +120,8 @@ struct NoteScreen: View {
             }
             if notePaths.contains(resolved) {
                 route = .note(roomID: roomID, path: resolved)
+            } else {
+                openFile(resolved)
             }
         case .web(let address):
             guard let url = URL(string: address) else { return }
@@ -127,6 +141,16 @@ struct NoteScreen: View {
         }
     }
     
+    /// A linked photo or file (`[[factura.pdf]]`) opens in Quick Look, downloaded first if needed.
+    private func openFile(_ path: String) {
+        let repository = service.repository
+        Task {
+            if let url = try? await repository.attachment(roomID: roomID, path: path) {
+                previewURL = url
+            }
+        }
+    }
+    
     /// Ticks or unticks the checklist item on `line`: saved on the phone at once, then sent.
     private func toggle(_ line: Int) {
         guard let content = file?.content, let ticked = ChecklistToggle.toggle(content, lineIndex: line) else { return }
@@ -135,35 +159,5 @@ struct NoteScreen: View {
             try? await repository.editNote(roomID: roomID, path: path, content: ticked)
             repository.syncInBackground(roomID: roomID)
         }
-    }
-}
-
-/// An embedded photo or file (`![[foto.jpg]]`), shown by name until it can be shown in full.
-struct NoteEmbedCard: View {
-    let target: String
-    let paths: [String]
-    
-    var body: some View {
-        let resolved = NoteLinkResolver.resolve(target, in: paths)
-        HStack(spacing: 12) {
-            CompoundIcon(icon)
-                .foregroundStyle(.compound.iconSecondary)
-            Text(NotesFolderEntries.fileName(resolved ?? target))
-                .font(.compound.bodyMD)
-                .foregroundStyle(.compound.textPrimary)
-                .lineLimit(1)
-            Spacer(minLength: 0)
-            if resolved == nil {
-                Text(ArtiseNotesL10n.attachmentMissing)
-                    .font(.compound.bodySM)
-                    .foregroundStyle(.compound.textSecondary)
-            }
-        }
-        .padding(12)
-        .background(.compound.bgSubtleSecondary, in: RoundedRectangle(cornerRadius: 8))
-    }
-    
-    private var icon: KeyPath<CompoundIcons, Image> {
-        NotesFolderEntries.isImage(target) ? \.image : \.files
     }
 }

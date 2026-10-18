@@ -35,3 +35,33 @@ struct FreePathTests {
         #expect(NoteNames.freePath(for: "Nueva.md", taken: ["Ideas.md"]) == "Nueva.md")
     }
 }
+
+struct RenameAndMoveTests {
+    /// Renaming keeps a note a note and a file's extension when it's left out.
+    @Test
+    func renamedPaths() {
+        #expect(NoteNames.renamedPath("Recetas/Mole.md", to: "Mole poblano") == "Recetas/Mole poblano.md")
+        #expect(NoteNames.renamedPath("factura.pdf", to: "recibo") == "recibo.pdf")
+        #expect(NoteNames.renamedPath("factura.pdf", to: "recibo.PDF") == "recibo.PDF")
+    }
+    
+    /// Renaming to a name already used is refused; renaming to the same name in other case isn't.
+    @Test
+    func renameProblems() {
+        #expect(NoteNames.renameProblem("Mole.md", to: "Súper", existingPaths: ["Mole.md", "Súper.md"]) == .exists)
+        #expect(NoteNames.renameProblem("Mole.md", to: "mole", existingPaths: ["Mole.md"]) == nil)
+        #expect(NoteNames.renameProblem("Mole.md", to: "a/b", existingPaths: []) == .invalid)
+    }
+    
+    /// Moving keeps the name; folders are tidied and checked.
+    @Test
+    func movesAndFolders() {
+        #expect(NoteNames.movedPath("Recetas/Mole.md", to: "") == "Mole.md")
+        #expect(NoteNames.movedPath("Mole.md", to: "Cocina") == "Cocina/Mole.md")
+        #expect(NoteNames.renamedFolder("Recetas/Postres", to: "Dulces") == "Recetas/Dulces")
+        #expect(NoteNames.folderPath("  Recetas / Postres/ ") == "Recetas/Postres")
+        #expect(NoteNames.folderProblem("Recetas//Postres") == .invalid)
+        #expect(NoteNames.folderProblem(".trash") == .invalid)
+        #expect(NoteNames.folderProblem("Recetas/Postres") == nil)
+    }
+}

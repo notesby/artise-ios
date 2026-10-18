@@ -6,6 +6,7 @@
 
 import ArtiseNotes
 import Compound
+import QuickLook
 import SwiftUI
 
 /// A chat's notes, or one folder of them: subfolders, notes, then photos and files.
@@ -27,6 +28,16 @@ struct NotesFolderScreen: View {
     @State private var paths: [String] = []
     @State private var isNamingNote = false
     @State private var newNoteName = ""
+    @State private var actions: NotesFolderActionsModel
+    @State private var previewURL: URL?
+    
+    init(service: ArtiseNotesService, roomID: String, folder: String, title: String?) {
+        self.service = service
+        self.roomID = roomID
+        self.folder = folder
+        self.title = title
+        _actions = State(initialValue: NotesFolderActionsModel(service: service, roomID: roomID))
+    }
     
     var body: some View {
         Form {
@@ -52,6 +63,7 @@ struct NotesFolderScreen: View {
                 Section {
                     ForEach(entries) { entry in
                         row(entry)
+                            .contextMenu { actions.menu(for: entry) }
                     }
                 }
             }
@@ -65,15 +77,33 @@ struct NotesFolderScreen: View {
         }
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
-                Button {
-                    newNoteName = ""
-                    isNamingNote = true
+                Button { route = .media(roomID: roomID) } label: {
+                    CompoundIcon(\.image)
+                }
+                .accessibilityLabel(ArtiseNotesL10n.text("screen_notes_media_title"))
+            }
+            ToolbarItem(placement: .primaryAction) {
+                Menu {
+                    Button {
+                        newNoteName = ""
+                        isNamingNote = true
+                    } label: {
+                        Label(ArtiseNotesL10n.text("screen_notes_new_note"), icon: \.document)
+                    }
+                    Button {
+                        actions.folderName = ""
+                        actions.isNamingFolder = true
+                    } label: {
+                        Label(ArtiseNotesL10n.text("screen_notes_new_folder"), icon: \.folder)
+                    }
                 } label: {
                     CompoundIcon(\.plus)
                 }
-                .accessibilityLabel(ArtiseNotesL10n.text("screen_notes_new_note"))
+                .accessibilityLabel(ArtiseNotesL10n.text("screen_notes_new"))
             }
         }
+        .modifier(NotesFolderActionsDialogs(model: actions, folder: folder))
+        .quickLookPreview($previewURL)
         .alert(ArtiseNotesL10n.text("screen_notes_new_note"), isPresented: $isNamingNote) {
             TextField(ArtiseNotesL10n.text("screen_notes_new_note_placeholder"), text: $newNoteName)
             Button(ArtiseNotesL10n.text("screen_notes_create")) { createNote() }
@@ -107,12 +137,11 @@ struct NotesFolderScreen: View {
         case .note(let name, let path, let hasLocalEdits):
             ListRow(label: .default(title: name, description: hasLocalEdits ? ArtiseNotesL10n.unsent : nil, icon: \.document),
                     kind: .navigationLink { route = .note(roomID: roomID, path: path) })
-        case .file(let name, _, let isImage, let size):
-            // Photos and files open from the notes that show them; managing them comes with the files feature.
+        case .file(let name, let path, let isImage, let size):
             ListRow(label: .default(title: name,
                                     description: ByteCountFormatter.string(fromByteCount: size, countStyle: .file),
                                     icon: Self.fileIcon(isImage: isImage)),
-                    kind: .label)
+                    kind: .button { open(path) })
         }
     }
     
@@ -138,11 +167,25 @@ struct NotesFolderScreen: View {
         let folders = await (try? repository.folders(roomID: roomID)) ?? []
         entries = NotesFolderEntries.entries(files: files, folder: folder, allFolders: folders)
         paths = files.map(\.path)
+        actions.paths = paths
+        actions.folders = folders
         choicesCount = await ((try? repository.edits(roomID: roomID)) ?? []).filter { $0.state != .pending }.count
         if title == nil, folder.isEmpty {
             chatName = try? await repository.cachedChats().first { $0.roomID == roomID }?.name
         }
         hasLoaded = hasLoaded || !entries.isEmpty
+    }
+    
+    /// Opens a photo or file in Quick Look, downloading it first when it isn't on the phone yet.
+    private func open(_ path: String) {
+        let repository = service.repository
+        Task {
+            do {
+                previewURL = try await repository.attachment(roomID: roomID, path: path)
+            } catch {
+                actions.problem = ArtiseNotesL10n.text("screen_notes_attachment_unavailable")
+            }
+        }
     }
     
     /// Why the typed name can't be used yet, said under the field.

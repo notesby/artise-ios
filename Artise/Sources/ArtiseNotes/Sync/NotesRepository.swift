@@ -49,4 +49,37 @@ public protocol NotesRepository: Sendable {
     func saveUnderNewName(roomID: String, editID: Int64, newPath: String) async throws
     /// Drops the edit and goes back to the server's copy.
     func discardEdit(roomID: String, editID: Int64) async throws
+    
+    /// Starts a sync that goes on if the screen that asked for it closes. Failures are silent: the queue stays.
+    func syncInBackground(roomID: String)
+    
+    // MARK: - Photos and files
+    
+    /// Adds a photo or file to `attachments/`; it shows at once and uploads with the next sync. Returns its path.
+    func addAttachment(roomID: String, fileName: String, data: Data, contentType: String) async throws -> String
+    /// The photo or file on the phone, downloaded once and kept while it doesn't change.
+    func attachment(roomID: String, path: String) async throws -> URL
+    /// The photo or file's copy on the phone, if it's there already; never downloads.
+    func cachedAttachment(roomID: String, path: String) async throws -> URL?
+    /// Photos and files added on this phone and not on the server yet, by path.
+    func uploads(roomID: String) async throws -> [String: UploadStatus]
+    /// Every photo and file, with the notes that use each one.
+    func media(roomID: String) async throws -> [MediaFile]
+    func retryUpload(roomID: String, path: String) async throws
+    /// Drops an upload not sent yet, and takes it out of the notes that embed it.
+    func cancelUpload(roomID: String, path: String) async throws
+    /// Deletes a photo or file; fails with `.inUse` when notes use it, unless `removeFromNotes`.
+    func deleteMedia(roomID: String, path: String, removeFromNotes: Bool) async throws
+    
+    // MARK: - Files and folders (need a connection)
+    
+    /// Renames or moves a note, photo or file; the server updates the links to it.
+    @discardableResult
+    func moveFile(roomID: String, from: String, to: String) async throws -> MovedNote
+    func createFolder(roomID: String, path: String) async throws
+    @discardableResult
+    func moveFolder(roomID: String, from: String, to: String) async throws -> MovedFolder
+    /// Fails with `.notEmpty` for a folder with something inside, unless `recursive`.
+    @discardableResult
+    func deleteFolder(roomID: String, path: String, recursive: Bool) async throws -> DeletedFolder
 }
