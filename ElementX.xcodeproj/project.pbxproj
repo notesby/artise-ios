@@ -438,6 +438,7 @@
 		4219391CD2351E410554B3E8 /* AggregratedReaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = B858A61F2A570DFB8DE570A7 /* AggregratedReaction.swift */; };
 		42239FD59394A086E046C9BF /* Backports.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76A46ABD27628CB5FC402541 /* Backports.swift */; };
 		422E8D182CA688D4565CD1E1 /* String.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40B21E611DADDEF00307E7AC /* String.swift */; };
+		424CD63EBEF1F42E16CC8A34 /* ArtiseNotificationHoursScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06F045766FC0921DF7A57C55 /* ArtiseNotificationHoursScreen.swift */; };
 		4295E5F850897710A51AE114 /* GeoURI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 190EC7285D3CFEF0D3011BCF /* GeoURI.swift */; };
 		42A5A42ACF063EEE6B1980D2 /* ReportContentScreenViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81B17B1F29448D1B9049B11C /* ReportContentScreenViewModel.swift */; };
 		42B084FDE621FBEE433AF444 /* LegalInformationScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4176C3E20C772DE8D182863C /* LegalInformationScreen.swift */; };
@@ -1652,7 +1653,6 @@
 		F99FB21EFC6D99D247FE7CBE /* SwiftState in Frameworks */ = {isa = PBXBuildFile; productRef = 19CD5B074D7DD44AF4C58BB6 /* SwiftState */; };
 		F9E5FF20B50705EB13137778 /* SpaceAddRoomsScreenViewModelProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59EBB553F8EFDD149742DC70 /* SpaceAddRoomsScreenViewModelProtocol.swift */; };
 		F9EA79092C18A8CFE4922DD2 /* PollFormScreenViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F64A8582F65567AC38C2976A /* PollFormScreenViewModel.swift */; };
-		FA094751B7B5A1A702218F4B /* ArtiseQuietHoursScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 971814DA8E1A261B1F8DD4C6 /* ArtiseQuietHoursScreen.swift */; };
 		FA2BBAE9FC5E2E9F960C0980 /* NavigationCoordinators.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8F28602AC7AC881AED37EBA /* NavigationCoordinators.swift */; };
 		FA53FA227FFBE469AFF32F71 /* TimelineControllerProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6C585CE1F721A2770C70D47 /* TimelineControllerProtocol.swift */; };
 		FA5A7E32B1920FCB4EEDC1BA /* RoomDetailsScreenCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6493AC9979CEB1410302BFE3 /* RoomDetailsScreenCoordinator.swift */; };
@@ -1873,6 +1873,7 @@
 		06775BFC4D00C62B7E1353A8 /* SettingsScreenUserStatusPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsScreenUserStatusPickerView.swift; sourceTree = "<group>"; };
 		0685156EB62D7E243F097CFC /* ServerSelectionScreenViewModelProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerSelectionScreenViewModelProtocol.swift; sourceTree = "<group>"; };
 		06B098A612DCB5A7358EECD5 /* DeveloperOptionsScreenModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeveloperOptionsScreenModels.swift; sourceTree = "<group>"; };
+		06F045766FC0921DF7A57C55 /* ArtiseNotificationHoursScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArtiseNotificationHoursScreen.swift; sourceTree = "<group>"; };
 		06F27F588F9059128E17C669 /* WindowManagerProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowManagerProtocol.swift; sourceTree = "<group>"; };
 		06FAE373A7F20780BA84B59C /* MessageForwardingScreenCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageForwardingScreenCoordinator.swift; sourceTree = "<group>"; };
 		0724EBDFE8BB4C9E5547C57D /* Client.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Client.swift; sourceTree = "<group>"; };
@@ -2767,7 +2768,6 @@
 		964093C7CA8823CAB7FFD88E /* UserIdentityProxy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserIdentityProxy.swift; sourceTree = "<group>"; };
 		969694F67E844FCA51F7E051 /* sv */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sv; path = sv.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		96C4762F8D6112E43117DB2F /* CustomStringConvertible.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomStringConvertible.swift; sourceTree = "<group>"; };
-		971814DA8E1A261B1F8DD4C6 /* ArtiseQuietHoursScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArtiseQuietHoursScreen.swift; sourceTree = "<group>"; };
 		97287090CA64DAA95386ECED /* ResolveVerifiedUserSendFailureScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResolveVerifiedUserSendFailureScreen.swift; sourceTree = "<group>"; };
 		974AEAF3FE0C577A6C04AD6E /* RoomPermissions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomPermissions.swift; sourceTree = "<group>"; };
 		976ED77B772F50C4BAD757E7 /* MediaEventsTimelineScreenViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaEventsTimelineScreenViewModel.swift; sourceTree = "<group>"; };
@@ -5179,7 +5179,7 @@
 		5C3D7D07072B17FD4B79F8AF /* Settings */ = {
 			isa = PBXGroup;
 			children = (
-				971814DA8E1A261B1F8DD4C6 /* ArtiseQuietHoursScreen.swift */,
+				06F045766FC0921DF7A57C55 /* ArtiseNotificationHoursScreen.swift */,
 				247399D280D57C6A0929AF84 /* ArtiseSecurityScreen.swift */,
 				F70CE73212EE10D98643B114 /* ArtiseSettingsSection.swift */,
 			);
@@ -9164,7 +9164,7 @@
 				B2B35A129DCBAA72A8D04BD6 /* ArtiseNotesFileSupport.swift in Sources */,
 				FB97FD795EAFEE572582DB5B /* ArtiseNotesL10n.swift in Sources */,
 				22A7CB516C2A39DBC901ADB3 /* ArtiseNotesService.swift in Sources */,
-				FA094751B7B5A1A702218F4B /* ArtiseQuietHoursScreen.swift in Sources */,
+				424CD63EBEF1F42E16CC8A34 /* ArtiseNotificationHoursScreen.swift in Sources */,
 				E2A78BA370D03F59C70F4DB9 /* ArtiseRecoveryKeys.swift in Sources */,
 				7A962087BE5D357B5A35BBED /* ArtiseSecurityScreen.swift in Sources */,
 				2833794F1855F4AA75FF72FB /* ArtiseSettingsSection.swift in Sources */,
