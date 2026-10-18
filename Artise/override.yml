@@ -50,10 +50,12 @@ targets:
     entitlements:
       properties:
         com.apple.developer.usernotifications.time-sensitive: true
-        # applinks: invite links. webcredentials: a workspace's sign-in page returns to https://join.artise.co/oauth.
+        # applinks: invite links. webcredentials: a workspace's sign-in page returns to https://join.artise.co/oauth;
+        # id.artise.co is Artise ID's passkey domain.
         com.apple.developer.associated-domains:
         - applinks:join.artise.co
         - webcredentials:join.artise.co
+        - webcredentials:id.artise.co
 
     # Nothing is collected before consent; no ads, no ad signals, no automatic screen reports.
     info:

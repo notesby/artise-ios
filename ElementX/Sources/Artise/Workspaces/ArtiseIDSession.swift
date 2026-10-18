@@ -11,13 +11,17 @@ import SwiftUI
 
 /// Signs in to Artise ID once, to list the person's workspaces. Its browser session is shared with the workspaces'
 /// sign-in pages, so opening a workspace afterwards shows no page.
+@Observable
 final class ArtiseIDSession {
     static let shared = ArtiseIDSession()
     
-    let client: ArtiseIDClient
+    /// Artise ID's security page, once the sign-in answer has been read; Settings → Security shows only with it.
+    private(set) var securityURL: URL?
+    
+    @ObservationIgnored let client: ArtiseIDClient
     /// The tokens, kept to read the list and the security settings again; given back when the person signs out.
-    private let tokens: ArtiseIDTokenKeeper
-    private var webSession: ArtiseIDWebSession?
+    @ObservationIgnored private let tokens: ArtiseIDTokenKeeper
+    @ObservationIgnored private var webSession: ArtiseIDWebSession?
     
     init() {
         client = ArtiseIDClient()
@@ -26,7 +30,11 @@ final class ArtiseIDSession {
     
     /// How to sign in to Artise ID; `nil` when Artise ID isn't available, and the app offers "type your workspace".
     func configuration() async -> ArtiseIDConfiguration? {
-        await client.configuration()
+        let configuration = await client.configuration()
+        if let configuration {
+            securityURL = configuration.securityURL
+        }
+        return configuration
     }
     
     /// Whether the person signed in with Artise ID on this phone and it's still usable without a new sign-in.

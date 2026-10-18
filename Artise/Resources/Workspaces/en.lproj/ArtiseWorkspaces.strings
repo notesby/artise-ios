@@ -34,3 +34,21 @@
 "screen_artise_id_no_workspaces" = "You’re not in any workspace yet. Ask the person who invited you for the invite link.";
 "screen_artise_id_other_account" = "Sign in another way";
 "screen_artise_id_error" = "Can’t sign in with Artise ID right now. Try again.";
+
+/* Settings → Security */
+"screen_artise_security_title" = "Security";
+"screen_artise_security_two_step" = "Two-step verification";
+"screen_artise_security_on" = "On";
+"screen_artise_security_off" = "Off";
+"screen_artise_security_on_description" = "Signing in on a new phone or browser asks for a second step after your password.";
+"screen_artise_security_off_description" = "It's optional. Add a second step, like an authenticator app or a code by email, to protect your Artise ID.";
+"screen_artise_security_manage" = "Manage in Artise ID";
+"screen_artise_security_manage_description" = "Change your password, add a passkey or set up two-step verification.";
+"screen_artise_security_provider_google" = "Your Google account protects your sign-in";
+"screen_artise_security_provider_microsoft" = "Your Microsoft account protects your sign-in";
+"screen_artise_security_provider_apple" = "Your Apple account protects your sign-in";
+"screen_artise_security_provider_description" = "To change two-step verification, use that account's own settings.";
+"screen_artise_security_sign_in_title" = "Sign in with Artise ID";
+"screen_artise_security_sign_in_description" = "To see how your account is protected, sign in to Artise ID on this phone.";
+"screen_artise_security_sign_in_action" = "Continue";
+"screen_artise_security_error" = "We couldn't check your account's security. Check your connection and try again.";

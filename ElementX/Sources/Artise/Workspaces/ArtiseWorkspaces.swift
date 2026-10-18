@@ -97,6 +97,10 @@ final class ArtiseWorkspaces {
                 Task { await self?.refresh() }
             }
         Task {
+            // Settings → Security shows once Artise ID's answer is known.
+            _ = await ArtiseIDSession.shared.configuration()
+        }
+        Task {
             await refresh()
             if store.consumeWelcome(serverName: serverName) {
                 ArtiseWorkspaceWelcome.showIfNeeded(for: current)

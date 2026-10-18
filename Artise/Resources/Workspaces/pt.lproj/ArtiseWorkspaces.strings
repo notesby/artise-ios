@@ -34,3 +34,21 @@
 "screen_artise_id_no_workspaces" = "Você ainda não está em nenhum espaço. Peça o link de convite a quem convidou você.";
 "screen_artise_id_other_account" = "Entrar de outra forma";
 "screen_artise_id_error" = "Não foi possível entrar com o Artise ID agora. Tente de novo.";
+
+/* Settings → Security */
+"screen_artise_security_title" = "Segurança";
+"screen_artise_security_two_step" = "Verificação em duas etapas";
+"screen_artise_security_on" = "Ativada";
+"screen_artise_security_off" = "Desativada";
+"screen_artise_security_on_description" = "Ao entrar em um celular ou navegador novo, você precisa de uma segunda etapa depois da senha.";
+"screen_artise_security_off_description" = "É opcional. Adicione uma segunda etapa, como um app autenticador ou um código por e-mail, para proteger seu Artise ID.";
+"screen_artise_security_manage" = "Gerenciar no Artise ID";
+"screen_artise_security_manage_description" = "Altere sua senha, adicione uma chave de acesso ou configure a verificação em duas etapas.";
+"screen_artise_security_provider_google" = "Sua conta do Google protege seu acesso";
+"screen_artise_security_provider_microsoft" = "Sua conta da Microsoft protege seu acesso";
+"screen_artise_security_provider_apple" = "Sua conta Apple protege seu acesso";
+"screen_artise_security_provider_description" = "Para mudar a verificação em duas etapas, use as configurações dessa conta.";
+"screen_artise_security_sign_in_title" = "Entre com o Artise ID";
+"screen_artise_security_sign_in_description" = "Para ver como sua conta está protegida, entre no Artise ID neste celular.";
+"screen_artise_security_sign_in_action" = "Continuar";
+"screen_artise_security_error" = "Não conseguimos verificar a segurança da sua conta. Verifique sua conexão e tente novamente.";
