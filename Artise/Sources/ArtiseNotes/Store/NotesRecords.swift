@@ -33,6 +33,8 @@ struct ChatRecord: Codable, Equatable {
     var folders: [String]
     /// The id the next queued edit gets.
     var nextEditID: Int64
+    /// The chat's pages as last fetched; `nil` before the first fetch (older records decode to `nil`, no migration needed).
+    var pages: [NotesPage]?
     
     init(roomID: String, name: String) {
         self.roomID = roomID

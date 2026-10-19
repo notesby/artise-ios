@@ -23,6 +23,8 @@ public protocol NotesRepository: Sendable {
     func folders(roomID: String) async throws -> [String]
     /// Unsent edits, including those waiting for the person to choose.
     func edits(roomID: String) async throws -> [PendingEdit]
+    /// The chat's pages (people, places, things, photos and documents), as last fetched with the tree; empty before.
+    func pages(roomID: String) async throws -> [NotesPage]
     
     /// Yields whenever the phone's copy of the chat's notes changes.
     func changes(roomID: String) async -> AsyncStream<Void>

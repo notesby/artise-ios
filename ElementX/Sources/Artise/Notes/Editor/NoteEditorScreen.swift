@@ -18,7 +18,8 @@ struct NoteEditorScreen: View {
     let onDone: () -> Void
     
     @State private var model = NoteEditorModel(text: "")
-    @State private var notePaths: [String] = []
+    /// The chat's files and pages, for `[[` suggestions and the link dialog.
+    @State private var index = PageIndex.empty
     @State private var isLoaded = false
     @State private var isSaving = false
     @State private var showsSaveChanges = false
@@ -58,7 +59,7 @@ struct NoteEditorScreen: View {
             .toolbar { toolbar }
             .sheet(isPresented: isEditingLink) {
                 if let edit = model.linkEdit {
-                    NoteLinkEditSheet(edit: edit, notePaths: notePaths, model: $model)
+                    NoteLinkEditSheet(edit: edit, index: index, model: $model)
                 }
             }
             .confirmationDialog(L10n.dialogUnsavedChangesTitle, isPresented: $showsSaveChanges, titleVisibility: .visible) {
@@ -109,23 +110,33 @@ struct NoteEditorScreen: View {
         }
     }
     
-    /// Notes that fit the `[[…` being typed, in a row above the formatting bar.
+    /// Notes, pages and files that fit the `[[…` being typed, in a row above the formatting bar. An alias shows the
+    /// page it names; a name two notes share shows each one's folder and summary.
     @ViewBuilder
     private var suggestions: some View {
         if let link = model.openLink {
-            let matches = WikiLinkSuggestions.suggestions(for: link.query, notePaths: notePaths, currentPath: path)
+            let matches = WikiLinkSuggestions.suggestions(for: link.query, index: index, currentPath: path)
             if !matches.isEmpty {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
                         ForEach(matches) { suggestion in
                             Button { model.choose(suggestion, now: .now) } label: {
-                                Text(suggestion.name)
-                                    .font(.compound.bodyMD)
-                                    .padding(.horizontal, 12)
-                                    .padding(.vertical, 8)
-                                    .background(.compound.bgSubtleSecondary, in: Capsule())
+                                VStack(alignment: .leading, spacing: 0) {
+                                    Text(suggestion.name)
+                                        .font(.compound.bodyMD)
+                                    if let detail = suggestion.detail {
+                                        Text(detail)
+                                            .font(.compound.bodyXS)
+                                            .foregroundStyle(.compound.textSecondary)
+                                            .lineLimit(1)
+                                    }
+                                }
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, suggestion.detail == nil ? 8 : 4)
+                                .background(.compound.bgSubtleSecondary, in: Capsule())
                             }
                             .buttonStyle(.plain)
+                            .accessibilityLabel([suggestion.name, suggestion.detail].compactMap { $0 }.joined(separator: ", "))
                         }
                     }
                     .padding(.horizontal, 12)
@@ -154,7 +165,7 @@ struct NoteEditorScreen: View {
             model = await NoteEditorModel(text: (try? repository.file(roomID: roomID, path: path)?.content) ?? "")
         }
         let files = await (try? repository.files(roomID: roomID)) ?? []
-        notePaths = files.filter(\.isNote).map(\.path)
+        index = await PageIndex(paths: files.map(\.path), pages: (try? repository.pages(roomID: roomID)) ?? [])
         isLoaded = true
     }
     
@@ -212,9 +223,10 @@ private struct NoteFormatBar: View {
 }
 
 /// Edits a link: the note or web address, and the text to show. Removing it keeps the words people saw.
+/// A note typed by one of its other names is written as Obsidian does: "Mamá" becomes `[[Ana|Mamá]]`.
 private struct NoteLinkEditSheet: View {
     let edit: LinkEditState
-    let notePaths: [String]
+    let index: PageIndex
     @Binding var model: NoteEditorModel
     
     @State private var target = ""
@@ -256,7 +268,7 @@ private struct NoteLinkEditSheet: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button(L10n.actionSave) {
-                        model.saveLink(EditableLink(isNote: edit.link.isNote, target: target, shownText: shownText), now: .now)
+                        model.saveLink(link, now: .now)
                         dismiss()
                     }
                     .disabled(target.trimmingCharacters(in: .whitespaces).isEmpty)
@@ -268,6 +280,14 @@ private struct NoteLinkEditSheet: View {
             target = edit.link.target
             shownText = edit.link.shownText
         }
+    }
+    
+    private var link: EditableLink {
+        guard edit.link.isNote, let written = index.written(target) else {
+            return EditableLink(isNote: edit.link.isNote, target: target, shownText: shownText)
+        }
+        let shown = shownText.trimmingCharacters(in: .whitespaces)
+        return EditableLink(isNote: true, target: written.target, shownText: shown.isEmpty ? written.shownText : shown)
     }
     
     private static func webAddress(_ target: String) -> String {

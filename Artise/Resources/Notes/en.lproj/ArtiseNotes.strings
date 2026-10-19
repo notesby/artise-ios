@@ -169,3 +169,17 @@
 "screen_notes_change_files" = "%1$@, on the files page";
 "screen_notes_change_sync" = "A synced device";
 "screen_notes_history_renamed" = "%1$@ → %2$@";
+"screen_notes_link_which" = "Which one?";
+"screen_notes_link_several" = "Several notes are called “%1$@”. Choose which one to open.";
+"screen_notes_page_other_names" = "Other names: %1$@";
+"screen_notes_page_type_person" = "Person";
+"screen_notes_page_type_place" = "Place";
+"screen_notes_page_type_thing" = "Thing";
+"screen_notes_page_type_client" = "Client";
+"screen_notes_page_type_pet" = "Pet";
+"screen_notes_page_type_project" = "Project";
+"screen_notes_page_type_company" = "Company";
+"screen_notes_page_type_event" = "Event";
+"screen_notes_page_type_document" = "Document";
+"screen_notes_page_type_image" = "Photo";
+"a11y_notes_map_page" = "%1$@, page";

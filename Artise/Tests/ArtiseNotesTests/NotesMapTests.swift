@@ -27,6 +27,22 @@ struct NotesMapTests {
         #expect(map.nodes.map(\.name) == ["Ideas", "Mole", "Súper"])
     }
     
+    /// Pages are marked and named by their title; links by alias join them; a name two notes share joins nothing.
+    @Test
+    func pagesAreMarkedAndAliasesJoin() {
+        let files = [note("people/Ana.md", "---\ntype: person\naliases: [Mamá]\n---\nVive en Monterrey"),
+                     note("clients/Ana.md", "Compra pasteles"),
+                     note("Diario.md", "Comí con [[Mamá]] y vi a [[Ana]]")]
+        let pages = [NotesPage(path: "people/Ana.md", title: "Ana", type: "person", folder: "people", aliases: ["Mamá"], summary: "", isNote: true),
+                     NotesPage(path: "clients/Ana.md", title: "Ana", type: "client", folder: "clients", aliases: [], summary: "", isNote: true)]
+        
+        let map = NotesMapBuilder.build(files, pages: pages)
+        
+        #expect(map.nodes.map(\.path) == ["clients/Ana.md", "Diario.md", "people/Ana.md"])
+        #expect(map.nodes.map(\.isPage) == [true, false, true])
+        #expect(map.edges == [MapEdge(from: 1, to: 2)])
+    }
+    
     /// Relative Markdown links to notes count; headings don't make a different note.
     @Test
     func markdownLinksAndHeadingsCount() {

@@ -13,6 +13,8 @@ public struct MapNode: Equatable, Sendable {
     public let x: Double
     public let y: Double
     public let degree: Int
+    /// A person, place or thing with a page of its own: drawn apart from plain notes.
+    public let isPage: Bool
 }
 
 /// The notes of a chat and the links between them, placed on a unit square.
@@ -38,17 +40,19 @@ public struct MapEdge: Equatable, Hashable, Sendable {
 }
 
 /// Builds the map from the notes on the phone, so it works offline and includes edits not sent yet, as the Android
-/// app does. Links are read like on the note screen: `[[wiki links]]`, embedded notes and Markdown links to notes.
+/// app does. Links are read like on the note screen: `[[wiki links]]`, embedded notes and Markdown links to notes,
+/// by name, title or alias; a link several notes answer to joins nothing, as on the server.
 public enum NotesMapBuilder {
-    public static func build(_ files: [LocalFile]) -> NotesMapModel {
+    public static func build(_ files: [LocalFile], pages: [NotesPage] = []) -> NotesMapModel {
         let notes = files.filter { $0.isNote && $0.path.hasSuffix(".md") }.sorted { $0.path.lowercased() < $1.path.lowercased() }
         let paths = notes.map(\.path)
+        let pageIndex = PageIndex(paths: paths, pages: pages.filter(\.isNote))
         let index = Dictionary(uniqueKeysWithValues: paths.enumerated().map { ($1, $0) })
         var edges: [MapEdge] = []
         var seen: Set<MapEdge> = []
         for (from, note) in notes.enumerated() {
             for target in linkTargets(note.content ?? "") {
-                guard let resolved = NoteLinkResolver.resolve(target, in: paths), let to = index[resolved], to != from else { continue }
+                guard case .file(let resolved) = pageIndex.resolve(target), let to = index[resolved], to != from else { continue }
                 let edge = MapEdge(from: min(from, to), to: max(from, to))
                 if seen.insert(edge).inserted {
                     edges.append(edge)
@@ -62,7 +66,8 @@ public enum NotesMapBuilder {
             degrees[edge.to] += 1
         }
         let nodes = notes.enumerated().map { index, note in
-            MapNode(path: note.path, name: NotesFolderEntries.noteName(note.path), x: positions[index].x, y: positions[index].y, degree: degrees[index])
+            MapNode(path: note.path, name: pageIndex.title(of: note.path), x: positions[index].x, y: positions[index].y,
+                    degree: degrees[index], isPage: pageIndex.isPage(note.path))
         }
         return NotesMapModel(nodes: nodes, edges: edges)
     }

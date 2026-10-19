@@ -149,12 +149,15 @@ public struct NotesSearchResult: Equatable, Sendable {
 public struct NoteLinks: Equatable, Sendable {
     public struct Outgoing: Equatable, Sendable {
         public let target: String
-        /// `nil` when the linked note doesn't exist yet.
+        /// `nil` when the linked note doesn't exist yet, or when several notes answer to the name (see `candidates`).
         public let path: String?
+        /// The notes sharing the link's name, when there's more than one: the person chooses, never the first.
+        public let candidates: [String]
         
-        public init(target: String, path: String?) {
+        public init(target: String, path: String?, candidates: [String] = []) {
             self.target = target
             self.path = path
+            self.candidates = candidates
         }
     }
     
@@ -176,6 +179,37 @@ public struct NoteLinks: Equatable, Sendable {
         self.path = path
         self.outgoing = outgoing
         self.backlinks = backlinks
+    }
+}
+
+/// A person, place or thing with a note of its own, as the Notes API lists it: the notes in the folders the chat's
+/// `SCHEMA.md` marks `(pages)`, with the header Obsidian reads, plus every photo and document as a page of its kind.
+public struct NotesPage: Equatable, Sendable, Codable, Identifiable {
+    public let path: String
+    /// The note's name, or the file's name for a photo or document.
+    public let title: String
+    /// "person", "place", "thing", "client", "image", "document"… as the chat's `SCHEMA.md` names them.
+    public let type: String
+    /// The folder the page is in, "" at the top level.
+    public let folder: String
+    /// Other names people use for it, from the note's `aliases` header: `[[Mamá]]` finds Ana.
+    public let aliases: [String]
+    public let summary: String
+    /// A note, as opposed to a photo or document.
+    public let isNote: Bool
+    
+    public var id: String {
+        path
+    }
+    
+    public init(path: String, title: String, type: String, folder: String, aliases: [String], summary: String, isNote: Bool) {
+        self.path = path
+        self.title = title
+        self.type = type
+        self.folder = folder
+        self.aliases = aliases
+        self.summary = summary
+        self.isNote = isNote
     }
 }
 

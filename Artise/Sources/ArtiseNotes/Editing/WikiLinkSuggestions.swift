@@ -13,19 +13,30 @@ public struct OpenWikiLink: Equatable, Sendable {
     public let query: String
 }
 
-/// A note offered while typing `[[`: its name, and the text inserted for it.
+/// A note, page or file offered while typing `[[`: the name that matched, and the text inserted for it.
 public struct WikiLinkSuggestion: Equatable, Sendable, Identifiable {
+    /// The note's name, the page's title, or the alias that matched.
     public let name: String
     public let path: String
-    /// The link target: the bare name when it's unique, else the path without `.md`, as Obsidian writes it.
+    /// The link target as Obsidian writes it: the bare name when it's unique, `Ana|Mamá` for an alias,
+    /// `people/Ana|Ana` when another note shares the name.
     public let linkText: String
+    /// What tells it apart: the page's own name for an alias, the folder and summary for a shared name.
+    public let detail: String?
+    
+    public init(name: String, path: String, linkText: String, detail: String? = nil) {
+        self.name = name
+        self.path = path
+        self.linkText = linkText
+        self.detail = detail
+    }
     
     public var id: String {
-        path
+        linkText
     }
 }
 
-/// Finds an unfinished `[[link` at the cursor and the notes that fit it, as the Android app does.
+/// Finds an unfinished `[[link` at the cursor and the notes, pages and files that fit it, as the Android app does.
 public enum WikiLinkSuggestions {
     public static let maxSuggestions = 6
     
@@ -43,19 +54,26 @@ public enum WikiLinkSuggestions {
         return OpenWikiLink(start: start, query: query)
     }
     
-    /// Notes matching `query`, names starting with it first, leaving out `currentPath`.
+    /// Notes matching `query` by name, names starting with it first, leaving out `currentPath`.
     public static func suggestions(for query: String, notePaths: [String], currentPath: String?) -> [WikiLinkSuggestion] {
+        suggestions(for: query, index: PageIndex(paths: notePaths, pages: []), currentPath: currentPath)
+    }
+    
+    /// Notes, pages and files matching `query` by name, title or alias: names starting with it first, then notes
+    /// before photos and documents. The note being edited is left out.
+    public static func suggestions(for query: String, index: PageIndex, currentPath: String?) -> [WikiLinkSuggestion] {
         let wanted = NoteLinkResolver.matchKey(query).trimmingCharacters(in: .whitespaces)
-        let nameCounts = Dictionary(grouping: notePaths) { NoteLinkResolver.matchKey(name(of: $0)) }.mapValues(\.count)
-        return notePaths
-            .filter { $0 != currentPath && $0.hasSuffix(".md") }
-            .map { (path: $0, name: name(of: $0)) }
-            .filter { wanted.isEmpty || NoteLinkResolver.matchKey($0.name).contains(wanted) || NoteLinkResolver.matchKey($0.path).contains(wanted) }
+        return entries(index)
+            .filter { $0.path != currentPath }
+            .filter { wanted.isEmpty || NoteLinkResolver.matchKey($0.name).contains(wanted) || ($0.matchesPath && NoteLinkResolver.matchKey($0.path).contains(wanted)) }
             .sorted { lhs, rhs in
                 let lhsStarts = NoteLinkResolver.matchKey(lhs.name).hasPrefix(wanted)
                 let rhsStarts = NoteLinkResolver.matchKey(rhs.name).hasPrefix(wanted)
                 if lhsStarts != rhsStarts {
                     return lhsStarts
+                }
+                if lhs.isNote != rhs.isNote {
+                    return lhs.isNote
                 }
                 if lhs.name.lowercased() != rhs.name.lowercased() {
                     return lhs.name.lowercased() < rhs.name.lowercased()
@@ -63,11 +81,7 @@ public enum WikiLinkSuggestions {
                 return lhs.path < rhs.path
             }
             .prefix(maxSuggestions)
-            .map { candidate in
-                let isUnique = (nameCounts[NoteLinkResolver.matchKey(candidate.name)] ?? 0) <= 1
-                return WikiLinkSuggestion(name: candidate.name, path: candidate.path,
-                                          linkText: isUnique ? candidate.name : String(candidate.path.dropLast(3)))
-            }
+            .map(\.suggestion)
     }
     
     /// The text with the open link completed as `[[linkText]]`, and the cursor after it.
@@ -79,8 +93,42 @@ public enum WikiLinkSuggestions {
         return EditedText(text: text.replacingUTF16(link.start, end, with: inserted), start: after, end: after)
     }
     
-    private static func name(of path: String) -> String {
-        let file = NotesFolderEntries.fileName(path)
-        return file.hasSuffix(".md") ? String(file.dropLast(3)) : file
+    private struct Entry {
+        let name: String
+        let path: String
+        let isNote: Bool
+        /// Typing part of the folder finds a note by its name entry, not by its aliases.
+        let matchesPath: Bool
+        let suggestion: WikiLinkSuggestion
+    }
+    
+    /// One entry per note (by its name), plus one per page alias and one per photo or document with a page.
+    private static func entries(_ index: PageIndex) -> [Entry] {
+        let notes = index.paths.filter { $0.hasSuffix(".md") }
+        let files = index.pages.filter { !$0.isNote }.map(\.path)
+        let all = notes + files
+        var entries: [Entry] = []
+        for path in all {
+            let title = index.title(of: path)
+            let shared = index.count(ofName: title, among: all) > 1
+            let page = index.page(at: path)
+            let detail = shared ? sharedDetail(path: path, summary: page?.summary ?? "") : nil
+            let linkText = shared ? PageIndex.pathForm(path) + (path.hasSuffix(".md") ? "|" + title : "") : title
+            entries.append(Entry(name: title, path: path, isNote: path.hasSuffix(".md"), matchesPath: true,
+                                 suggestion: WikiLinkSuggestion(name: title, path: path, linkText: linkText, detail: detail)))
+            for alias in page?.aliases ?? [] where !alias.isEmpty {
+                let target = shared ? PageIndex.pathForm(path) : title
+                entries.append(Entry(name: alias, path: path, isNote: path.hasSuffix(".md"), matchesPath: false,
+                                     suggestion: WikiLinkSuggestion(name: alias, path: path, linkText: target + "|" + alias, detail: title)))
+            }
+        }
+        return entries
+    }
+    
+    /// "people · Ana, Hector's mother", or the folder alone; "/" for the top level.
+    private static func sharedDetail(path: String, summary: String) -> String {
+        let folder = NotesFolderEntries.parentFolder(of: path)
+        let place = folder.isEmpty ? "/" : folder
+        return summary.isEmpty ? place : place + " · " + summary
     }
 }

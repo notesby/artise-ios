@@ -11,9 +11,13 @@ import Markdown
 /// `[[wiki links]]` and `![[embeds]]` are understood, as in Obsidian and the Android app.
 public struct NoteDocument: Equatable, Sendable {
     public let blocks: [NoteBlock]
+    /// The page's header (`type`, `aliases`, `summary`), kept out of `blocks`.
+    public let frontmatter: NoteFrontmatter?
     
     public init(markdown: String) {
-        let document = Document(parsing: WikiLinkRewriter.rewrite(markdown))
+        let (header, body) = NoteFrontmatter.split(markdown)
+        frontmatter = header
+        let document = Document(parsing: WikiLinkRewriter.rewrite(body))
         blocks = document.children.compactMap(Self.block)
     }
     

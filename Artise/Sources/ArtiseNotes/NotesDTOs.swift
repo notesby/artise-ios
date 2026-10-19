@@ -135,6 +135,7 @@ struct LinksDTO: Decodable {
     struct Outgoing: Decodable {
         let target: String
         let path: String?
+        let candidates: [String]?
     }
     
     struct Backlink: Decodable {
@@ -145,6 +146,20 @@ struct LinksDTO: Decodable {
     let path: String
     let outgoing: [Outgoing]
     let backlinks: [Backlink]
+}
+
+struct PagesDTO: Decodable {
+    struct Page: Decodable {
+        let path: String
+        let title: String
+        let type: String?
+        let folder: String?
+        let aliases: [String]?
+        let summary: String?
+        let note: Bool?
+    }
+    
+    let pages: [Page]
 }
 
 struct GraphDTO: Decodable {
