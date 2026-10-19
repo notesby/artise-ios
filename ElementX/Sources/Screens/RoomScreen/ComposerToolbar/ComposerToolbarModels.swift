@@ -80,6 +80,7 @@ struct ComposerToolbarViewState: BindableState {
     var artiseComposerEmpty: Bool {
         bindings.composerFormattingEnabled ? composerEmpty : bindings.plainComposerText.string.isEmpty
     }
+    
     /// Artise: the preview of the link being typed.
     var artiseLinkPreview: ArtiseComposerLinkPreview?
     /// Could be false if sending is disabled in the room
