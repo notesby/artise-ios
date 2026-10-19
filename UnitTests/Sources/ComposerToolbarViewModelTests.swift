@@ -25,6 +25,19 @@ final class ComposerToolbarViewModelTests {
         setUpViewModel()
     }
     
+    /// Artise: the sticker button shows only while nothing is typed, in the plain composer as in the rich one.
+    @Test
+    func artiseStickerButtonHidesWhileTyping() {
+        viewModel.context.composerFormattingEnabled = false
+        #expect(viewModel.state.artiseComposerEmpty)
+        
+        viewModel.context.plainComposerText = .init(string: "Hola")
+        #expect(!viewModel.state.artiseComposerEmpty)
+        
+        viewModel.context.plainComposerText = .init(string: "")
+        #expect(viewModel.state.artiseComposerEmpty)
+    }
+    
     @Test
     func composerFocus() {
         viewModel.process(timelineAction: .setMode(mode: .edit(originalEventOrTransactionID: .eventID("mock"), type: .default)))

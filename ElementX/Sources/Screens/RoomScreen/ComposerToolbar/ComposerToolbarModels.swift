@@ -74,6 +74,12 @@ struct ComposerToolbarViewState: BindableState {
     var composerEmpty = true
     /// Artise: the room the sticker button sends to.
     var artiseRoomID: String?
+    
+    /// Artise: nothing typed yet, in whichever composer is in use. `composerEmpty` follows the rich text editor only,
+    /// so the plain composer's text is read directly, as `showSendButton` does.
+    var artiseComposerEmpty: Bool {
+        bindings.composerFormattingEnabled ? composerEmpty : bindings.plainComposerText.string.isEmpty
+    }
     /// Artise: the preview of the link being typed.
     var artiseLinkPreview: ArtiseComposerLinkPreview?
     /// Could be false if sending is disabled in the room
