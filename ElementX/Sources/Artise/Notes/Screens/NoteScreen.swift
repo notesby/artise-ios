@@ -20,8 +20,9 @@ struct NoteScreen: View {
     @State private var file: LocalFile?
     @State private var isEditing = false
     @State private var missingTarget: String?
-    /// A link several notes answer to: the person picks one.
+    /// A link several notes answer to: the person picks one, opened once the sheet is gone.
     @State private var choice: NoteLinkChoice?
+    @State private var chosenPath: String?
     @State private var previewURL: URL?
     @State private var document = NoteDocument(markdown: "")
     @State private var paths: [String] = []
@@ -90,10 +91,15 @@ struct NoteScreen: View {
             Button(ArtiseNotesL10n.text("screen_notes_create")) { createMissingNote() }
             Button(L10n.actionCancel, role: .cancel) { }
         }
-        .sheet(item: $choice) { choice in
+        .sheet(item: $choice, onDismiss: {
+            if let chosenPath {
+                self.chosenPath = nil
+                open(chosenPath)
+            }
+        }) { choice in
             NoteLinkChoiceSheet(choice: choice) { path in
+                chosenPath = path
                 self.choice = nil
-                open(path)
             }
         }
         .quickLookPreview($previewURL)

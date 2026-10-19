@@ -107,10 +107,11 @@ public enum WikiLinkSuggestions {
         let notes = index.paths.filter { $0.hasSuffix(".md") }
         let files = index.pages.filter { !$0.isNote }.map(\.path)
         let all = notes + files
+        let counts = index.counts(ofNames: all)
         var entries: [Entry] = []
         for path in all {
             let title = index.title(of: path)
-            let shared = index.count(ofName: title, among: all) > 1
+            let shared = counts[NoteLinkResolver.matchKey(title), default: 0] > 1
             let page = index.page(at: path)
             let detail = shared ? sharedDetail(path: path, summary: page?.summary ?? "") : nil
             let linkText = shared ? PageIndex.pathForm(path) + (path.hasSuffix(".md") ? "|" + title : "") : title

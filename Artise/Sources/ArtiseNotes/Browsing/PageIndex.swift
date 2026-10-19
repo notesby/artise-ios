@@ -113,22 +113,14 @@ public struct PageIndex: Equatable, Sendable {
         return WrittenLink(target: page.title, shownText: target)
     }
     
-    /// The link text that reaches `path` and nothing else: its name when unique, else `folder/Name|Name`.
-    public func linkText(for path: String) -> String {
-        let title = title(of: path)
-        let isUnique = count(ofName: title, among: paths) <= 1
-        return isUnique && !path.hasSuffix(".md") ? title : isUnique ? title : Self.pathForm(path) + "|" + title
-    }
-    
     /// `people/Ana.md` → `people/Ana`; a photo keeps its extension.
     public static func pathForm(_ path: String) -> String {
         path.hasSuffix(".md") ? String(path.dropLast(3)) : path
     }
     
-    /// How many files and pages answer to `name`.
-    func count(ofName name: String, among candidates: [String]) -> Int {
-        let key = NoteLinkResolver.matchKey(name)
-        return candidates.filter { NoteLinkResolver.matchKey(title(of: $0)) == key }.count
+    /// How many of `candidates` answer to each name (case and accents ignored).
+    func counts(ofNames candidates: [String]) -> [String: Int] {
+        Dictionary(grouping: candidates) { NoteLinkResolver.matchKey(title(of: $0)) }.mapValues(\.count)
     }
     
     private func choose(_ matches: [String]) -> LinkResolution {
