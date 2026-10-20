@@ -146,7 +146,7 @@ struct ComposerToolbar: View {
                 messageComposer
                     // Artise: the sticker button, at the end of an empty message field.
                     .overlay(alignment: .bottomTrailing) {
-                        if context.viewState.composerEmpty, context.viewState.composerMode == .default, !context.composerFormattingEnabled {
+                        if context.viewState.artiseComposerEmpty, context.viewState.composerMode == .default, !context.composerFormattingEnabled {
                             ArtiseStickerButton(roomID: context.viewState.artiseRoomID)
                         }
                     }
