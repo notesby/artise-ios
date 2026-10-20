@@ -102,6 +102,8 @@ struct NotesStoreTests {
         #expect(record.edits.first?.baseVersion == "v1")
         #expect(record.folders == ["Recetas"])
         #expect(record.nextEditID == 2)
+        // Pages came later as an optional field: a record from before them reads back without any.
+        #expect(record.pages == nil)
     }
     
     #if canImport(CryptoKit)

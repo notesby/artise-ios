@@ -79,6 +79,13 @@ enum ArtiseNotesL10n {
         String.localizedStringWithFormat(text("screen_notes_folder_file_count"), files)
     }
     
+    /// A page's type as people read it: "person" → "Persona"; a type the app doesn't know shows as written.
+    static func pageType(_ type: String) -> String {
+        let key = "screen_notes_page_type_" + type.lowercased()
+        let text = NSLocalizedString(key, tableName: "ArtiseNotes", bundle: .main, comment: "")
+        return text == key ? type.prefix(1).uppercased() + type.dropFirst() : text
+    }
+    
     /// Texts that say "Ari" use the workspace's assistant name.
     static func text(_ key: String) -> String {
         let text = NSLocalizedString(key, tableName: "ArtiseNotes", bundle: .main, comment: "")

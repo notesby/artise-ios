@@ -81,9 +81,9 @@
 
 /* What's new (change with ArtiseWhatsNew.edition) */
 "screen_artise_whats_new_title" = "Novedades";
-"screen_artise_whats_new_1" = "Inicia sesión una vez con Apple, Google, Microsoft o tu correo, y elige tu espacio de trabajo.";
-"screen_artise_whats_new_2" = "Ari aparece fijo arriba en tus chats, y en Ajustes tienes Ayuda y Seguridad.";
-"screen_artise_whats_new_3" = "Las notas se actualizan solas al abrir la app, y ahora puedes buscarlas.";
+"screen_artise_whats_new_1" = "Los enlaces en las notas encuentran personas y cosas por cualquiera de sus nombres, y si dos notas se llaman igual, tú eliges cuál.";
+"screen_artise_whats_new_2" = "Las notas de un chat se actualizan solas, incluso con la app cerrada.";
+"screen_artise_whats_new_3" = "Horario de notificaciones: todos los días, de lunes a viernes o cada día con su horario, y un sonido por chat.";
 "screen_artise_whats_new_done" = "Entendido";
 
 /* Settings → Notification hours */

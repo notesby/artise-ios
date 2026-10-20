@@ -168,3 +168,17 @@
 "screen_notes_change_app" = "%1$@, en la app";
 "screen_notes_change_files" = "%1$@, en la página de archivos";
 "screen_notes_change_sync" = "Un dispositivo sincronizado";
+"screen_notes_link_which" = "¿Cuál?";
+"screen_notes_link_several" = "Hay varias notas llamadas “%1$@”. Elige cuál abrir.";
+"screen_notes_page_other_names" = "Otros nombres: %1$@";
+"screen_notes_page_type_person" = "Persona";
+"screen_notes_page_type_place" = "Lugar";
+"screen_notes_page_type_thing" = "Cosa";
+"screen_notes_page_type_client" = "Cliente";
+"screen_notes_page_type_pet" = "Mascota";
+"screen_notes_page_type_project" = "Proyecto";
+"screen_notes_page_type_company" = "Empresa";
+"screen_notes_page_type_event" = "Evento";
+"screen_notes_page_type_document" = "Documento";
+"screen_notes_page_type_image" = "Foto";
+"a11y_notes_map_page" = "%1$@, página";

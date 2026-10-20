@@ -100,6 +100,10 @@ public final class NotesSyncEngine: NotesRepository {
         try await store.chat(roomID)?.edits.map(Self.pendingEdit) ?? []
     }
     
+    public func pages(roomID: String) async throws -> [NotesPage] {
+        try await store.chat(roomID)?.pages ?? []
+    }
+    
     public func changes(roomID: String) async -> AsyncStream<Void> {
         await changeCenter.changes(of: roomID)
     }
@@ -515,8 +519,14 @@ public final class NotesSyncEngine: NotesRepository {
             await setDownloading(roomID, notesLeft)
         }
         
+        // Pages change with the tree, so they're fetched once per changed tree. A server without `/pages` keeps the last list.
+        let pages = try? await api.pages(roomID: roomID)
+        
         let remotePaths = Set(tree.files.map(\.path))
         try await store.updateChat(roomID) { record in
+            if let pages {
+                record.pages = pages
+            }
             for (path, file) in record.files where !remotePaths.contains(path) {
                 let hasEdits = record.edits.contains { $0.path == path }
                 if !hasEdits, !file.version.isEmpty {

@@ -42,6 +42,8 @@ final class FakeNotesServer: NotesHTTPTransport {
     struct State {
         var files: [String: StoredFile] = [:]
         var folders: [String] = []
+        /// What `GET /pages` answers.
+        var pages: [NotesPage] = []
         var versionCounter = 0
         var treeCounter = 0
         var requests: [Recorded] = []
@@ -109,6 +111,10 @@ final class FakeNotesServer: NotesHTTPTransport {
             $0.folders = folders
             $0.treeCounter += 1
         }
+    }
+    
+    func setPages(_ pages: [NotesPage]) {
+        state.withLock { $0.pages = pages }
     }
     
     func content(_ path: String) -> String? {
@@ -232,6 +238,12 @@ final class FakeNotesServer: NotesHTTPTransport {
             state.folders.removeAll { $0 == path || $0.hasPrefix(path + "/") }
             state.treeCounter += 1
             return (200, ["path": path, "deleted": true, "notes": inside.count, "files": 0], [:])
+        case ("GET", "pages"):
+            let pages = state.pages.map { page in
+                ["path": page.path, "title": page.title, "type": page.type, "folder": page.folder,
+                 "aliases": page.aliases, "summary": page.summary, "note": page.isNote] as [String: Any]
+            }
+            return (200, ["pages": pages], [:])
         case ("GET", "links"):
             let name = path.split(separator: "/").last.map(String.init) ?? path
             let backlinks = state.files.filter { $0.value.isNote && $0.value.content.contains(name) }.keys.sorted()

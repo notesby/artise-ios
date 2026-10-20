@@ -22,6 +22,29 @@ struct NotesSyncEngineTests {
     
     // MARK: - Pulling
     
+    /// Pages come with a changed tree and stay on the phone: an unchanged chat doesn't ask for them again,
+    /// and a server without `/pages` keeps the last list.
+    @Test
+    func pagesComeWithTheTreeAndAreKept() async throws {
+        server.put("people/Ana.md", "---\ntype: person\naliases: [Mamá]\n---")
+        let ana = NotesPage(path: "people/Ana.md", title: "Ana", type: "person", folder: "people", aliases: ["Mamá"], summary: "", isNote: true)
+        server.setPages([ana])
+        let engine = makeEngine()
+        
+        try await engine.sync(roomID: room)
+        try await engine.sync(roomID: room)
+        
+        #expect(try await engine.pages(roomID: room) == [ana])
+        #expect(server.requests(to: "pages").count == 1)
+        
+        server.put("Súper.md", "- leche")
+        server.failNext("pages", status: 404, error: "not_found")
+        try await engine.sync(roomID: room)
+        
+        #expect(server.requests(to: "pages").count == 2)
+        #expect(try await engine.pages(roomID: room) == [ana])
+    }
+    
     /// The first sync downloads every note's text, and lists photos without downloading them.
     @Test
     func firstSyncDownloadsNotesAndListsFiles() async throws {

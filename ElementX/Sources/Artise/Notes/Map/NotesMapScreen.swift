@@ -10,6 +10,7 @@ import SwiftUI
 
 /// The chat's notes as a map, built on the phone: pinch to zoom around the fingers, drag to move, double tap to
 /// zoom in, tap a note to open it, and buttons to zoom and go back to the whole map, as in the Android app.
+/// Pages (people, places and things with a note of their own) are drawn with a ring around them.
 struct NotesMapScreen: View {
     let service: ArtiseNotesService
     let roomID: String
@@ -52,7 +53,8 @@ struct NotesMapScreen: View {
         }
         .task {
             let files = await (try? service.repository.files(roomID: roomID)) ?? []
-            map = await Task.detached { NotesMapBuilder.build(files) }.value
+            let pages = await (try? service.repository.pages(roomID: roomID)) ?? []
+            map = await Task.detached { NotesMapBuilder.build(files, pages: pages) }.value
             hasLoaded = true
         }
     }
@@ -71,7 +73,12 @@ struct NotesMapScreen: View {
                 let radius = nodeRadius(node)
                 let point = points[index]
                 context.fill(Path(ellipseIn: CGRect(x: point.x - radius, y: point.y - radius, width: radius * 2, height: radius * 2)),
-                             with: .color(.compound.iconAccentTertiary))
+                             with: .color(node.isPage ? .compound.iconAccentPrimary : .compound.iconAccentTertiary))
+                if node.isPage {
+                    let ring = radius + 3
+                    context.stroke(Path(ellipseIn: CGRect(x: point.x - ring, y: point.y - ring, width: ring * 2, height: ring * 2)),
+                                   with: .color(.compound.iconAccentPrimary), lineWidth: 1.5)
+                }
                 let label = context.resolve(Text(node.name).font(.compound.bodySM).foregroundStyle(Color.compound.textSecondary))
                 let labelSize = label.measure(in: CGSize(width: 120, height: 40))
                 context.draw(label, in: CGRect(x: point.x - labelSize.width / 2, y: point.y + radius + 2, width: labelSize.width, height: labelSize.height))

@@ -164,8 +164,17 @@ public struct NotesAPIClient: Sendable {
     public func links(roomID: String, path: String) async throws(NotesError) -> NoteLinks {
         let dto: LinksDTO = try await json(request(url(roomID: roomID, "links", query: [("path", path)])))
         return NoteLinks(path: dto.path,
-                         outgoing: dto.outgoing.map { .init(target: $0.target, path: $0.path) },
+                         outgoing: dto.outgoing.map { .init(target: $0.target, path: $0.path, candidates: $0.candidates ?? []) },
                          backlinks: dto.backlinks.map { .init(path: $0.path, line: $0.line) })
+    }
+    
+    /// The chat's pages: people, places and things with a note of their own, and every photo and document.
+    public func pages(roomID: String) async throws(NotesError) -> [NotesPage] {
+        let dto: PagesDTO = try await json(request(url(roomID: roomID, "pages")))
+        return dto.pages.map {
+            NotesPage(path: $0.path, title: $0.title, type: $0.type ?? "", folder: $0.folder ?? "",
+                      aliases: $0.aliases ?? [], summary: $0.summary ?? "", isNote: $0.note ?? $0.path.hasSuffix(".md"))
+        }
     }
     
     public func graph(roomID: String) async throws(NotesError) -> NotesGraph {

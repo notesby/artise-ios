@@ -13,7 +13,7 @@ import SwiftUI
 final class ArtiseWhatsNew {
     static let shared = ArtiseWhatsNew()
     /// This release's changes; bump it when the texts change.
-    static let edition = "2026-10-17"
+    static let edition = "2026-10-20"
     static let itemKeys = ["screen_artise_whats_new_1", "screen_artise_whats_new_2", "screen_artise_whats_new_3"]
     
     private static let seenKey = "artise.whatsNew.seen"
