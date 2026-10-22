@@ -132,8 +132,12 @@ jobs:
         run: swift test --package-path Artise
 
       - name: Upstream lint and unit tests
-        # Preview snapshots are skipped: Artise's branding changes them on purpose.
-        run: swift run -q tools ci unit-tests --skip-previews
+        # Preview snapshots are skipped: Artise's branding changes them on purpose. Failed tests are retried (flaky
+        # upstream tests) only on development; elsewhere one pass is enough to see a real failure, about 12 minutes
+        # instead of 45 of reruns.
+        env:
+          RETRIES: ${{ github.ref == 'refs/heads/development' && '3' || '0' }}
+        run: swift run -q tools ci unit-tests --skip-previews --retries "$RETRIES"
 
       - name: Save compilation cache
         # Like upstream: one branch fills the cache and every run reads it.
