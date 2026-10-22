@@ -23,6 +23,11 @@ struct NoteEditorScreen: View {
     @State private var isLoaded = false
     @State private var isSaving = false
     @State private var showsSaveChanges = false
+    /// Finding words in the text, unsaved edits included: the matches and the one the view is on.
+    @State private var isSearching = false
+    @State private var query = ""
+    @State private var matches: [Range<Int>] = []
+    @State private var cursor = SearchCursor(count: 0)
     
     var body: some View {
         ElementNavigationStack {
@@ -35,8 +40,14 @@ struct NoteEditorScreen: View {
                         .padding(.top, 8)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
+                if isSearching {
+                    NoteSearchBar(query: $query, status: searchStatus, onNext: nextMatch, onPrevious: previousMatch) {
+                        isSearching = false
+                        query = ""
+                    }
+                }
                 if isLoaded {
-                    NoteTextView(model: $model)
+                    NoteTextView(model: $model, highlights: matches, currentHighlight: currentMatch)
                 } else {
                     ProgressView()
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -71,7 +82,54 @@ struct NoteEditorScreen: View {
         }
         .interactiveDismissDisabled(model.hasChanges)
         .onAppear { ArtiseAnalyticsClient.shared.screen(.noteEditor) }
+        .onChange(of: query) { _, _ in search(keepingPlace: false) }
+        .onChange(of: model.text) { _, _ in search(keepingPlace: true) }
         .task { await load() }
+    }
+    
+    // MARK: - Finding words
+    
+    private var currentMatch: Range<Int>? {
+        cursor.index.flatMap { matches.indices.contains($0) ? matches[$0] : nil }
+    }
+    
+    private var searchStatus: NoteSearchStatus {
+        if query.trimmingCharacters(in: .whitespaces).isEmpty {
+            return .idle
+        }
+        guard let position = cursor.position else { return .none }
+        return .found(position: position, total: matches.count)
+    }
+    
+    /// Finds the words as they're typed; while the text changes under a search, the place is kept when it can be.
+    private func search(keepingPlace: Bool) {
+        let found = DocumentSearch.ranges(of: query, in: model.text)
+        let previous = cursor.index
+        matches = found
+        cursor = SearchCursor(count: found.count)
+        if keepingPlace, let previous, previous < found.count {
+            for _ in 0..<previous {
+                cursor.next()
+            }
+        } else if !keepingPlace {
+            goToCurrentMatch()
+        }
+    }
+    
+    private func nextMatch() {
+        cursor.next()
+        goToCurrentMatch()
+    }
+    
+    private func previousMatch() {
+        cursor.previous()
+        goToCurrentMatch()
+    }
+    
+    private func goToCurrentMatch() {
+        if let currentMatch {
+            model.select(currentMatch)
+        }
     }
     
     @ToolbarContentBuilder
@@ -96,6 +154,12 @@ struct NoteEditorScreen: View {
             .disabled(!isLoaded || isSaving)
         }
         ToolbarItemGroup(placement: .primaryAction) {
+            Button { isSearching.toggle() } label: {
+                CompoundIcon(\.search)
+            }
+            .accessibilityLabel(ArtiseNotesL10n.text("a11y_notes_find"))
+            .disabled(!isLoaded)
+            
             Button { model.undo() } label: {
                 Image(systemName: "arrow.uturn.backward")
             }

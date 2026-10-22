@@ -86,9 +86,20 @@ enum ArtiseNotesL10n {
         return text == key ? type.prefix(1).uppercased() + type.dropFirst() : text
     }
     
+    /// "3 of 12" / "3 de 12": where the current match is among all of them.
+    static func findCount(_ position: Int, of total: Int) -> String {
+        String(format: text("screen_notes_find_count"), position, total)
+    }
+    
     /// Texts that say "Ari" use the workspace's assistant name.
     static func text(_ key: String) -> String {
         let text = NSLocalizedString(key, tableName: "ArtiseNotes", bundle: .main, comment: "")
         return ArtiseWorkspaces.shared.branding?.naming(text) ?? text
+    }
+    
+    /// The text in one of the app's languages ("en", "es", "pt"), for tests.
+    static func text(_ key: String, language: String) -> String {
+        let bundle = Bundle.main.path(forResource: language, ofType: "lproj").flatMap(Bundle.init(path:)) ?? .main
+        return NSLocalizedString(key, tableName: "ArtiseNotes", bundle: bundle, comment: "")
     }
 }

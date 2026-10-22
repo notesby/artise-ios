@@ -81,9 +81,9 @@
 
 /* What's new (change with ArtiseWhatsNew.edition) */
 "screen_artise_whats_new_title" = "Novidades";
-"screen_artise_whats_new_1" = "Os links nas notas encontram pessoas e coisas por qualquer um de seus nomes, e se duas notas têm o mesmo nome, você escolhe qual.";
-"screen_artise_whats_new_2" = "As notas de uma conversa se atualizam sozinhas, mesmo com o app fechado.";
-"screen_artise_whats_new_3" = "Horário de notificações: todos os dias, de segunda a sexta ou cada dia com seu horário, e um som por conversa.";
+"screen_artise_whats_new_1" = "Um PDF que a Ari envia mostra sua primeira página na conversa, e ao tocar abre a cópia das notas: documentos no visualizador, notas no editor.";
+"screen_artise_whats_new_2" = "Busque palavras dentro de um documento ou de uma nota enquanto lê ou escreve: “camion” encontra “camión”.";
+"screen_artise_whats_new_3" = "As reações que a Ari pede vêm primeiro na barra de reações, depois seus emojis mais usados, e ao segurar uma mensagem as ações abrem mais rápido.";
 "screen_artise_whats_new_done" = "Entendi";
 
 /* Settings → Notification hours */
