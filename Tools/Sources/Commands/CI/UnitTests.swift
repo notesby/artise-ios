@@ -15,6 +15,10 @@ struct UnitTests: AsyncParsableCommand {
     @Option(help: "Number of times to retry failed unit tests.")
     var retries = 3
     
+    // Artise: feature branches run only the suites that test Artise's code; none given runs every suite.
+    @Option(name: .customLong("only-testing"), help: "Only run this unit test suite; repeat for several.")
+    var onlyTesting: [String] = []
+    
     private static let osVersion = CI.defaultOSVersion
     private static let device = "iPhone 17"
     
@@ -35,6 +39,9 @@ struct UnitTests: AsyncParsableCommand {
             ]
             if constrained {
                 arguments.append("--constrained")
+            }
+            for suite in onlyTesting {
+                arguments += ["--only-testing", suite]
             }
             
             try await RunTests.parse(arguments).run()

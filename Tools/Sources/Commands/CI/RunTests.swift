@@ -39,6 +39,10 @@ struct RunTests: AsyncParsableCommand {
     @Option(help: "Only run a specific test (format: 'ClassName/testName').")
     var testName: String?
     
+    // Artise: feature branches run only the suites that test Artise's code (Artise/Scripts/artise_test_suites.py).
+    @Option(name: .customLong("only-testing"), help: "Only run this suite; repeat for several.")
+    var onlyTesting: [String] = []
+    
     @Flag(help: "Run the tests on a saturated CPU to reproduce the flakiness of a busy CI runner.")
     var constrained = false
     
@@ -157,6 +161,10 @@ struct RunTests: AsyncParsableCommand {
         
         if let testName {
             command += " -only-testing:\(scheme)/\(testName)"
+        }
+        
+        for suite in onlyTesting {
+            command += " -only-testing:\(scheme)/\(suite)"
         }
         
         command += " | \(formatter)"

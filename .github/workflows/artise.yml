@@ -5,7 +5,9 @@
 #
 # Artise's CI. There is no Mac in the team, so this workflow is the Mac:
 # - checks: Artise file headers and script tests (Linux, fast).
-# - tests: upstream SwiftFormat lint and unit tests, plus the Artise package tests.
+# - stack: skips a branch's macOS tests when another open pull request is built on it (that one tests both).
+# - tests: upstream SwiftFormat lint and unit tests, plus the Artise package tests. development runs every suite with
+#   retries; other branches run Artise's suites and the changed files' suites once.
 # - testflight (on demand): archives, signs with Artise's distribution certificate and uploads to TestFlight.
 # - beta (on demand): puts a build in the public TestFlight group "Artise beta" and sends it to Beta App Review.
 # Upstream's own workflows are disabled on this repository.
@@ -50,9 +52,36 @@ jobs:
       - name: Artise script tests
         run: python3 -m unittest discover -s Artise/Scripts/tests -v
 
+  # Stacked pull requests: a branch with another open pull request built on it is tested by that one, which
+  # contains it, so its own macOS run is skipped. Rebase the branches above after changing one below.
+  stack:
+    name: Stack
+    if: github.event_name == 'push' && github.ref != 'refs/heads/development'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      pull-requests: read
+    outputs:
+      covered: ${{ steps.above.outputs.covered }}
+    steps:
+      - name: Look for pull requests built on this branch
+        id: above
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          above="$(gh pr list -R "$GITHUB_REPOSITORY" --state open --base "$GITHUB_REF_NAME" --json number -q 'map("#\(.number)") | join(", ")')"
+          if [ -n "$above" ]; then
+            echo "covered=true" >> "$GITHUB_OUTPUT"
+            echo "::notice title=Tested above::$above builds on this branch and runs the tests for both."
+          else
+            echo "covered=false" >> "$GITHUB_OUTPUT"
+          fi
+
   tests:
     name: Tests
-    if: github.event_name != 'workflow_dispatch' || inputs.beta_build == ''
+    needs: stack
+    # Runs when the stack check was skipped (development, a manual run) or failed; skips a branch tested above.
+    if: ${{ !cancelled() && (github.event_name != 'workflow_dispatch' || inputs.beta_build == '') && needs.stack.outputs.covered != 'true' }}
     runs-on: macos-26
     # A run without the compilation cache builds everything from scratch.
     timeout-minutes: 150
@@ -132,12 +161,22 @@ jobs:
         run: swift test --package-path Artise
 
       - name: Upstream lint and unit tests
-        # Preview snapshots are skipped: Artise's branding changes them on purpose. Failed tests are retried (flaky
-        # upstream tests) only on development; elsewhere one pass is enough to see a real failure, about 12 minutes
-        # instead of 45 of reruns.
-        env:
-          RETRIES: ${{ github.ref == 'refs/heads/development' && '3' || '0' }}
-        run: swift run -q tools ci unit-tests --skip-previews --retries "$RETRIES"
+        # Preview snapshots are skipped: Artise's branding changes them on purpose. development runs every suite and
+        # retries failed tests (upstream has flaky ones). Other branches run each test once, and only the suites that
+        # test Artise's code and the files the branch changes (Artise/Scripts/artise_test_suites.py): about a minute
+        # of tests instead of 11 to 13 a pass, and a real failure shows in one pass instead of four.
+        run: |
+          if [ "$GITHUB_REF" = "refs/heads/development" ]; then
+            swift run -q tools ci unit-tests --skip-previews --retries 3
+            exit
+          fi
+          git fetch -q --depth=1 origin development
+          set -- --skip-previews --retries 0
+          for suite in $(python3 Artise/Scripts/artise_test_suites.py $(git diff --name-only origin/development HEAD)); do
+            set -- "$@" --only-testing "$suite"
+          done
+          echo "Suites: $*"
+          swift run -q tools ci unit-tests "$@"
 
       - name: Save compilation cache
         # Like upstream: one branch fills the cache and every run reads it.
