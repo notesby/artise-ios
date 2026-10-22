@@ -27,6 +27,9 @@ struct NotesFolderScreen: View {
     @State private var route: NotesRoute?
     @State private var choicesCount = 0
     @State private var paths: [String] = []
+    /// Each note's first lines, and each file's version (a changed file gets a new preview).
+    @State private var previews: [String: String] = [:]
+    @State private var versions: [String: String] = [:]
     @State private var isNamingNote = false
     @State private var newNoteName = ""
     @State private var actions: NotesFolderActionsModel
@@ -166,13 +169,21 @@ struct NotesFolderScreen: View {
             ListRow(label: .default(title: name, description: Self.counts(notes: notes, files: files), icon: \.folder),
                     kind: .navigationLink { route = .folder(roomID: roomID, path: path) })
         case .note(let name, let path, let hasLocalEdits):
-            ListRow(label: .default(title: name, description: hasLocalEdits ? ArtiseNotesL10n.unsent : nil, icon: \.document),
+            ListRow(label: .default(title: name, description: hasLocalEdits ? ArtiseNotesL10n.unsent : previews[path], icon: \.document),
                     kind: .navigationLink { route = .note(roomID: roomID, path: path) })
         case .file(let name, let path, let isImage, let size):
-            ListRow(label: .default(title: name,
-                                    description: ByteCountFormatter.string(fromByteCount: size, countStyle: .file),
-                                    icon: Self.fileIcon(isImage: isImage)),
-                    kind: .button { open(path) })
+            let description = ByteCountFormatter.string(fromByteCount: size, countStyle: .file)
+            if isImage || ArtiseNoteDocument.isPDF(path) {
+                // A small picture of the photo, or of the PDF's first page.
+                ListRow(label: .avatar(title: name,
+                                       description: description,
+                                       icon: NotePreviewThumbnail(service: service, roomID: roomID, path: path,
+                                                                  version: versions[path] ?? "", icon: Self.fileIcon(isImage: isImage))),
+                        kind: .button { open(path) })
+            } else {
+                ListRow(label: .default(title: name, description: description, icon: Self.fileIcon(isImage: isImage)),
+                        kind: .button { open(path) })
+            }
         }
     }
     
@@ -198,6 +209,9 @@ struct NotesFolderScreen: View {
         let folders = await (try? repository.folders(roomID: roomID)) ?? []
         entries = NotesFolderEntries.entries(files: files, folder: folder, allFolders: folders)
         paths = files.map(\.path)
+        previews = Dictionary(files.compactMap { file in NotePreviewText.firstLines(of: file.content).map { (file.path, $0) } },
+                              uniquingKeysWith: { first, _ in first })
+        versions = Dictionary(files.map { ($0.path, $0.version) }, uniquingKeysWith: { first, _ in first })
         actions.paths = paths
         actions.folders = folders
         choicesCount = await ((try? repository.edits(roomID: roomID)) ?? []).filter { $0.state != .pending }.count
@@ -208,8 +222,13 @@ struct NotesFolderScreen: View {
         hasLoaded = hasLoaded || !entries.isEmpty
     }
     
-    /// Opens a photo or file in Quick Look, downloading it first when it isn't on the phone yet.
+    /// Opens a PDF in the viewer, and a photo or other file in Quick Look, downloading it first when it isn't on the
+    /// phone yet.
     private func open(_ path: String) {
+        if ArtiseNoteDocument.isPDF(path) {
+            route = .pdf(roomID: roomID, path: path)
+            return
+        }
         let repository = service.repository
         Task {
             do {

@@ -626,6 +626,12 @@ class TimelineInteractionHandler {
             return .none
         }
         
+        // Artise: a document or photo Ari posted from the notes opens the notes' copy (current, in the editor or
+        // viewer) instead of the attachment.
+        if let path = timelineItem.properties.artiseFields?.notePath, ArtiseNotes.shared.openDocument(roomID: roomProxy.id, path: path) {
+            return .none
+        }
+        
         switch timelineItem {
         case let item as LocationRoomTimelineItem:
             guard let geoURI = item.content.geoURI else { return .none }

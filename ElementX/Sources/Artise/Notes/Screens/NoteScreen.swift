@@ -179,8 +179,12 @@ struct NoteScreen: View {
         }
     }
     
-    /// A linked photo or file (`[[factura.pdf]]`) opens in Quick Look, downloaded first if needed.
+    /// A linked PDF (`[[factura.pdf]]`) opens in the viewer, a photo or other file in Quick Look, downloaded first if needed.
     private func openFile(_ path: String) {
+        if ArtiseNoteDocument.isPDF(path) {
+            route = .pdf(roomID: roomID, path: path)
+            return
+        }
         let repository = service.repository
         Task {
             if let url = try? await repository.attachment(roomID: roomID, path: path) {

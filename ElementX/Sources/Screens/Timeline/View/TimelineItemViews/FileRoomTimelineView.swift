@@ -23,7 +23,8 @@ struct FileRoomTimelineView: View {
                                          shouldBoost: timelineItem.shouldBoost,
                                          contentScannerService: context?.contentScannerService,
                                          mediaSource: timelineItem.content.source,
-                                         thumbnailSource: timelineItem.content.thumbnailSource) {
+                                         thumbnailSource: timelineItem.content.thumbnailSource,
+                                         mediaProvider: context?.mediaProvider) {
                 context?.send(viewAction: .mediaTapped(itemID: timelineItem.id))
             }
             .accessibilityLabel(L10n.commonFile)
@@ -44,6 +45,10 @@ struct MediaFileRoomTimelineContent: View {
     var contentScannerService: ContentScannerServiceProtocol?
     var mediaSource: MediaSourceProxy?
     var thumbnailSource: MediaSourceProxy?
+    /// Artise: with a provider, a document that comes with a picture of its first page shows it instead of the icon.
+    var mediaProvider: MediaProviderProtocol?
+    
+    private static let artiseThumbnailSize = CGSize(width: 44, height: 56)
     
     private var fileDescription: String {
         var fileDescription = "\(filename.validatedFileExtension.uppercased())"
@@ -102,7 +107,21 @@ struct MediaFileRoomTimelineContent: View {
             .foregroundStyle(.compound.textPrimary)
             .lineLimit(2)
         } icon: {
-            FileTypeIconView(icon: icon, isScanning: isScanning)
+            // Artise: a PDF Ari posted carries its first page as a thumbnail (the standard Matrix one, decrypted like
+            // the file in an encrypted chat); it shows in place of the file icon, with the name and size as before.
+            if let thumbnailSource, let mediaProvider, !isScanning {
+                LoadableImage(mediaSource: thumbnailSource,
+                              mediaType: .generic,
+                              size: Self.artiseThumbnailSize,
+                              mediaProvider: mediaProvider,
+                              transformer: { AnyView($0.scaledToFill()) }) {
+                    FileTypeIconView(icon: icon)
+                }
+                .frame(width: Self.artiseThumbnailSize.width, height: Self.artiseThumbnailSize.height)
+                .clipShape(RoundedRectangle(cornerRadius: 4))
+            } else {
+                FileTypeIconView(icon: icon, isScanning: isScanning)
+            }
         }
         .labelStyle(.custom(spacing: 8, alignment: .center))
         .padding(.horizontal, 4) // Add to the styler's padding of 8, as we use the default insets for the caption.
