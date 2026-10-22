@@ -166,7 +166,8 @@ jobs:
         # test Artise's code and the files the branch changes (Artise/Scripts/artise_test_suites.py): about a minute
         # of tests instead of 11 to 13 a pass, and a real failure shows in one pass instead of four.
         run: |
-          if [ "$GITHUB_REF" = "refs/heads/development" ]; then
+          # A manual run (the TestFlight one) runs the full suite too, so any branch can get a full check.
+          if [ "$GITHUB_REF" = "refs/heads/development" ] || [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
             swift run -q tools ci unit-tests --skip-previews --retries 3
             exit
           fi
