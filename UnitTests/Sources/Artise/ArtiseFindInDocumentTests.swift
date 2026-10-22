@@ -4,7 +4,6 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 //
 
-import ArtiseNotes
 @testable import ElementX
 import Foundation
 import PDFKit
@@ -32,7 +31,7 @@ struct ArtiseFindInDocumentTests {
         var asked = false
         let model = NotePDFSearchModel(document: document) {
             asked = true
-            return NotesDocumentText(path: "a.pdf", version: "1", pages: [])
+            return .init(path: "a.pdf", version: "1", pages: [])
         }
         
         #expect(model.source == .pdfKit)
@@ -56,8 +55,7 @@ struct ArtiseFindInDocumentTests {
     @Test
     func aDocumentWithoutTextUsesTheServersText() async {
         let model = NotePDFSearchModel(document: makeBlankDocument(pages: 2)) {
-            NotesDocumentText(path: "scan.pdf", version: "1", pages: [.init(number: 1, text: "Mole poblano"),
-                                                                      .init(number: 2, text: "chiles y chiles")])
+            .init(path: "scan.pdf", version: "1", pages: [.init(number: 1, text: "Mole poblano"), .init(number: 2, text: "chiles y chiles")])
         }
         
         #expect(model.source == .serverText)
@@ -76,8 +74,9 @@ struct ArtiseFindInDocumentTests {
     /// When the server can't give the text (too big, no text), the field says search isn't available; no error.
     @Test
     func anUnavailableTextSaysSo() async {
+        struct TooBig: Error { }
         let model = NotePDFSearchModel(document: makeBlankDocument(pages: 1)) {
-            throw NotesError.tooBig("Too big")
+            throw TooBig()
         }
         
         model.search("algo")
