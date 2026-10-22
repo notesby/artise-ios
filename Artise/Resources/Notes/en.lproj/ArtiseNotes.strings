@@ -183,3 +183,10 @@
 "screen_notes_page_type_document" = "Document";
 "screen_notes_page_type_image" = "Photo";
 "a11y_notes_map_page" = "%1$@, page";
+"screen_notes_find_placeholder" = "Find in document";
+"screen_notes_find_count" = "%1$d of %2$d";
+"screen_notes_find_none" = "No matches";
+"screen_notes_find_unavailable" = "Search isn’t available for this file.";
+"a11y_notes_find" = "Find in document";
+"a11y_notes_find_next" = "Next match";
+"a11y_notes_find_previous" = "Previous match";
