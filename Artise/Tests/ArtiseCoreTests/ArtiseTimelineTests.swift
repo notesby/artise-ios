@@ -8,10 +8,11 @@
 import Testing
 
 struct ArtiseTimelineTests {
-    /// Holding a message opens its reactions after 250 ms, like on Android: no wait after the gesture starts.
+    /// Holding a message opens its reactions after 150 ms: no wait after the gesture starts.
     @Test
-    func holdIs250Milliseconds() {
-        #expect(ArtiseTimeline.messageHoldMilliseconds == 250)
+    func holdIs150Milliseconds() {
+        #expect(ArtiseTimeline.messageHoldMilliseconds == 150)
         #expect(ArtiseTimeline.extraWaitMilliseconds == 0)
+        #expect(ArtiseTimeline.gestureMinimumSeconds == 0.15)
     }
 }

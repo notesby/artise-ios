@@ -28,4 +28,6 @@ nonisolated struct RoomTimelineItemProperties: Hashable {
     var encryptionAuthenticity: EncryptionAuthenticity?
     /// Information about the forwarder of the keys used to decrypt this message.
     var encryptionForwarder: TimelineItemKeyForwarder?
+    /// Artise: the fields Ari adds to its messages for the apps (offered reactions, proposal kind, notes path).
+    var artiseFields: ArtiseMessageFields?
 }
