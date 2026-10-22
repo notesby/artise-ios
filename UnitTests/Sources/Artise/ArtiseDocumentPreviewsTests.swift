@@ -15,7 +15,8 @@ struct ArtiseDocumentPreviewsTests {
     /// A file with `thumbnail_url` carries its thumbnail; the file itself is unchanged.
     @Test
     func aPlainThumbnailIsCarried() throws {
-        let item = try #require(try buildFileItem(thumbnail: MediaSource.fromUrl(url: "mxc://artise.co/thumb")))
+        let built = try buildFileItem(thumbnail: MediaSource.fromUrl(url: "mxc://artise.co/thumb"))
+        let item = try #require(built)
         
         #expect(item.content.thumbnailSource?.url == URL(string: "mxc://artise.co/thumb"))
         #expect(item.content.thumbnailSource?.mimeType == "image/png")
@@ -32,7 +33,8 @@ struct ArtiseDocumentPreviewsTests {
                   "hashes": {"sha256": "AAAA"},
                   "key": {"kty": "oct", "key_ops": ["encrypt", "decrypt"], "alg": "A256CTR", "k": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", "ext": true}}}
         """
-        let item = try #require(try buildFileItem(thumbnail: MediaSource.fromJson(json: json)))
+        let built = try buildFileItem(thumbnail: MediaSource.fromJson(json: json))
+        let item = try #require(built)
         
         #expect(item.content.thumbnailSource?.url == URL(string: "mxc://artise.co/encrypted-thumb"))
         #expect(item.content.thumbnailSource?.underlyingSource.toJson().contains("\"key\"") == true)
@@ -41,7 +43,8 @@ struct ArtiseDocumentPreviewsTests {
     /// Without a thumbnail there's none: the icon shows as before.
     @Test
     func noThumbnailMeansNone() throws {
-        let item = try #require(buildFileItem(thumbnail: nil))
+        let built = try buildFileItem(thumbnail: nil)
+        let item = try #require(built)
         
         #expect(item.content.thumbnailSource == nil)
     }
@@ -49,10 +52,12 @@ struct ArtiseDocumentPreviewsTests {
     /// A file with `co.artise.note` knows its notes path; without it there's nothing to open from the notes.
     @Test
     func theNotesPathComesFromTheEvent() throws {
-        let withPath = try #require(buildFileItem(thumbnail: nil, notePath: "business/documents/invoices/INV-2026-004.pdf"))
+        let builtWithPath = try buildFileItem(thumbnail: nil, notePath: "business/documents/invoices/INV-2026-004.pdf")
+        let withPath = try #require(builtWithPath)
         #expect(withPath.properties.artiseFields?.notePath == "business/documents/invoices/INV-2026-004.pdf")
         
-        let without = try #require(buildFileItem(thumbnail: nil, notePath: nil))
+        let builtWithout = try buildFileItem(thumbnail: nil, notePath: nil)
+        let without = try #require(builtWithout)
         #expect(without.properties.artiseFields?.notePath == nil)
     }
     
