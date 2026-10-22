@@ -6,7 +6,6 @@
 // Please see LICENSE files in the repository root for full details.
 //
 
-import OrderedCollections
 import SFSafeSymbols
 import SwiftUI
 
@@ -27,21 +26,21 @@ struct TimelineItemMenuActions {
         self.actions = actions
         self.secondaryActions = secondaryActions
         
-        var frequentlyUsed: OrderedSet<TimelineItemMenuReaction> = [
+        let defaults: [TimelineItemMenuReaction] = [
             .init(key: "👍️", symbol: .handThumbsup),
             .init(key: "👎️", symbol: .handThumbsdown),
             .init(key: "🎉", symbol: .partyPopper),
             .init(key: "❤️", symbol: .heart)
         ]
         
-        frequentlyUsed.append(contentsOf: emojiProvider.frequentlyUsedSystemEmojis().map { TimelineItemMenuReaction(key: $0, symbol: .heart) })
-        
-        // Artise: the reactions Ari asks for come first, in its order; a usual one that repeats them is left out.
+        // Artise: the reactions Ari asks for come first, in its order, then the ones this person uses most (Element
+        // put its four usual ones before those), then the usual four. An emoji is never shown twice.
         let offered = (artiseFields?.reactions ?? []).map { key in
             TimelineItemMenuReaction(key: key, symbol: .heart, artiseLabel: ArtiseReactionLabels.label(for: key, fields: artiseFields))
         }
+        let frequentlyUsed = emojiProvider.frequentlyUsedSystemEmojis().map { TimelineItemMenuReaction(key: $0, symbol: .heart) }
         var seen = Set<String>()
-        let ordered = (offered + frequentlyUsed.elements).filter { seen.insert(ArtiseMessageFields.plainEmoji($0.key)).inserted }
+        let ordered = (offered + frequentlyUsed + defaults).filter { seen.insert(ArtiseMessageFields.plainEmoji($0.key)).inserted }
         
         reactions = if isReactable {
             Array(ordered.prefix(10))

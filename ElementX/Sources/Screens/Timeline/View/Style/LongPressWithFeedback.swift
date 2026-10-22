@@ -141,7 +141,7 @@ private struct LongPressGestureRepresentable: UIGestureRecognizerRepresentable {
     
     func makeUIGestureRecognizer(context: Context) -> UILongPressGestureRecognizer {
         let gesture = UILongPressGestureRecognizer()
-        gesture.minimumPressDuration = 0.25
+        gesture.minimumPressDuration = ArtiseTimeline.gestureMinimumSeconds // Artise: a shorter hold than Element's.
         gesture.delegate = context.coordinator
         gesture.isEnabled = isEnabled
         return gesture

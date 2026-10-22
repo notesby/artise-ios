@@ -38,6 +38,21 @@ struct ArtiseQuickReactionsTests {
         #expect(actions.reactions.allSatisfy { $0.artiseLabel == nil })
     }
     
+    /// The emojis this person uses most come before the usual four, most used first, and after Ari's.
+    @Test
+    func mostUsedEmojisComeBeforeTheUsualOnes() throws {
+        let emojiProvider = EmojiProvider(appSettings: .volatile())
+        emojiProvider.markEmojiAsFrequentlyUsed("🔥")
+        emojiProvider.markEmojiAsFrequentlyUsed("🙏")
+        emojiProvider.markEmojiAsFrequentlyUsed("🙏")
+        
+        let usual = try #require(makeActions(fields: nil, emojiProvider: emojiProvider))
+        #expect(usual.reactions.map(\.key) == ["🙏", "🔥", "👍️", "👎️", "🎉", "❤️"])
+        
+        let offered = try #require(makeActions(fields: ArtiseMessageFields(reactions: ["✅", "❌"]), emojiProvider: emojiProvider))
+        #expect(offered.reactions.map(\.key) == ["✅", "❌", "🙏", "🔥", "👍️", "👎️", "🎉", "❤️"])
+    }
+    
     /// On a proposal ✅ and ❌ carry their labels; on a reminder nothing does.
     @Test
     func labelsOnlyOnProposals() throws {
@@ -82,7 +97,7 @@ struct ArtiseQuickReactionsTests {
         return factory.buildTimelineItem(for: EventTimelineItemProxy(item: event, uniqueID: .init("0")), isDM: false) as? TextRoomTimelineItem
     }
     
-    private func makeActions(fields: ArtiseMessageFields?) -> TimelineItemMenuActions? {
+    private func makeActions(fields: ArtiseMessageFields?, emojiProvider: EmojiProviderProtocol = EmojiProvider(appSettings: .volatile())) -> TimelineItemMenuActions? {
         var properties = RoomTimelineItemProperties()
         properties.artiseFields = fields
         let item = TextRoomTimelineItem(id: .randomEvent,
@@ -103,7 +118,7 @@ struct ArtiseQuickReactionsTests {
                                               areThreadsEnabled: true,
                                               isMultiSelectEnabled: false,
                                               timelineKind: .live,
-                                              emojiProvider: EmojiProvider(appSettings: .volatile()))
+                                              emojiProvider: emojiProvider)
             .makeActions()
     }
 }
