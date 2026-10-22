@@ -162,6 +162,17 @@ struct PagesDTO: Decodable {
     let pages: [Page]
 }
 
+struct TextDTO: Decodable {
+    struct Page: Decodable {
+        let n: Int
+        let text: String
+    }
+    
+    let path: String
+    let version: String
+    let pages: [Page]
+}
+
 struct GraphDTO: Decodable {
     let nodes: [String]
     let edges: [[String]]

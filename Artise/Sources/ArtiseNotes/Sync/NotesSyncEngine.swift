@@ -5,6 +5,7 @@
 //
 
 import Foundation
+import Synchronization
 
 /// `NotesRepository` over the Notes API and the phone's encrypted store, following the contract's
 /// "Offline sync, step by step":
@@ -24,6 +25,8 @@ public final class NotesSyncEngine: NotesRepository {
     let now: @Sendable () -> Date
     let files: NotesFileOptions
     let uploads = UploadTracker()
+    /// Documents' text for search, by room and path, kept while the app runs.
+    let texts = Mutex<[String: NotesDocumentText]>([:])
     let activityTracker = SyncActivityTracker()
     /// Counts what's done with notes, for people who said yes to usage statistics; never names or text.
     let track: @Sendable (NotesAnalyticsEvent) -> Void
@@ -453,7 +456,7 @@ public final class NotesSyncEngine: NotesRepository {
         case .server:
             // Something went wrong on the server's side with this one (a 5xx, a proxy limit, an unreadable answer).
             return .retry
-        case .noChat, .badPath, .notFound, .tooBig, .inUse, .notEmpty, .notANote:
+        case .noChat, .badPath, .notFound, .tooBig, .inUse, .notEmpty, .notANote, .noPreview, .unreadable, .noText:
             // Retrying won't help.
             try await mark(.rejected, message: error.message)
             return .needsChoice
