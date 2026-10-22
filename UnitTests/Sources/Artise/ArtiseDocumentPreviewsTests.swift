@@ -29,8 +29,8 @@ struct ArtiseDocumentPreviewsTests {
     @Test
     func anEncryptedThumbnailIsCarried() throws {
         let json = """
-        {"file": {"url": "mxc://artise.co/encrypted-thumb", "v": "v2", "iv": "AAAAAAAAAAAAAAAA",
-                  "hashes": {"sha256": "AAAA"},
+        {"file": {"url": "mxc://artise.co/encrypted-thumb", "v": "v2", "iv": "AAAAAAAAAAAAAAAAAAAAAA",
+                  "hashes": {"sha256": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},
                   "key": {"kty": "oct", "key_ops": ["encrypt", "decrypt"], "alg": "A256CTR", "k": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", "ext": true}}}
         """
         let built = try buildFileItem(thumbnail: MediaSource.fromJson(json: json))
