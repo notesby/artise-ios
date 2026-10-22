@@ -23,6 +23,7 @@ struct NotesMediaScreen: View {
     @State private var inUse: (path: String, usedBy: [String])?
     @State private var showsDeleteUnused = false
     @State private var problem: String?
+    @State private var route: NotesRoute?
     
     var body: some View {
         Form {
@@ -63,6 +64,9 @@ struct NotesMediaScreen: View {
         .navigationTitle(ArtiseNotesL10n.text("screen_notes_media_title"))
         .navigationBarTitleDisplayMode(.inline)
         .quickLookPreview($previewURL)
+        .navigationDestination(item: $route) { route in
+            NotesDestination(service: service, route: route)
+        }
         .task { await load() }
         .task {
             for await _ in await service.repository.changes(roomID: roomID) {
@@ -121,23 +125,35 @@ struct NotesMediaScreen: View {
         showsUnusedOnly ? unused : media
     }
     
+    @ViewBuilder
     private func row(_ file: MediaFile) -> some View {
         let usedBy = file.usedBy.isEmpty
             ? ArtiseNotesL10n.text("screen_notes_media_not_used")
             : String.localizedStringWithFormat(ArtiseNotesL10n.text("screen_notes_media_used_in"), file.usedBy.count)
-        let icon: KeyPath<CompoundIcons, Image> = NotesFolderEntries.isImage(file.path) ? \.image : \.files
-        return ListRow(label: .default(title: NotesFolderEntries.fileName(file.path),
-                                       description: usedBy + " · " + ByteCountFormatter.string(fromByteCount: file.size, countStyle: .file),
-                                       icon: icon),
-                       kind: .button { open(file.path) })
-            .contextMenu {
-                Button { open(file.path) } label: {
-                    Label(ArtiseNotesL10n.text("screen_notes_media_open"), icon: \.image)
-                }
-                Button(role: .destructive) { deleting = file } label: {
-                    Label(ArtiseNotesL10n.text("screen_notes_media_delete"), icon: \.delete)
-                }
+        let isImage = NotesFolderEntries.isImage(file.path)
+        let icon: KeyPath<CompoundIcons, Image> = isImage ? \.image : \.files
+        let description = usedBy + " · " + ByteCountFormatter.string(fromByteCount: file.size, countStyle: .file)
+        Group {
+            if isImage || ArtiseNoteDocument.isPDF(file.path) {
+                // A small picture of the photo, or of the PDF's first page.
+                ListRow(label: .avatar(title: NotesFolderEntries.fileName(file.path),
+                                       description: description,
+                                       icon: NotePreviewThumbnail(service: service, roomID: roomID, path: file.path,
+                                                                  version: String(file.modified), icon: icon)),
+                        kind: .button { open(file.path) })
+            } else {
+                ListRow(label: .default(title: NotesFolderEntries.fileName(file.path), description: description, icon: icon),
+                        kind: .button { open(file.path) })
             }
+        }
+        .contextMenu {
+            Button { open(file.path) } label: {
+                Label(ArtiseNotesL10n.text("screen_notes_media_open"), icon: \.image)
+            }
+            Button(role: .destructive) { deleting = file } label: {
+                Label(ArtiseNotesL10n.text("screen_notes_media_delete"), icon: \.delete)
+            }
+        }
     }
     
     private func totalSize(_ files: [MediaFile]) -> String {
@@ -150,6 +166,10 @@ struct NotesMediaScreen: View {
     }
     
     private func open(_ path: String) {
+        if ArtiseNoteDocument.isPDF(path) {
+            route = .pdf(roomID: roomID, path: path)
+            return
+        }
         let repository = service.repository
         Task {
             do {

@@ -44,6 +44,10 @@ final class FakeNotesServer: NotesHTTPTransport {
         var folders: [String] = []
         /// What `GET /pages` answers.
         var pages: [NotesPage] = []
+        /// What `GET /preview` answers for a path, with its ETag; a PDF or photo without one is "unreadable".
+        var previews: [String: (png: Data, etag: String)] = [:]
+        /// What `GET /text` answers for a PDF, page by page; one without an entry is "too big".
+        var texts: [String: [String]] = [:]
         var versionCounter = 0
         var treeCounter = 0
         var requests: [Recorded] = []
@@ -115,6 +119,14 @@ final class FakeNotesServer: NotesHTTPTransport {
     
     func setPages(_ pages: [NotesPage]) {
         state.withLock { $0.pages = pages }
+    }
+    
+    func setPreview(_ path: String, png: Data, etag: String) {
+        state.withLock { $0.previews[path] = (png, etag) }
+    }
+    
+    func setText(_ path: String, pages: [String]) {
+        state.withLock { $0.texts[path] = pages }
     }
     
     func content(_ path: String) -> String? {
@@ -244,6 +256,39 @@ final class FakeNotesServer: NotesHTTPTransport {
                  "aliases": page.aliases, "summary": page.summary, "note": page.isNote] as [String: Any]
             }
             return (200, ["pages": pages], [:])
+        case ("GET", "preview"):
+            guard let file = state.files[path] else {
+                return (404, ["error": "not_found", "message": "No such file"], [:])
+            }
+            if let preview = state.previews[path] {
+                if request.headers["If-None-Match"] == preview.etag {
+                    return (304, Data(), ["ETag": preview.etag])
+                }
+                return (200, preview.png, ["Content-Type": "image/png", "ETag": preview.etag, "X-Width": "128", "X-Height": "96"])
+            }
+            if file.isNote {
+                let lines = file.content.split(separator: "\n", omittingEmptySubsequences: false).prefix(40)
+                return (200, Data(lines.joined(separator: "\n").utf8), ["Content-Type": "text/plain; charset=utf-8"])
+            }
+            if path.lowercased().hasSuffix(".pdf") || NotesFolderEntries.isImage(path) {
+                return (422, ["error": "unreadable", "message": "Couldn't read it"], [:])
+            }
+            return (415, ["error": "no_preview", "message": "No preview for this kind"], [:])
+        case ("GET", "text"):
+            guard let file = state.files[path] else {
+                return (404, ["error": "not_found", "message": "No such file"], [:])
+            }
+            if file.isNote {
+                return (200, ["path": path, "version": file.version, "pages": [["n": 1, "text": file.content]]], [:])
+            }
+            if let pages = state.texts[path] {
+                return (200, ["path": path, "version": file.version,
+                              "pages": pages.enumerated().map { ["n": $0.offset + 1, "text": $0.element] as [String: Any] }], [:])
+            }
+            if path.lowercased().hasSuffix(".pdf") {
+                return (413, ["error": "too_big", "message": "Too big"], [:])
+            }
+            return (415, ["error": "no_text", "message": "No text for this kind"], [:])
         case ("GET", "links"):
             let name = path.split(separator: "/").last.map(String.init) ?? path
             let backlinks = state.files.filter { $0.value.isNote && $0.value.content.contains(name) }.keys.sorted()

@@ -160,6 +160,11 @@ public struct NoteEditorModel: Equatable, Sendable {
         commit(newText, cursor..<cursor, isTyping: false, now: now)
     }
     
+    /// Moves the selection without changing the text or the undo history: the search's current match.
+    public mutating func select(_ range: Range<Int>) {
+        selection = Self.clamped(range, in: text)
+    }
+    
     public mutating func undo() {
         guard let previous = undoStack.popLast() else { return }
         redoStack.append(Snapshot(text: text, selection: selection))

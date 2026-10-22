@@ -74,6 +74,11 @@ public protocol NotesRepository: Sendable {
     func uploads(roomID: String) async throws -> [String: UploadStatus]
     /// Every photo and file, with the notes that use each one.
     func media(roomID: String) async throws -> [MediaFile]
+    /// A small picture of a PDF's first page or a photo (or a text file's first lines) for lists, kept on the phone
+    /// per file version: one request each, none for a file the server said has no preview (`nil`).
+    func preview(roomID: String, path: String, size: Int) async throws -> NotePreview?
+    /// A document's text page by page, for search; kept by path and version while the app runs (needs a connection).
+    func documentText(roomID: String, path: String) async throws -> NotesDocumentText
     func retryUpload(roomID: String, path: String) async throws
     /// Drops an upload not sent yet, and takes it out of the notes that embed it.
     func cancelUpload(roomID: String, path: String) async throws

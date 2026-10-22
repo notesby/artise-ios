@@ -29,6 +29,12 @@ public enum NotesError: Error, Equatable, Sendable {
     case notEmpty(String, files: Int, folders: Int)
     /// A photo or document: use the raw endpoints.
     case notANote(String)
+    /// A kind of file with no preview (an Office file, audio…).
+    case noPreview(String)
+    /// A file that couldn't be read for a preview.
+    case unreadable(String)
+    /// A kind of file with no text to search.
+    case noText(String)
     /// No connection, or the request didn't complete. Safe to retry later.
     case network(String)
     /// Anything the contract doesn't name, such as a 500, or an answer the app can't read.
@@ -39,8 +45,8 @@ public enum NotesError: Error, Equatable, Sendable {
         switch self {
         case .unauthorized(let message), .noChat(let message), .badPath(let message), .notFound(let message),
              .exists(let message, _), .conflict(let message, _), .deleted(let message), .tooBig(let message),
-             .inUse(let message, _), .notEmpty(let message, _, _), .notANote(let message), .network(let message),
-             .server(_, let message):
+             .inUse(let message, _), .notEmpty(let message, _, _), .notANote(let message), .noPreview(let message),
+             .unreadable(let message), .noText(let message), .network(let message), .server(_, let message):
             message
         }
     }

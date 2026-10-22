@@ -175,6 +175,23 @@ final class ArtiseNotes {
         host = controller
         presenter.present(controller, animated: true)
     }
+    
+    /// Opens a file Ari posted from the notes at its path there: a note in the editor, a PDF in the viewer, a photo as
+    /// itself, after updating the chat's notes so it's the current copy. `false` when notes aren't available here,
+    /// so the attachment opens as it always did.
+    @discardableResult
+    func openDocument(roomID: String, path: String) -> Bool {
+        guard let service, let presenter = UIViewController.artiseTopViewController() else { return false }
+        weak var host: UIViewController?
+        let root = ArtiseNoteDocumentView(service: service, roomID: roomID, path: path) {
+            host?.dismiss(animated: true)
+        }
+        let controller = UIHostingController(rootView: root.artiseWorkspaceAccent())
+        controller.modalPresentationStyle = .fullScreen
+        host = controller
+        presenter.present(controller, animated: true)
+        return true
+    }
 }
 
 /// Starts and stops the workspace, notes, stickers and link previews with the account's session.

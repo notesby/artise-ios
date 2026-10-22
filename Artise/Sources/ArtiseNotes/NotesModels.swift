@@ -213,6 +213,49 @@ public struct NotesPage: Equatable, Sendable, Codable, Identifiable {
     }
 }
 
+/// The server's answer to a preview request.
+public enum NotePreviewResponse: Equatable, Sendable {
+    /// A PDF's first page or a photo, scaled down, with the ETag to ask with next time.
+    case image(Data, etag: String?)
+    /// The first lines of a text file.
+    case text(String)
+    /// The picture the phone asked about (by its ETag) is still the one.
+    case notModified
+}
+
+/// A preview on the phone, for lists.
+public enum NotePreview: Equatable, Sendable {
+    /// A PNG file on the phone.
+    case image(URL)
+    /// The first lines of a text file.
+    case text(String)
+}
+
+/// A document's text page by page, as `GET /text` gives it: a PDF's pages, numbered from 1 as a viewer shows them, or a
+/// note as one page. A scanned PDF without a text layer has pages with empty text.
+public struct NotesDocumentText: Equatable, Sendable {
+    public struct Page: Equatable, Sendable {
+        public let number: Int
+        public let text: String
+        
+        public init(number: Int, text: String) {
+            self.number = number
+            self.text = text
+        }
+    }
+    
+    public let path: String
+    /// Changes when the file changes; the pages are kept by path and version.
+    public let version: String
+    public let pages: [Page]
+    
+    public init(path: String, version: String, pages: [Page]) {
+        self.path = path
+        self.version = version
+        self.pages = pages
+    }
+}
+
 public struct NotesGraph: Equatable, Sendable {
     public struct Edge: Equatable, Sendable {
         public let from: String

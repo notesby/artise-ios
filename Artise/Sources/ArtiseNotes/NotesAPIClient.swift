@@ -177,6 +177,32 @@ public struct NotesAPIClient: Sendable {
         }
     }
     
+    /// A small picture of a PDF's first page or a photo (`size` px on the longer edge: 128, 256, 512 or 1024), or the
+    /// first lines of a text file. With `etag`, `.notModified` when the picture is still the one the phone has.
+    /// `.noPreview` for other kinds, `.unreadable` for a file that can't be read.
+    public func preview(roomID: String, path: String, size: Int, etag: String? = nil) async throws(NotesError) -> NotePreviewResponse {
+        var request = request(url(roomID: roomID, "preview", query: [("path", path), ("size", String(size))]))
+        request.setValue("image/png, text/plain", forHTTPHeaderField: "Accept")
+        if let etag {
+            request.setValue(etag, forHTTPHeaderField: "If-None-Match")
+        }
+        let (data, response) = try await send(request)
+        if response.statusCode == 304 {
+            return .notModified
+        }
+        if response.value(forHTTPHeaderField: "Content-Type")?.hasPrefix("text/") == true {
+            return .text(String(decoding: data, as: UTF8.self))
+        }
+        return .image(data, etag: response.value(forHTTPHeaderField: "ETag"))
+    }
+    
+    /// A document's text page by page (a PDF's pages; a note as one page), for search. `.noText` for other kinds,
+    /// `.tooBig` over 10 MB or 300 pages, or for a PDF that can't be read.
+    public func text(roomID: String, path: String) async throws(NotesError) -> NotesDocumentText {
+        let dto: TextDTO = try await json(request(url(roomID: roomID, "text", query: [("path", path)])))
+        return NotesDocumentText(path: dto.path, version: dto.version, pages: dto.pages.map { .init(number: $0.n, text: $0.text) })
+    }
+    
     public func graph(roomID: String) async throws(NotesError) -> NotesGraph {
         let dto: GraphDTO = try await json(request(url(roomID: roomID, "graph")))
         let edges = dto.edges.compactMap { $0.count == 2 ? NotesGraph.Edge(from: $0[0], to: $0[1]) : nil }
@@ -307,6 +333,9 @@ public struct NotesAPIClient: Sendable {
         case "deleted": return .deleted(message)
         case "too_big": return .tooBig(message)
         case "not_a_note": return .notANote(message)
+        case "no_preview": return .noPreview(message)
+        case "unreadable": return .unreadable(message)
+        case "no_text": return .noText(message)
         case "in_use": return .inUse(message, usedBy: dto?.usedBy ?? [])
         case "not_empty": return .notEmpty(message, files: dto?.files ?? 0, folders: dto?.folders ?? 0)
         default: return status == 401 ? .unauthorized(message) : .server(status: status, message: message)

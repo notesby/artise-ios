@@ -12,6 +12,9 @@ import SwiftUI
 /// `NoteEditorModel`, and the text is restyled from `LivePreview` runs; the Markdown itself never changes for looks.
 struct NoteTextView: UIViewRepresentable {
     @Binding var model: NoteEditorModel
+    /// What a search found, in UTF-16 offsets, and the match it's on: shown over the text, the current one stronger.
+    var highlights: [Range<Int>] = []
+    var currentHighlight: Range<Int>?
     
     func makeCoordinator() -> Coordinator {
         Coordinator(model: $model)
@@ -40,14 +43,22 @@ struct NoteTextView: UIViewRepresentable {
     
     func updateUIView(_ textView: UITextView, context: Context) {
         context.coordinator.model = $model
-        // Changes from outside the text view (toolbar, undo, a suggestion, the link dialog).
-        if textView.text != model.text || textView.selectedRange != NSRange(model.selection) {
+        let searchChanged = context.coordinator.highlights != highlights || context.coordinator.currentHighlight != currentHighlight
+        context.coordinator.highlights = highlights
+        context.coordinator.currentHighlight = currentHighlight
+        // Changes from outside the text view (toolbar, undo, a suggestion, the link dialog, the search).
+        if searchChanged || textView.text != model.text || textView.selectedRange != NSRange(model.selection) {
             context.coordinator.show(model, in: textView)
+        }
+        if searchChanged, let currentHighlight {
+            textView.scrollRangeToVisible(NSRange(currentHighlight))
         }
     }
     
     final class Coordinator: NSObject, UITextViewDelegate {
         var model: Binding<NoteEditorModel>
+        var highlights: [Range<Int>] = []
+        var currentHighlight: Range<Int>?
         private var isUpdating = false
         
         init(model: Binding<NoteEditorModel>) {
@@ -65,6 +76,7 @@ struct NoteTextView: UIViewRepresentable {
                 textView.selectedRange = selection
             }
             NotePreviewStyle.apply(LivePreview.runs(for: model.text, rawLines: model.rawLines), to: textView.textStorage)
+            NotePreviewStyle.highlight(highlights, current: currentHighlight, in: textView.textStorage)
             textView.typingAttributes = NotePreviewStyle.baseAttributes
         }
         
@@ -104,6 +116,19 @@ nonisolated enum NotePreviewStyle {
         paragraph.lineSpacing = 6
         paragraph.paragraphSpacing = 6
         return [.font: bodyFont, .foregroundColor: UIColor.compound.textPrimary, .paragraphStyle: paragraph]
+    }
+    
+    /// Marks what a search found, the current match stronger, over whatever style the text has.
+    static func highlight(_ ranges: [Range<Int>], current: Range<Int>?, in storage: NSTextStorage) {
+        guard !ranges.isEmpty else { return }
+        storage.beginEditing()
+        for range in ranges {
+            let nsRange = NSRange(location: range.lowerBound, length: range.count)
+            guard NSMaxRange(nsRange) <= storage.length else { continue }
+            let isCurrent = range == current
+            storage.addAttribute(.backgroundColor, value: UIColor.systemYellow.withAlphaComponent(isCurrent ? 0.7 : 0.3), range: nsRange)
+        }
+        storage.endEditing()
     }
     
     static func apply(_ runs: [PreviewRun], to storage: NSTextStorage) {

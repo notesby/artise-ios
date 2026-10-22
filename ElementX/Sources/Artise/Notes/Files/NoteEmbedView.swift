@@ -25,6 +25,7 @@ struct NoteEmbedView: View {
     @State private var failed = false
     @State private var previewURL: URL?
     @State private var showsCancelUpload = false
+    @State private var showsPDF = false
     
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -38,6 +39,11 @@ struct NoteEmbedView: View {
             }
         }
         .quickLookPreview($previewURL)
+        .fullScreenCover(isPresented: $showsPDF) {
+            if let path {
+                NotePDFSheet(service: service, roomID: roomID, path: path) { showsPDF = false }
+            }
+        }
         .task(id: path) { await loadPhoto() }
         .confirmationDialog(ArtiseNotesL10n.text("screen_notes_upload_cancel_title"), isPresented: $showsCancelUpload, titleVisibility: .visible) {
             Button(ArtiseNotesL10n.text("screen_notes_upload_cancel"), role: .destructive) {
@@ -151,9 +157,13 @@ struct NoteEmbedView: View {
         failed = image == nil
     }
     
-    /// Opens the file in Quick Look, downloading it first if it isn't on the phone yet.
+    /// Opens a PDF in the viewer, anything else in Quick Look, downloading it first if it isn't on the phone yet.
     private func open() {
         guard let path, !isLoading else { return }
+        if ArtiseNoteDocument.isPDF(path) {
+            showsPDF = true
+            return
+        }
         isLoading = true
         failed = false
         Task {
