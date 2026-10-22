@@ -262,11 +262,20 @@ enum ArtiseWorkspacesL10n {
         NSLocalizedString(key, tableName: "ArtiseWorkspaces", bundle: bundle, comment: "")
     }
     
+    /// The text in one of the app's languages ("en", "es", "pt"), for tests.
+    static func text(_ key: String, language: String) -> String {
+        NSLocalizedString(key, tableName: "ArtiseWorkspaces", bundle: bundle(for: language), comment: "")
+    }
+    
     private static let bundle: Bundle = {
         let preferred = Bundle.main.preferredLocalizations.first.map { String($0.prefix(2)) }
         let language = ["en", "es", "pt"].contains(preferred) ? preferred ?? "es" : "es"
-        return Bundle.main.path(forResource: language, ofType: "lproj").flatMap(Bundle.init(path:)) ?? .main
+        return bundle(for: language)
     }()
+    
+    private static func bundle(for language: String) -> Bundle {
+        Bundle.main.path(forResource: language, ofType: "lproj").flatMap(Bundle.init(path:)) ?? .main
+    }
 }
 
 extension Color {

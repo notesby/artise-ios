@@ -152,7 +152,9 @@ struct TimelineItemMenuActionProvider {
         
         let isReactable = timelineKind == .live || timelineKind == .detached || timelineKind.isThread ? item.isReactable : false
         
-        return .init(isReactable: isReactable, actions: actions, secondaryActions: secondaryActions, emojiProvider: emojiProvider)
+        // Artise: the reactions Ari asks for go first in the bar.
+        return .init(isReactable: isReactable, actions: actions, secondaryActions: secondaryActions, emojiProvider: emojiProvider,
+                     artiseFields: item.properties.artiseFields)
     }
     
     private func makeEncryptedItemActions() -> TimelineItemMenuActions? {

@@ -130,3 +130,5 @@
 "screen_artise_notes_background_wifi" = "Só com Wi-Fi";
 "screen_artise_notes_background_mobile" = "Wi-Fi e dados móveis";
 "screen_artise_notes_background_footer" = "Mantém as notas em dia antes de você abri-las. Ao abrir Notas, elas sempre são atualizadas, e o modo de pouco uso de dados espera por isso.";
+"timeline_reaction_approve" = "Aprovar";
+"timeline_reaction_decline" = "Recusar";

@@ -24,6 +24,8 @@ nonisolated struct EventTimelineItemSDKMockConfiguration {
                                                                inReplyTo: nil,
                                                                threadRoot: nil,
                                                                threadSummary: nil))
+    /// Artise: the event's JSON, for the fields Ari adds to its messages.
+    var artiseOriginalJSON: String?
 }
 
 nonisolated extension EventTimelineItem {
@@ -31,7 +33,7 @@ nonisolated extension EventTimelineItem {
         let lazyProvider = LazyTimelineItemProviderSDKMock()
         lazyProvider.containsOnlyEmojisReturnValue = false
         lazyProvider.getShieldsStrictReturnValue = ShieldState.none
-        lazyProvider.debugInfoReturnValue = .init(model: "", originalJson: nil, latestEditJson: nil)
+        lazyProvider.debugInfoReturnValue = .init(model: "", originalJson: configuration.artiseOriginalJSON, latestEditJson: nil)
         self.init(isRemote: true,
                   eventOrTransactionId: .eventId(eventId: configuration.eventID),
                   sender: configuration.sender,

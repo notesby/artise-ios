@@ -18,7 +18,8 @@ struct TimelineItemMenuActions {
     init?(isReactable: Bool,
           actions: [TimelineItemMenuAction],
           secondaryActions: [TimelineItemMenuAction],
-          emojiProvider: EmojiProviderProtocol) {
+          emojiProvider: EmojiProviderProtocol,
+          artiseFields: ArtiseMessageFields? = nil) {
         if !isReactable, actions.isEmpty, secondaryActions.isEmpty {
             return nil
         }
@@ -35,8 +36,15 @@ struct TimelineItemMenuActions {
         
         frequentlyUsed.append(contentsOf: emojiProvider.frequentlyUsedSystemEmojis().map { TimelineItemMenuReaction(key: $0, symbol: .heart) })
         
+        // Artise: the reactions Ari asks for come first, in its order; a usual one that repeats them is left out.
+        let offered = (artiseFields?.reactions ?? []).map { key in
+            TimelineItemMenuReaction(key: key, symbol: .heart, artiseLabel: ArtiseReactionLabels.label(for: key, fields: artiseFields))
+        }
+        var seen = Set<String>()
+        let ordered = (offered + frequentlyUsed.elements).filter { seen.insert(ArtiseMessageFields.plainEmoji($0.key)).inserted }
+        
         reactions = if isReactable {
-            Array(frequentlyUsed.elements.prefix(10))
+            Array(ordered.prefix(10))
         } else {
             []
         }
@@ -46,6 +54,8 @@ struct TimelineItemMenuActions {
 struct TimelineItemMenuReaction: Hashable {
     let key: String
     let symbol: SFSymbol
+    /// Artise: what the bar says under the emoji when Ari asks for it on a proposal ("Approve", "Decline").
+    var artiseLabel: String?
     
     /// Frequently used emojis on the all use the same .heart SFSymbol.
     /// Override equatable so we can remove duplicates.

@@ -115,7 +115,7 @@ struct TimelineItemMenu: View {
             ScrollView(.horizontal) {
                 HStack(alignment: .center, spacing: 8) {
                     ForEach(actions.reactions, id: \.key) {
-                        reactionButton(for: $0.key)
+                        reactionButton(for: $0)
                     }
                 }
                 .padding(.horizontal)
@@ -150,20 +150,29 @@ struct TimelineItemMenu: View {
         }
     }
     
-    private func reactionButton(for emoji: String) -> some View {
-        Button {
+    // Artise: a reaction Ari asks for on a proposal says what it does ("Approve", "Decline") under the emoji.
+    private func reactionButton(for reaction: TimelineItemMenuReaction) -> some View {
+        let emoji = reaction.key
+        return Button {
             feedbackGenerator.impactOccurred()
             dismiss()
             context.send(viewAction: .toggleReaction(key: emoji, itemID: item.id))
         } label: {
-            Text(emoji)
-                .font(.compound.headingLG)
-                .padding(8)
-                .background(Circle()
-                    .foregroundColor(reactionBackgroundColor(for: emoji)))
-                .frame(maxWidth: .infinity, alignment: .leading)
+            VStack(spacing: 2) {
+                Text(emoji)
+                    .font(.compound.headingLG)
+                    .padding(8)
+                    .background(Circle()
+                        .foregroundColor(reactionBackgroundColor(for: emoji)))
+                if let label = reaction.artiseLabel {
+                    Text(label)
+                        .font(.compound.bodyXS)
+                        .foregroundStyle(.compound.textSecondary)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .accessibilityLabel(hasReacted(to: emoji) ? L10n.a11yRemoveReaction(emoji) : L10n.a11yAddReaction(emoji))
+        .accessibilityLabel(hasReacted(to: emoji) ? L10n.a11yRemoveReaction(emoji) : reaction.artiseLabel ?? L10n.a11yAddReaction(emoji))
     }
     
     private func hasReacted(to emoji: String) -> Bool {

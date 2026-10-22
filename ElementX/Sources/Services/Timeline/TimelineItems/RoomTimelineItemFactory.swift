@@ -214,7 +214,8 @@ nonisolated struct RoomTimelineItemFactory: RoomTimelineItemFactoryProtocol {
                                                deliveryStatus: eventItemProxy.deliveryStatus,
                                                orderedReadReceipts: buildOrderedReadReceipts(eventItemProxy.readReceipts),
                                                encryptionAuthenticity: buildEncryptionAuthenticity(eventItemProxy.shieldState),
-                                               encryptionForwarder: eventItemProxy.forwarder))
+                                               encryptionForwarder: eventItemProxy.forwarder,
+                                               artiseFields: artiseFields(eventItemProxy, isOutgoing: isOutgoing)))
     }
     
     private func buildImageTimelineItem(for eventItemProxy: EventTimelineItemProxy,
@@ -238,7 +239,8 @@ nonisolated struct RoomTimelineItemFactory: RoomTimelineItemFactoryProtocol {
                                                 deliveryStatus: eventItemProxy.deliveryStatus,
                                                 orderedReadReceipts: buildOrderedReadReceipts(eventItemProxy.readReceipts),
                                                 encryptionAuthenticity: buildEncryptionAuthenticity(eventItemProxy.shieldState),
-                                                encryptionForwarder: eventItemProxy.forwarder))
+                                                encryptionForwarder: eventItemProxy.forwarder,
+                                                artiseFields: artiseFields(eventItemProxy, isOutgoing: isOutgoing)))
     }
     
     private func buildVideoTimelineItem(for eventItemProxy: EventTimelineItemProxy,
@@ -333,7 +335,8 @@ nonisolated struct RoomTimelineItemFactory: RoomTimelineItemFactoryProtocol {
                                                deliveryStatus: eventItemProxy.deliveryStatus,
                                                orderedReadReceipts: buildOrderedReadReceipts(eventItemProxy.readReceipts),
                                                encryptionAuthenticity: buildEncryptionAuthenticity(eventItemProxy.shieldState),
-                                               encryptionForwarder: eventItemProxy.forwarder))
+                                               encryptionForwarder: eventItemProxy.forwarder,
+                                               artiseFields: artiseFields(eventItemProxy, isOutgoing: isOutgoing)))
     }
     
     private func buildNoticeTimelineItem(for eventItemProxy: EventTimelineItemProxy,
@@ -356,7 +359,8 @@ nonisolated struct RoomTimelineItemFactory: RoomTimelineItemFactoryProtocol {
                                                  deliveryStatus: eventItemProxy.deliveryStatus,
                                                  orderedReadReceipts: buildOrderedReadReceipts(eventItemProxy.readReceipts),
                                                  encryptionAuthenticity: buildEncryptionAuthenticity(eventItemProxy.shieldState),
-                                                 encryptionForwarder: eventItemProxy.forwarder))
+                                                 encryptionForwarder: eventItemProxy.forwarder,
+                                                 artiseFields: artiseFields(eventItemProxy, isOutgoing: isOutgoing)))
     }
     
     private func buildEmoteTimelineItem(for eventItemProxy: EventTimelineItemProxy,
@@ -635,6 +639,12 @@ nonisolated struct RoomTimelineItemFactory: RoomTimelineItemFactoryProtocol {
                                          properties: .init(replyDetails: buildTimelineItemReplyDetails(messageLikeContent.inReplyTo),
                                                            isThreaded: messageLikeContent.threadRoot != nil,
                                                            threadSummary: buildTimelineItemThreadSummary(messageLikeContent.threadSummary)))
+    }
+    
+    // Artise: the fields Ari adds for the apps. Only Ari's messages carry them, and Ari's are never our own, so
+    // our own messages skip reading the event's JSON.
+    private func artiseFields(_ eventItemProxy: EventTimelineItemProxy, isOutgoing: Bool) -> ArtiseMessageFields? {
+        isOutgoing ? nil : ArtiseMessageFields.read(eventJSON: eventItemProxy.debugInfo.originalJSON)
     }
     
     // MARK: - Message events content
