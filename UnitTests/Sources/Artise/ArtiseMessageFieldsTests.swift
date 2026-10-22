@@ -50,7 +50,7 @@ struct ArtiseMessageFieldsTests {
     /// An emoji sent with the variation selector keeps it (the server accepts both) and still matches the plain one.
     @Test
     func variationSelectorIsKeptAndMatched() throws {
-        let fields = try #require(ArtiseMessageFields.read(eventJSON: event(#""co.artise.reactions": ["✔\u{FE0F}"]"#)))
+        let fields = try #require(ArtiseMessageFields.read(eventJSON: event(#""co.artise.reactions": ["✔\uFE0F"]"#)))
         #expect(fields.reactions == ["✔\u{FE0F}"])
         #expect(ArtiseMessageFields.plainEmoji(fields.reactions[0]) == "✔")
     }
