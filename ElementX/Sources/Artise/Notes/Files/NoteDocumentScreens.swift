@@ -227,9 +227,9 @@ struct NotePDFScreen: View {
     }
 }
 
-/// Finding words in a PDF: with PDFKit's own search when the document has a text layer, highlighting every match on
-/// its page; otherwise with the server's text (`GET /text`), turning to the match's page and showing its words, so a
-/// scanned or odd PDF behaves the same as in the Android app. A file the server can't give text for says so.
+/// Finding words in a PDF: on PDFKit's text layer when the document has one, highlighting every match on its page;
+/// otherwise with the server's text (`GET /text`), turning to the match's page and showing its words, so a scanned
+/// or odd PDF behaves the same as in the Android app. A file the server can't give text for says so.
 @Observable
 final class NotePDFSearchModel {
     enum Source: Equatable {
@@ -302,7 +302,18 @@ final class NotePDFSearchModel {
     private func find(_ needle: String) async {
         switch source {
         case .pdfKit:
-            let found = document.findString(needle, withOptions: [.caseInsensitive, .diacriticInsensitive])
+            // The same matching as everywhere else (case and accents don't matter), on each page's text layer, turned
+            // into PDFKit selections so they're marked on the page.
+            var found: [PDFSelection] = []
+            for index in 0..<document.pageCount {
+                guard let page = document.page(at: index) else { continue }
+                let text = page.string ?? ""
+                for range in DocumentSearch.ranges(of: needle, in: text) {
+                    if let selection = page.selection(for: NSRange(location: range.lowerBound, length: range.count)) {
+                        found.append(selection)
+                    }
+                }
+            }
             guard !Task.isCancelled else { return }
             for selection in found {
                 selection.color = UIColor.systemYellow.withAlphaComponent(0.4)
