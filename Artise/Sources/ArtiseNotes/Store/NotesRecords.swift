@@ -35,6 +35,9 @@ struct ChatRecord: Codable, Equatable {
     var nextEditID: Int64
     /// The chat's pages as last fetched; `nil` before the first fetch (older records decode to `nil`, no migration needed).
     var pages: [NotesPage]?
+    /// Which fields of the tree's entries this record holds: below `TreeFields.current`, the next pull asks for the whole
+    /// tree (no ETag) once, since an unchanged chat would answer `304` and never send the new fields.
+    var treeFields: Int?
     
     init(roomID: String, name: String) {
         self.roomID = roomID
@@ -56,6 +59,11 @@ struct FileRecord: Codable, Equatable {
     var isNote: Bool
     /// Only kept for notes; photos and files are fetched on demand.
     var content: String?
+    /// What the server's tree says the file is, its title and whether it's read-only; `nil` from older records and
+    /// servers (no migration needed: the next full tree fills them).
+    var kind: NoteDocumentKind?
+    var title: String?
+    var readonly: Bool?
 }
 
 struct EditRecord: Codable, Equatable {

@@ -160,6 +160,12 @@ public struct NoteEditorModel: Equatable, Sendable {
         commit(newText, cursor..<cursor, isTyping: false, now: now)
     }
     
+    /// Replaces the whole text as a step of its own (a dashboard's layout moving or adding a chart), keeping the
+    /// cursor where it was when it still fits.
+    public mutating func replaceText(_ newText: String, now: Date) {
+        commit(newText, selection, isTyping: false, now: now)
+    }
+    
     /// Moves the selection without changing the text or the undo history: the search's current match.
     public mutating func select(_ range: Range<Int>) {
         selection = Self.clamped(range, in: text)

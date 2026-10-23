@@ -160,4 +160,17 @@ struct NoteEditorModelTests {
         model.undo()
         #expect(!model.hasChanges)
     }
+    
+    /// A layout change replaces the text in one step that undo takes back.
+    @Test
+    func replacingTheTextIsOneUndoStep() {
+        var model = NoteEditorModel(text: "a\nb")
+        
+        model.replaceText("b\na", now: .now)
+        
+        #expect(model.text == "b\na")
+        #expect(model.hasChanges)
+        model.undo()
+        #expect(model.text == "a\nb")
+    }
 }

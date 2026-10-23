@@ -84,6 +84,25 @@ public protocol NotesRepository: Sendable {
     func officePDF(roomID: String, path: String) async throws -> URL
     /// A document's text page by page, for search; kept by path and version while the app runs (needs a connection).
     func documentText(roomID: String, path: String) async throws -> NotesDocumentText
+    
+    // MARK: - Charts and dashboards (need a connection, except a picture already on the phone)
+    
+    /// The picture of a chart or dashboard last drawn at this size and mode, if the phone has one; never asks.
+    func cachedDrawing(roomID: String, path: String, size: Int, mode: NoteDrawingMode) async -> URL?
+    /// A chart's or dashboard's picture as drawn now, asked for every time with the last one's ETag (a chart that
+    /// reads records changes while its file doesn't). `nil` when it can't be drawn.
+    func drawing(roomID: String, path: String, size: Int, mode: NoteDrawingMode) async throws -> URL?
+    /// A chart as data (title, caption, as of) and SVG.
+    func chart(roomID: String, path: String, mode: NoteDrawingMode) async throws -> NotesChart
+    /// A dashboard as a web page.
+    func dashboard(roomID: String, path: String) async throws -> String
+    /// A chart's PNG or PDF, a note's or dashboard's PDF, made now for the share sheet, as a named file on the phone.
+    func export(roomID: String, path: String, format: NoteExportFormat) async throws -> URL
+    /// The record types a chart's `source` may read in this chat.
+    func recordTypes(roomID: String) async throws -> [NotesRecordType]
+    /// An unsaved chart's picture (at most 512 px); `.badChart` with the server's sentence when it can't be drawn.
+    func chartPreview(roomID: String, content: String, size: Int, mode: NoteDrawingMode) async throws -> Data
+    
     func retryUpload(roomID: String, path: String) async throws
     /// Drops an upload not sent yet, and takes it out of the notes that embed it.
     func cancelUpload(roomID: String, path: String) async throws

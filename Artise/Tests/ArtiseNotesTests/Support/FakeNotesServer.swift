@@ -37,6 +37,10 @@ final class FakeNotesServer: NotesHTTPTransport {
         var version: String
         var content: String
         var isNote: Bool
+        /// What the tree says it is, its title and whether it's read-only; `nil` leaves them out, as an older server does.
+        var kind: String?
+        var title: String?
+        var readonly = false
     }
     
     struct State {
@@ -50,6 +54,16 @@ final class FakeNotesServer: NotesHTTPTransport {
         var texts: [String: [String]] = [:]
         /// What `GET /pdf` answers for an Office file; one without an entry couldn't be converted.
         var pdfs: [String: Data] = [:]
+        /// What `GET /chart` answers for a path.
+        var charts: [String: Data] = [:]
+        /// What `GET /dashboard` answers for a path; a note without one isn't a dashboard.
+        var dashboards: [String: String] = [:]
+        /// What `GET /export` answers for a path and format, with the file's name.
+        var exports: [String: (data: Data, name: String)] = [:]
+        /// What `GET /records` lists.
+        var recordTypes = Data(#"{"types": []}"#.utf8)
+        /// Drawings of chart and dashboard previews by path and mode, with their ETags.
+        var drawings: [String: (png: Data, etag: String)] = [:]
         var versionCounter = 0
         var treeCounter = 0
         var requests: [Recorded] = []
@@ -135,6 +149,38 @@ final class FakeNotesServer: NotesHTTPTransport {
         state.withLock { $0.texts[path] = pages }
     }
     
+    /// The tree's `kind`, `title` and `readonly` for a file already put; the tree hash doesn't change, as on the server.
+    func describe(_ path: String, kind: String?, title: String? = nil, readonly: Bool = false) {
+        state.withLock {
+            $0.files[path]?.kind = kind
+            $0.files[path]?.title = title
+            $0.files[path]?.readonly = readonly
+        }
+    }
+    
+    func setChart(_ path: String, _ answer: [String: Any]) {
+        let data = Self.json(answer)
+        state.withLock { $0.charts[path] = data }
+    }
+    
+    func setDashboard(_ path: String, html: String) {
+        state.withLock { $0.dashboards[path] = html }
+    }
+    
+    func setExport(_ path: String, format: String, data: Data, name: String) {
+        state.withLock { $0.exports[path + "." + format] = (data, name) }
+    }
+    
+    func setRecordTypes(_ types: [[String: Any]]) {
+        let data = Self.json(["types": types])
+        state.withLock { $0.recordTypes = data }
+    }
+    
+    /// A chart's or dashboard's picture in one mode; the ETag is the picture's, as the server's.
+    func setDrawing(_ path: String, mode: String, png: Data, etag: String) {
+        state.withLock { $0.drawings[path + "#" + mode] = (png, etag) }
+    }
+    
     func content(_ path: String) -> String? {
         state.withLock { $0.files[path]?.content }
     }
@@ -194,7 +240,18 @@ final class FakeNotesServer: NotesHTTPTransport {
                 return (304, Data(), ["ETag": etag])
             }
             let list = state.files.sorted { $0.key < $1.key }.map { path, file in
-                ["path": path, "version": file.version, "size": file.content.utf8.count, "modified": 1_790_000_000, "note": file.isNote] as [String: Any]
+                var entry: [String: Any] = ["path": path, "version": file.version, "size": file.content.utf8.count, "modified": 1_790_000_000,
+                                            "note": file.isNote]
+                if let kind = file.kind {
+                    entry["kind"] = kind
+                }
+                if let title = file.title {
+                    entry["title"] = title
+                }
+                if file.readonly {
+                    entry["readonly"] = true
+                }
+                return entry
             }
             return (200, ["tree": "tree-\(state.treeCounter)", "files": list, "folders": state.folders], ["ETag": etag])
         case ("GET", "note"):
@@ -266,6 +323,15 @@ final class FakeNotesServer: NotesHTTPTransport {
             guard let file = state.files[path] else {
                 return (404, ["error": "not_found", "message": "No such file"], [:])
             }
+            if let drawing = state.drawings[path + "#" + (request.query["mode"] ?? "light")] {
+                if request.headers["If-None-Match"] == drawing.etag {
+                    return (304, Data(), ["ETag": drawing.etag])
+                }
+                return (200, drawing.png, ["Content-Type": "image/png", "ETag": drawing.etag])
+            }
+            if path.hasSuffix(".chart") {
+                return (422, ["error": "unreadable", "message": "This chart couldn't be drawn right now."], [:])
+            }
             if let preview = state.previews[path] {
                 if request.headers["If-None-Match"] == preview.etag {
                     return (304, Data(), ["ETag": preview.etag])
@@ -306,6 +372,43 @@ final class FakeNotesServer: NotesHTTPTransport {
                 return (422, ["error": "unreadable", "message": "Couldn't convert it"], [:])
             }
             return (415, ["error": "no_pdf", "message": "Not an Office file"], [:])
+        case ("POST", "preview"):
+            // POST chart/preview: an unsaved chart drawn; a file without a title is refused as the server would.
+            let content = request.json?["content"] as? String ?? ""
+            if !content.contains("title:") {
+                return (422, ["error": "bad_chart", "message": "the chart needs a title"], [:])
+            }
+            return (200, Data(("drawn:" + (request.query["mode"] ?? "")).utf8), ["Content-Type": "image/png"])
+        case ("GET", "chart"):
+            guard state.files[path] != nil else {
+                return (404, ["error": "not_found", "message": "No such file"], [:])
+            }
+            guard path.hasSuffix(".chart") else {
+                return (415, ["error": "no_chart", "message": "That file isn't a chart."], [:])
+            }
+            guard let chart = state.charts[path] else {
+                return (503, ["error": "unavailable", "message": "Can't draw now"], [:])
+            }
+            return (200, chart, [:])
+        case ("GET", "dashboard"):
+            guard state.files[path] != nil else {
+                return (404, ["error": "not_found", "message": "No such file"], [:])
+            }
+            guard let html = state.dashboards[path] else {
+                return (415, ["error": "no_dashboard", "message": "That note isn't a dashboard."], [:])
+            }
+            return (200, Data(html.utf8), ["Content-Type": "text/html"])
+        case ("GET", "export"):
+            guard state.files[path] != nil else {
+                return (404, ["error": "not_found", "message": "No such file"], [:])
+            }
+            guard let export = state.exports[path + "." + (request.query["format"] ?? "pdf")] else {
+                return (415, ["error": "no_export", "message": "Can't be that format"], [:])
+            }
+            let encoded = export.name.addingPercentEncoding(withAllowedCharacters: .alphanumerics) ?? export.name
+            return (200, export.data, ["Content-Disposition": "attachment; filename*=UTF-8''" + encoded])
+        case ("GET", "records"):
+            return (200, state.recordTypes, [:])
         case ("GET", "links"):
             let name = path.split(separator: "/").last.map(String.init) ?? path
             let backlinks = state.files.filter { $0.value.isNote && $0.value.content.contains(name) }.keys.sorted()
@@ -353,7 +456,8 @@ final class FakeNotesServer: NotesHTTPTransport {
         state.treeCounter += 1
         let counter = String(state.versionCounter)
         let version = String(repeating: "0", count: 40 - counter.count) + counter
-        state.files[path] = StoredFile(version: version, content: content, isNote: isNote)
+        let old = state.files[path]
+        state.files[path] = StoredFile(version: version, content: content, isNote: isNote, kind: old?.kind, title: old?.title, readonly: old?.readonly ?? false)
         return version
     }
     

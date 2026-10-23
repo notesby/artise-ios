@@ -173,4 +173,18 @@ struct WorkspaceFileTests {
         #expect(branding.name == "Acme")
         #expect(branding.assistantUserID == nil)
     }
+    
+    /// The admin's chart palette: valid colours only, upper case, at most 8; none set is `nil`.
+    @Test
+    func chartPalette() throws {
+        let json = ##"{"co.artise.workspace": {"colors": {"accent": "#22408a", "palette": ["#22408a", "red", "#eb6834", 3]}}}"##
+        let file = try #require(WorkspaceFile.parse(Data(json.utf8)))
+        #expect(file.branding?.chartPalette == ["#22408A", "#EB6834"])
+        
+        let many = ##"{"co.artise.workspace": {"colors": {"palette": ["#000001","#000002","#000003","#000004","#000005","#000006","#000007","#000008","#000009"]}}}"##
+        #expect(try #require(WorkspaceFile.parse(Data(many.utf8))).branding?.chartPalette?.count == 8)
+        
+        let none = ##"{"co.artise.workspace": {"colors": {"accent": "#22408a"}}}"##
+        #expect(try #require(WorkspaceFile.parse(Data(none.utf8))).branding?.chartPalette == nil)
+    }
 }
