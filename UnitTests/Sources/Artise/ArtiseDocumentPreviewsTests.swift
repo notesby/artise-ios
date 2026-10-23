@@ -79,6 +79,21 @@ struct ArtiseDocumentPreviewsTests {
         #expect(ArtiseNoteDocument.hasPicture("a.pptx"))
         #expect(ArtiseNoteDocument.hasPicture("luna.jpg"))
         #expect(!ArtiseNoteDocument.hasPicture("a.csv"))
+        #expect(ArtiseNoteDocument.route(roomID: room, path: "charts/ventas.chart") == .chart(roomID: room, path: "charts/ventas.chart"))
+        #expect(ArtiseNoteDocument.route(roomID: room, path: "datos.tsv") == .table(roomID: room, path: "datos.tsv"))
+        #expect(ArtiseNoteDocument.hasPicture("charts/ventas.chart"))
+    }
+    
+    /// A dashboard is a `.md`: the server's kind (from the tree or a card) sends it to the dashboard screen, with a picture.
+    @Test
+    func dashboardsOpenByTheServersKind() {
+        let room = "!r:artise.co"
+        #expect(ArtiseNoteDocument.route(roomID: room, path: "Octubre.md", kind: .dashboard) == .dashboard(roomID: room, path: "Octubre.md"))
+        #expect(ArtiseNoteDocument.route(roomID: room, path: "Octubre.md") == .note(roomID: room, path: "Octubre.md"))
+        #expect(ArtiseNoteDocument.hasPicture("Octubre.md", kind: .dashboard))
+        #expect(!ArtiseNoteDocument.hasPicture("Octubre.md"))
+        #expect(ArtiseNoteDocument.icon(.chart) == \.chart)
+        #expect(ArtiseNoteDocument.icon(.dashboard) == \.polls)
     }
     
     private func buildFileItem(thumbnail: MediaSource?, notePath: String? = nil) throws -> FileRoomTimelineItem? {

@@ -19,12 +19,16 @@ struct NotePreviewThumbnail: View {
     /// The file's version: a changed file gets its picture again.
     let version: String
     let icon: KeyPath<CompoundIcons, Image>
+    /// A chart or dashboard is drawn by the server, asked for every time it shows.
+    var kind: NoteDocumentKind?
     
     @State private var image: UIImage?
     
     var body: some View {
         ZStack {
-            if let image {
+            if let kind, kind.isDrawn {
+                NoteDrawingImage(service: service, roomID: roomID, path: path, size: 128, fill: true, icon: icon, iconSize: 20)
+            } else if let image {
                 Image(uiImage: image)
                     .resizable()
                     .scaledToFill()
@@ -41,6 +45,7 @@ struct NotePreviewThumbnail: View {
     }
     
     private func load() async {
+        guard kind?.isDrawn != true else { return }
         let repository = service.repository
         guard case .image(let url)? = try? await repository.preview(roomID: roomID, path: path, size: 128) else { return }
         image = await Task.detached { UIImage(contentsOfFile: url.path)?.preparingForDisplay() }.value

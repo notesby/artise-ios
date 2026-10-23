@@ -64,4 +64,14 @@ struct RenameAndMoveTests {
         #expect(NoteNames.folderProblem(".trash") == .invalid)
         #expect(NoteNames.folderProblem("Recetas/Postres") == nil)
     }
+    
+    /// New charts go in `charts/`, new dashboards in `dashboards/`, numbered when the name is taken.
+    @Test
+    func newChartsAndDashboardsGetFreePaths() {
+        #expect(NoteNames.newChartPath(named: " Ventas ", taken: []) == "charts/Ventas.chart")
+        #expect(NoteNames.newChartPath(named: "Ventas", taken: ["charts/ventas.chart"]) == "charts/Ventas (2).chart")
+        #expect(NoteNames.newChartPath(named: "a/b", taken: []) == nil)
+        #expect(NoteNames.newDashboardPath(named: "Octubre", taken: ["dashboards/Octubre.md"]) == "dashboards/Octubre (2).md")
+        #expect(NoteNames.newDashboardPath(named: "", taken: []) == nil)
+    }
 }

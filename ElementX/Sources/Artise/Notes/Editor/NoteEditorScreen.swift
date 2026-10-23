@@ -28,6 +28,11 @@ struct NoteEditorScreen: View {
     @State private var query = ""
     @State private var matches: [Range<Int>] = []
     @State private var cursor = SearchCursor(count: 0)
+    /// A dashboard opens on its layout; the Text tab shows its Markdown as it is.
+    @State private var isDashboard = false
+    @State private var showsLayout = false
+    /// The chat's charts, for a dashboard's "Add chart".
+    @State private var charts: [LocalFile] = []
     
     var body: some View {
         ElementNavigationStack {
@@ -46,7 +51,12 @@ struct NoteEditorScreen: View {
                         query = ""
                     }
                 }
-                if isLoaded {
+                if isLoaded, showsLayout {
+                    DashboardLayoutEditor(service: service, roomID: roomID, model: $model, charts: charts) { line in
+                        showsLayout = false
+                        model.select(Self.offset(ofLine: line, in: model.text)..<Self.offset(ofLine: line, in: model.text))
+                    }
+                } else if isLoaded {
                     NoteTextView(model: $model, highlights: matches, currentHighlight: currentMatch)
                 } else {
                     ProgressView()
@@ -54,14 +64,16 @@ struct NoteEditorScreen: View {
                 }
             }
             .safeAreaInset(edge: .bottom, spacing: 0) {
-                VStack(spacing: 0) {
-                    suggestions
-                    HStack(spacing: 0) {
-                        NoteAttachMenu(service: service, roomID: roomID, model: $model)
-                            .padding(.leading, 8)
-                        NoteFormatBar(model: $model)
+                if !showsLayout {
+                    VStack(spacing: 0) {
+                        suggestions
+                        HStack(spacing: 0) {
+                            NoteAttachMenu(service: service, roomID: roomID, model: $model)
+                                .padding(.leading, 8)
+                            NoteFormatBar(model: $model)
+                        }
+                        .background(.compound.bgSubtleSecondary)
                     }
-                    .background(.compound.bgSubtleSecondary)
                 }
             }
             .background(.compound.bgCanvasDefault)
@@ -134,6 +146,18 @@ struct NoteEditorScreen: View {
     
     @ToolbarContentBuilder
     private var toolbar: some ToolbarContent {
+        if isDashboard {
+            ToolbarItem(placement: .principal) {
+                Picker(selection: $showsLayout) {
+                    Text(ArtiseNotesL10n.text("screen_notes_dashboard_layout")).tag(true)
+                    Text(ArtiseNotesL10n.text("screen_notes_dashboard_text")).tag(false)
+                } label: {
+                    EmptyView()
+                }
+                .pickerStyle(.segmented)
+                .fixedSize()
+            }
+        }
         ToolbarItem(placement: .cancellationAction) {
             Button(L10n.actionCancel) {
                 if model.hasChanges {
@@ -158,7 +182,7 @@ struct NoteEditorScreen: View {
                 CompoundIcon(\.search)
             }
             .accessibilityLabel(ArtiseNotesL10n.text("a11y_notes_find"))
-            .disabled(!isLoaded)
+            .disabled(!isLoaded || showsLayout)
             
             Button { model.undo() } label: {
                 Image(systemName: "arrow.uturn.backward")
@@ -230,7 +254,15 @@ struct NoteEditorScreen: View {
         }
         let files = await (try? repository.files(roomID: roomID)) ?? []
         index = await PageIndex(paths: files.map(\.path), pages: (try? repository.pages(roomID: roomID)) ?? [])
+        charts = files.filter { $0.kind == .chart }
+        isDashboard = resolveEditID == nil && DashboardLayout.parse(model.text) != nil
+        showsLayout = isDashboard
         isLoaded = true
+    }
+    
+    /// Where a line (from 0) starts, in UTF-16 offsets as the text view counts.
+    static func offset(ofLine line: Int, in text: String) -> Int {
+        text.components(separatedBy: "\n").prefix(max(line, 0)).reduce(0) { $0 + $1.utf16.count + 1 }
     }
     
     private func save() {

@@ -30,13 +30,23 @@ public struct NotesFile: Equatable, Sendable, Codable {
     public let modified: Int64
     /// Text opened with the note endpoints. Anything else (photos, PDFs…) is a raw file.
     public let isNote: Bool
+    /// What the server says the file is; `nil` from a server that doesn't say (the name tells then).
+    public let kind: NoteDocumentKind?
+    /// A note's, dashboard's or chart's own title, when it has one.
+    public let title: String?
+    /// A page Ari rewrites each period (a business report): shown and shared, never edited.
+    public let isReadOnly: Bool
     
-    public init(path: String, version: String, size: Int64, modified: Int64, isNote: Bool) {
+    public init(path: String, version: String, size: Int64, modified: Int64, isNote: Bool,
+                kind: NoteDocumentKind? = nil, title: String? = nil, isReadOnly: Bool = false) {
         self.path = path
         self.version = version
         self.size = size
         self.modified = modified
         self.isNote = isNote
+        self.kind = kind
+        self.title = title
+        self.isReadOnly = isReadOnly
     }
 }
 
@@ -324,8 +334,15 @@ public struct LocalFile: Equatable, Sendable {
     public let content: String?
     /// An edit to this file is waiting to be sent or for the person to choose.
     public let hasLocalEdits: Bool
+    /// What the file is: the server's word when the tree gave one, else its name's.
+    public let kind: NoteDocumentKind
+    /// Its own title (a chart's, a dashboard's), when the server gave one.
+    public let title: String?
+    /// Shown and shared, never edited (a business report Ari rewrites each period).
+    public let isReadOnly: Bool
     
-    public init(path: String, version: String, size: Int64, modified: Int64, isNote: Bool, content: String?, hasLocalEdits: Bool) {
+    public init(path: String, version: String, size: Int64, modified: Int64, isNote: Bool, content: String?, hasLocalEdits: Bool,
+                kind: NoteDocumentKind? = nil, title: String? = nil, isReadOnly: Bool = false) {
         self.path = path
         self.version = version
         self.size = size
@@ -333,6 +350,9 @@ public struct LocalFile: Equatable, Sendable {
         self.isNote = isNote
         self.content = content
         self.hasLocalEdits = hasLocalEdits
+        self.kind = NoteDocumentKind.of(path, server: kind)
+        self.title = title
+        self.isReadOnly = isReadOnly
     }
 }
 

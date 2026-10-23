@@ -180,10 +180,10 @@ final class ArtiseNotes {
     /// itself, after updating the chat's notes so it's the current copy. `false` when notes aren't available here,
     /// so the attachment opens as it always did.
     @discardableResult
-    func openDocument(roomID: String, path: String) -> Bool {
+    func openDocument(roomID: String, path: String, kind: NoteDocumentKind? = nil) -> Bool {
         guard let service, let presenter = UIViewController.artiseTopViewController() else { return false }
         weak var host: UIViewController?
-        let root = ArtiseNoteDocumentView(service: service, roomID: roomID, path: path) {
+        let root = ArtiseNoteDocumentView(service: service, roomID: roomID, path: path, kind: kind) {
             host?.dismiss(animated: true)
         }
         let controller = UIHostingController(rootView: root.artiseWorkspaceAccent())

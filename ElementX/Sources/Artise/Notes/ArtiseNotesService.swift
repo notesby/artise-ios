@@ -72,6 +72,23 @@ final class ArtiseNotesService {
         KeychainNotesKeyStore().deleteKey(account: userID)
     }
     
+    // MARK: - Asking Ari
+    
+    /// Posts "Ari, share “<title>” with a link" in the chat, as the person, in the app's language: the app can't make
+    /// share links itself, Ari can. It names Ari, so Ari answers in a chat with other people too. `false` when it
+    /// couldn't be sent.
+    func askForLink(roomID: String, title: String) async -> Bool {
+        guard case let .joined(roomProxy) = await clientProxy.roomForIdentifier(roomID) else { return false }
+        let message = String(format: ArtiseNotesL10n.text("screen_notes_ask_link_message"), title)
+        let ari = ArtiseWorkspaces.shared.branding?.assistantUserID
+        let mentions = IntentionalMentions(userIDs: Set([ari].compactMap { $0 }), atRoom: false)
+        if case .failure(let error) = await roomProxy.timeline.sendMessage(message, html: nil, inReplyToEventID: nil, intentionalMentions: mentions) {
+            MXLog.error("Notes: couldn't ask for a link: \(error)")
+            return false
+        }
+        return true
+    }
+    
     // MARK: - Live updates
     
     /// Keeps these chats' notes current while a notes screen shows them, as the Notes API contract asks:

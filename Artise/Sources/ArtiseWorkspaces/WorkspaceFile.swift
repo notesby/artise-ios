@@ -55,11 +55,15 @@ public struct WorkspaceBranding: Codable, Equatable, Sendable {
     public var contactUserID: String?
     public var minimumAppVersion: MinimumAppVersion?
     public var storeLinks: StoreLinks?
+    /// The charts' series colours an admin set (`colors.palette`, up to 8, `#RRGGBB`); `nil` when unset, so charts use
+    /// the accent and the server's own palette.
+    public var chartPalette: [String]?
     
     public init(name: String? = nil, logoURL: URL? = nil, accentHex: String? = nil, assistantName: String? = nil,
                 welcome: [String: String] = [:], language: String? = nil, features: Set<String>? = nil, pushGatewayURL: URL? = nil,
                 links: WorkspaceLinks? = nil, oauth: WorkspaceOAuthClient? = nil, assistantUserID: String? = nil,
-                contactUserID: String? = nil, minimumAppVersion: MinimumAppVersion? = nil, storeLinks: StoreLinks? = nil) {
+                contactUserID: String? = nil, minimumAppVersion: MinimumAppVersion? = nil, storeLinks: StoreLinks? = nil,
+                chartPalette: [String]? = nil) {
         self.name = name
         self.logoURL = logoURL
         self.accentHex = accentHex
@@ -74,6 +78,7 @@ public struct WorkspaceBranding: Codable, Equatable, Sendable {
         self.contactUserID = contactUserID
         self.minimumAppVersion = minimumAppVersion
         self.storeLinks = storeLinks
+        self.chartPalette = chartPalette
     }
     
     /// Reads the section field by field, so one bad value doesn't lose the others. Any `version` is read:
@@ -96,7 +101,14 @@ public struct WorkspaceBranding: Codable, Equatable, Sendable {
                   assistantUserID: (section["assistant_user_id"] as? String).flatMap(Self.userID),
                   contactUserID: (section["contact_user_id"] as? String).flatMap(Self.userID),
                   minimumAppVersion: MinimumAppVersion(value: section["min_app_version"]),
-                  storeLinks: StoreLinks(value: section["store_links"]))
+                  storeLinks: StoreLinks(value: section["store_links"]),
+                  chartPalette: Self.palette((section["colors"] as? [String: Any])?["palette"]))
+    }
+    
+    /// Up to 8 valid colours from `colors.palette`; `nil` when there are none.
+    static func palette(_ value: Any?) -> [String]? {
+        let colors = ((value as? [Any]) ?? []).compactMap { ($0 as? String).flatMap(hexColor) }
+        return colors.isEmpty ? nil : Array(colors.prefix(8))
     }
     
     /// Where the pusher is registered: the workspace's gateway, else Artise's shared one.

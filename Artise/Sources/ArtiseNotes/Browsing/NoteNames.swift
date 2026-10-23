@@ -39,6 +39,29 @@ public enum NoteNames {
         return "\(base) (\(number))\(suffix)"
     }
     
+    /// A new chart's path: "Ventas" → "charts/Ventas.chart", or "charts/Ventas (2).chart" when that's taken. `nil` for
+    /// a name that can't be a file's.
+    public static func newChartPath(named name: String, taken: [String]) -> String? {
+        let trimmed = name.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty, !trimmed.contains("/"), !trimmed.hasPrefix(".") else { return nil }
+        let base = trimmed.lowercased().hasSuffix(".chart") ? String(trimmed.dropLast(6)) : trimmed
+        let used = Set(taken.map { $0.lowercased() })
+        var path = DashboardLayout.chartsFolder + "/" + base + ".chart"
+        var number = 2
+        while used.contains(path.lowercased()) {
+            path = DashboardLayout.chartsFolder + "/" + base + " (\(number)).chart"
+            number += 1
+        }
+        return path
+    }
+    
+    /// A new dashboard's path: "Octubre" → "dashboards/Octubre.md", or "dashboards/Octubre (2).md".
+    public static func newDashboardPath(named name: String, taken: [String]) -> String? {
+        let trimmed = name.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty, !trimmed.contains("/"), !trimmed.hasPrefix(".") else { return nil }
+        return freePath(for: path(for: trimmed, in: "dashboards"), taken: taken)
+    }
+    
     /// The problem with `name` in `folder`, or `nil` if it can be used. `existingPaths` are the chat's files.
     public static func problem(with name: String, in folder: String, existingPaths: [String]) -> NoteNameProblem? {
         let trimmed = name.trimmingCharacters(in: .whitespaces)

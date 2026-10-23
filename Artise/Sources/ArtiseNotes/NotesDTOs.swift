@@ -27,6 +27,9 @@ struct TreeDTO: Decodable {
         let size: Int64
         let modified: Int64
         let note: Bool
+        let kind: String?
+        let title: String?
+        let readonly: Bool?
     }
     
     let tree: String
@@ -232,4 +235,56 @@ struct ErrorDTO: Decodable {
         case error, message, current, files, folders
         case usedBy = "used_by"
     }
+}
+
+struct ChartDTO: Decodable {
+    struct Spec: Decodable {
+        let title: String?
+        let type: String?
+        let columns: [String]?
+        let rows: [[ChartCell]]?
+        let series: [String]?
+        let unit: String?
+        let caption: String?
+        let colors: [String]?
+        let compare: String?
+    }
+    
+    let path: String
+    let version: String
+    let spec: Spec
+    let asOf: String?
+    let svg: String?
+    
+    enum CodingKeys: String, CodingKey {
+        case path, version, spec, svg
+        case asOf = "as_of"
+    }
+    
+    var chart: NotesChart {
+        NotesChart(path: path, version: version, title: spec.title ?? "", type: spec.type ?? "", columns: spec.columns ?? [],
+                   rows: spec.rows ?? [], series: spec.series ?? [], unit: spec.unit ?? "", caption: spec.caption ?? "",
+                   colors: spec.colors ?? [], compare: spec.compare ?? "", asOf: asOf ?? "", svg: svg ?? "")
+    }
+}
+
+struct RecordTypesDTO: Decodable {
+    struct RecordType: Decodable {
+        let type: String
+        let fields: [String]
+        let dateField: String?
+        let amountField: String?
+        
+        enum CodingKeys: String, CodingKey {
+            case type, fields
+            case dateField = "date_field"
+            case amountField = "amount_field"
+        }
+    }
+    
+    let types: [RecordType]
+}
+
+struct ChartPreviewDTO: Encodable {
+    let content: String
 }

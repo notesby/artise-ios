@@ -81,7 +81,12 @@ public struct NotesAPIClient: Sendable {
             return .notModified
         }
         let dto: TreeDTO = try decode(data)
-        let files = dto.files.map { NotesFile(path: $0.path, version: $0.version, size: $0.size, modified: $0.modified, isNote: $0.note) }
+        let files = dto.files.map { file in
+            NotesFile(path: file.path, version: file.version, size: file.size, modified: file.modified, isNote: file.note,
+                      kind: NoteDocumentKind(serverValue: file.kind),
+                      title: file.title.flatMap { $0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : $0 },
+                      isReadOnly: file.readonly ?? false)
+        }
         return .changed(NotesTree(tree: dto.tree, files: files, folders: dto.folders ?? []),
                         etag: response.value(forHTTPHeaderField: "ETag"))
     }
@@ -180,8 +185,14 @@ public struct NotesAPIClient: Sendable {
     /// A small picture of a PDF's first page or a photo (`size` px on the longer edge: 128, 256, 512 or 1024), or the
     /// first lines of a text file. With `etag`, `.notModified` when the picture is still the one the phone has.
     /// `.noPreview` for other kinds, `.unreadable` for a file that can't be read.
-    public func preview(roomID: String, path: String, size: Int, etag: String? = nil) async throws(NotesError) -> NotePreviewResponse {
-        var request = request(url(roomID: roomID, "preview", query: [("path", path), ("size", String(size))]))
+    /// A chart or dashboard is drawn for `mode` (light or dark; other files ignore it).
+    public func preview(roomID: String, path: String, size: Int, mode: NoteDrawingMode? = nil,
+                        etag: String? = nil) async throws(NotesError) -> NotePreviewResponse {
+        var query = [("path", path), ("size", String(size))]
+        if let mode {
+            query.append(("mode", mode.rawValue))
+        }
+        var request = request(url(roomID: roomID, "preview", query: query))
         request.setValue("image/png, text/plain", forHTTPHeaderField: "Accept")
         if let etag {
             request.setValue(etag, forHTTPHeaderField: "If-None-Match")
@@ -207,6 +218,68 @@ public struct NotesAPIClient: Sendable {
     /// over the limits, `.unreadable` when the conversion failed.
     public func pdf(roomID: String, path: String) async throws(NotesError) -> Data {
         try await send(request(url(roomID: roomID, "pdf", query: [("path", path)]))).0
+    }
+    
+    /// A chart as data and as a drawing in `mode`: its title, caption, rows (a sourced chart's as of today) and SVG.
+    /// `.noChart` for another file, `.badChart` for one with a mistake, `.unavailable` when it can't be drawn now.
+    public func chart(roomID: String, path: String, mode: NoteDrawingMode) async throws(NotesError) -> NotesChart {
+        let dto: ChartDTO = try await json(request(url(roomID: roomID, "chart", query: [("path", path), ("mode", mode.rawValue)])))
+        return dto.chart
+    }
+    
+    /// A dashboard as a web page (its charts inline, light and dark with the device), for a web view.
+    /// `.noDashboard` for a note that isn't one.
+    public func dashboard(roomID: String, path: String) async throws(NotesError) -> String {
+        var request = request(url(roomID: roomID, "dashboard", query: [("path", path)]))
+        request.setValue("text/html", forHTTPHeaderField: "Accept")
+        return try await String(decoding: send(request).0, as: UTF8.self)
+    }
+    
+    /// A chart as a picture or a PDF, a note or dashboard as a PDF, made now for the share sheet, with the file's name.
+    /// `.noExport` for a kind that can't be that format.
+    public func export(roomID: String, path: String, format: NoteExportFormat, size: Int? = nil) async throws(NotesError) -> NotesExport {
+        var query = [("path", path), ("format", format.rawValue)]
+        if let size {
+            query.append(("size", String(size)))
+        }
+        var request = request(url(roomID: roomID, "export", query: query))
+        request.setValue(format == .png ? "image/png" : "application/pdf", forHTTPHeaderField: "Accept")
+        let (data, response) = try await send(request)
+        let name = Self.fileName(contentDisposition: response.value(forHTTPHeaderField: "Content-Disposition"))
+            ?? NotesFolderEntries.fileName(path).split(separator: ".").dropLast().joined(separator: ".") + "." + format.rawValue
+        return NotesExport(data: data, fileName: name)
+    }
+    
+    /// The record types this chat keeps and their fields: what a chart's `source` may read.
+    public func recordTypes(roomID: String) async throws(NotesError) -> [NotesRecordType] {
+        let dto: RecordTypesDTO = try await json(request(url(roomID: roomID, "records")))
+        return dto.types.map {
+            NotesRecordType(type: $0.type, fields: $0.fields, dateField: ($0.dateField ?? "").isEmpty ? nil : $0.dateField,
+                            amountField: ($0.amountField ?? "").isEmpty ? nil : $0.amountField)
+        }
+    }
+    
+    /// An unsaved chart drawn (at most 512 px), nothing written. `.badChart` says what's wrong with it.
+    public func chartPreview(roomID: String, content: String, size: Int, mode: NoteDrawingMode) async throws(NotesError) -> Data {
+        let url = url(roomID: roomID, "chart/preview", query: [("size", String(min(size, 512))), ("mode", mode.rawValue)])
+        var request = request(url, method: "POST", jsonBody: ChartPreviewDTO(content: content))
+        request.setValue("image/png", forHTTPHeaderField: "Accept")
+        return try await send(request).0
+    }
+    
+    /// `attachment; filename*=UTF-8''Ventas%20por%20mes.pdf` → "Ventas por mes.pdf"; also a plain `filename="…"`.
+    static func fileName(contentDisposition: String?) -> String? {
+        guard let header = contentDisposition else { return nil }
+        for part in header.split(separator: ";").map({ $0.trimmingCharacters(in: .whitespaces) }) {
+            if part.lowercased().hasPrefix("filename*="), let quote = part.range(of: "''") {
+                return String(part[quote.upperBound...]).removingPercentEncoding.flatMap { $0.isEmpty ? nil : $0 }
+            }
+        }
+        for part in header.split(separator: ";").map({ $0.trimmingCharacters(in: .whitespaces) }) where part.lowercased().hasPrefix("filename=") {
+            let name = part.dropFirst("filename=".count).trimmingCharacters(in: CharacterSet(charactersIn: "\""))
+            return name.isEmpty ? nil : name
+        }
+        return nil
     }
     
     public func graph(roomID: String) async throws(NotesError) -> NotesGraph {
@@ -343,6 +416,11 @@ public struct NotesAPIClient: Sendable {
         case "unreadable": return .unreadable(message)
         case "no_text": return .noText(message)
         case "no_pdf": return .noPDF(message)
+        case "no_chart": return .noChart(message)
+        case "bad_chart": return .badChart(message)
+        case "no_dashboard": return .noDashboard(message)
+        case "no_export": return .noExport(message)
+        case "unavailable": return .unavailable(message)
         case "in_use": return .inUse(message, usedBy: dto?.usedBy ?? [])
         case "not_empty": return .notEmpty(message, files: dto?.files ?? 0, folders: dto?.folders ?? 0)
         default: return status == 401 ? .unauthorized(message) : .server(status: status, message: message)

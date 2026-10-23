@@ -453,10 +453,12 @@ public final class NotesSyncEngine: NotesRepository {
         case .network, .unauthorized:
             // Every other edit would fail the same way: stop, and send the whole queue later.
             return .stop(error)
-        case .server:
+        case .server, .unavailable:
             // Something went wrong on the server's side with this one (a 5xx, a proxy limit, an unreadable answer).
             return .retry
-        case .noChat, .badPath, .notFound, .tooBig, .inUse, .notEmpty, .notANote, .noPreview, .unreadable, .noText, .noPDF:
+        case .noChat, .badPath, .notFound, .tooBig, .inUse, .notEmpty, .notANote, .noPreview, .unreadable, .noText, .noPDF,
+             .noChart, .noDashboard, .noExport, .badChart:
+            // A chart the server can't draw (`.badChart`) is refused with its sentence, which the choice shows.
             // Retrying won't help.
             try await mark(.rejected, message: error.message)
             return .needsChoice
@@ -478,14 +480,14 @@ public final class NotesSyncEngine: NotesRepository {
     }
     
     private func pullTree(_ roomID: String, timing: inout SyncTiming) async throws -> PullResult {
-        let etag = try await store.chat(roomID)?.etag
+        let local = try await store.chat(roomID)
+        let etag = (local?.treeFields ?? 0) >= TreeFields.current ? local?.etag : nil
         let response = try await timing.measure(\.treeMillis) { try await api.tree(roomID: roomID, etag: etag) }
         guard case let .changed(tree, etag) = response else { return PullResult() }
         timing.treeChanged = true
         timing.treeFiles = tree.files.count
         
         var result = PullResult()
-        let local = try await store.chat(roomID)
         let changed = tree.files.filter { Self.needsDownload($0, local: local) }
         // Photos and documents download when opened; only their listing is kept, in one write.
         let listings = changed.filter { !$0.isNote }
@@ -530,6 +532,13 @@ public final class NotesSyncEngine: NotesRepository {
             if let pages {
                 record.pages = pages
             }
+            // What each file is can change without its version (a note that became a dashboard keeps no new
+            // version for the tree's listing of it), so every entry's kind and title are taken as they come.
+            for file in tree.files where record.files[file.path] != nil {
+                record.files[file.path]?.kind = file.kind
+                record.files[file.path]?.title = file.title
+                record.files[file.path]?.readonly = file.isReadOnly ? true : nil
+            }
             for (path, file) in record.files where !remotePaths.contains(path) {
                 let hasEdits = record.edits.contains { $0.path == path }
                 if !hasEdits, !file.version.isEmpty {
@@ -540,6 +549,7 @@ public final class NotesSyncEngine: NotesRepository {
             record.folders = tree.folders
             record.tree = tree.tree
             record.etag = etag
+            record.treeFields = TreeFields.current
         }
         return result
     }
@@ -653,7 +663,8 @@ public final class NotesSyncEngine: NotesRepository {
     
     private static func localFile(_ file: FileRecord, in record: ChatRecord) -> LocalFile {
         LocalFile(path: file.path, version: file.version, size: file.size, modified: file.modified, isNote: file.isNote,
-                  content: file.content, hasLocalEdits: record.edits.contains { $0.path == file.path })
+                  content: file.content, hasLocalEdits: record.edits.contains { $0.path == file.path },
+                  kind: file.kind, title: file.title, isReadOnly: file.readonly ?? false)
     }
     
     private static func pendingEdit(_ edit: EditRecord) -> PendingEdit {
@@ -671,8 +682,15 @@ public final class NotesSyncEngine: NotesRepository {
 
 extension FileRecord {
     init(_ file: NotesFile, content: String?) {
-        self.init(path: file.path, version: file.version, size: file.size, modified: file.modified, isNote: file.isNote, content: content)
+        self.init(path: file.path, version: file.version, size: file.size, modified: file.modified, isNote: file.isNote, content: content,
+                  kind: file.kind, title: file.title, readonly: file.isReadOnly ? true : nil)
     }
+}
+
+/// The tree entry fields a chat's record holds; raised when the tree gains one the phone keeps.
+enum TreeFields {
+    /// 1: `kind`, `title` and `readonly` (charts and dashboards).
+    static let current = 1
 }
 
 extension String {

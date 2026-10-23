@@ -30,6 +30,14 @@ struct NotesFolderScreen: View {
     /// Each note's first lines, and each file's version (a changed file gets a new preview).
     @State private var previews: [String: String] = [:]
     @State private var versions: [String: String] = [:]
+    /// What each file is and its own title, from the server's tree (a dashboard is a `.md`).
+    @State private var kinds: [String: NoteDocumentKind] = [:]
+    @State private var titles: [String: String] = [:]
+    @State private var isNamingChart = false
+    @State private var isNamingDashboard = false
+    @State private var newName = ""
+    /// A new chart, opened in the editor; it's written with the first Save.
+    @State private var newChart: NewChart?
     @State private var isNamingNote = false
     @State private var newNoteName = ""
     @State private var actions: NotesFolderActionsModel
@@ -130,6 +138,18 @@ struct NotesFolderScreen: View {
                     } label: {
                         Label(ArtiseNotesL10n.text("screen_notes_new_folder"), icon: \.folder)
                     }
+                    Button {
+                        newName = ""
+                        isNamingChart = true
+                    } label: {
+                        Label(ArtiseNotesL10n.text("screen_notes_new_chart"), icon: \.chart)
+                    }
+                    Button {
+                        newName = ""
+                        isNamingDashboard = true
+                    } label: {
+                        Label(ArtiseNotesL10n.text("screen_notes_new_dashboard"), icon: \.polls)
+                    }
                 } label: {
                     CompoundIcon(\.plus)
                 }
@@ -145,6 +165,30 @@ struct NotesFolderScreen: View {
             Button(L10n.actionCancel, role: .cancel) { }
         } message: {
             Text(newNoteProblem ?? "")
+        }
+        .alert(ArtiseNotesL10n.text("screen_notes_new_chart"), isPresented: $isNamingChart) {
+            TextField(ArtiseNotesL10n.text("screen_notes_new_chart_placeholder"), text: $newName)
+            Button(ArtiseNotesL10n.text("screen_notes_create")) {
+                if let path = NoteNames.newChartPath(named: newName, taken: paths) {
+                    newChart = NewChart(path: path, title: newName.trimmingCharacters(in: .whitespaces))
+                }
+            }
+            .disabled(NoteNames.newChartPath(named: newName, taken: paths) == nil)
+            Button(L10n.actionCancel, role: .cancel) { }
+        }
+        .alert(ArtiseNotesL10n.text("screen_notes_new_dashboard"), isPresented: $isNamingDashboard) {
+            TextField(ArtiseNotesL10n.text("screen_notes_new_dashboard_placeholder"), text: $newName)
+            Button(ArtiseNotesL10n.text("screen_notes_create")) { createDashboard() }
+                .disabled(NoteNames.newDashboardPath(named: newName, taken: paths) == nil)
+            Button(L10n.actionCancel, role: .cancel) { }
+        }
+        .fullScreenCover(item: $newChart) { chart in
+            NoteChartEditorScreen(service: service, roomID: roomID, path: chart.path, newTitle: chart.title) { saved in
+                newChart = nil
+                if saved {
+                    route = .chart(roomID: roomID, path: chart.path)
+                }
+            }
         }
         .task { await load() }
         .task { await followChanges() }
@@ -169,8 +213,18 @@ struct NotesFolderScreen: View {
             ListRow(label: .default(title: name, description: Self.counts(notes: notes, files: files), icon: \.folder),
                     kind: .navigationLink { route = .folder(roomID: roomID, path: path) })
         case .note(let name, let path, let hasLocalEdits):
-            ListRow(label: .default(title: name, description: hasLocalEdits ? ArtiseNotesL10n.unsent : previews[path], icon: \.document),
-                    kind: .navigationLink { route = NoteDocumentKind.of(path) == .table ? .table(roomID: roomID, path: path) : .note(roomID: roomID, path: path) })
+            let kind = kinds[path] ?? NoteDocumentKind.of(path)
+            if kind.isDrawn {
+                // A chart or dashboard: its picture and its own title.
+                ListRow(label: .avatar(title: titles[path] ?? name,
+                                       description: hasLocalEdits ? ArtiseNotesL10n.unsent : nil,
+                                       icon: NotePreviewThumbnail(service: service, roomID: roomID, path: path, version: versions[path] ?? "",
+                                                                  icon: ArtiseNoteDocument.icon(kind), kind: kind)),
+                        kind: .navigationLink { route = ArtiseNoteDocument.route(roomID: roomID, path: path, kind: kind) })
+            } else {
+                ListRow(label: .default(title: name, description: hasLocalEdits ? ArtiseNotesL10n.unsent : previews[path], icon: \.document),
+                        kind: .navigationLink { route = kind == .table ? .table(roomID: roomID, path: path) : .note(roomID: roomID, path: path) })
+            }
         case .file(let name, let path, let isImage, let size):
             let description = ByteCountFormatter.string(fromByteCount: size, countStyle: .file)
             if isImage || ArtiseNoteDocument.hasPicture(path) {
@@ -212,6 +266,8 @@ struct NotesFolderScreen: View {
         previews = Dictionary(files.compactMap { file in NotePreviewText.firstLines(of: file.content).map { (file.path, $0) } },
                               uniquingKeysWith: { first, _ in first })
         versions = Dictionary(files.map { ($0.path, $0.version) }, uniquingKeysWith: { first, _ in first })
+        kinds = Dictionary(files.map { ($0.path, $0.kind) }, uniquingKeysWith: { first, _ in first })
+        titles = Dictionary(files.compactMap { file in file.title.map { (file.path, $0) } }, uniquingKeysWith: { first, _ in first })
         actions.paths = paths
         actions.folders = folders
         choicesCount = await ((try? repository.edits(roomID: roomID)) ?? []).filter { $0.state != .pending }.count
@@ -225,7 +281,7 @@ struct NotesFolderScreen: View {
     /// Opens a document where it reads best (a PDF or Office file in the viewer, a CSV as a table), and a photo or
     /// other file in Quick Look, downloading it first when it isn't on the phone yet.
     private func open(_ path: String) {
-        if let next = ArtiseNoteDocument.route(roomID: roomID, path: path) {
+        if let next = ArtiseNoteDocument.route(roomID: roomID, path: path, kind: kinds[path]) {
             route = next
             return
         }
@@ -245,6 +301,22 @@ struct NotesFolderScreen: View {
         case .invalid where !newNoteName.isEmpty: ArtiseNotesL10n.text("screen_notes_name_invalid")
         case .exists: ArtiseNotesL10n.text("screen_notes_name_exists")
         default: nil
+        }
+    }
+    
+    /// Creates the dashboard (its header, sent with the next sync) and opens it with the editor on its layout.
+    private func createDashboard() {
+        guard let path = NoteNames.newDashboardPath(named: newName, taken: paths) else { return }
+        let title = newName.trimmingCharacters(in: .whitespaces)
+        let repository = service.repository
+        Task {
+            do {
+                try await repository.createNote(roomID: roomID, path: path, content: DashboardEdits.new(title: title))
+                repository.syncInBackground(roomID: roomID)
+                route = .newDashboard(roomID: roomID, path: path)
+            } catch {
+                MXLog.error("Couldn't create a dashboard: \(error)")
+            }
         }
     }
     
@@ -276,5 +348,15 @@ struct NotesFolderScreen: View {
         }
         await load()
         hasLoaded = true
+    }
+}
+
+/// A chart being made: where it will be saved and the name the person gave it.
+struct NewChart: Identifiable {
+    let path: String
+    let title: String
+    
+    var id: String {
+        path
     }
 }

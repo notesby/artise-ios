@@ -37,6 +37,16 @@ public enum NotesError: Error, Equatable, Sendable {
     case noText(String)
     /// Not an Office file, or a server without the conversion: there's no PDF of it to read.
     case noPDF(String)
+    /// Not a chart file.
+    case noChart(String)
+    /// A chart file with a mistake: the message says what, in the server's words.
+    case badChart(String)
+    /// A note that isn't a dashboard.
+    case noDashboard(String)
+    /// A kind of file that can't be exported in that format.
+    case noExport(String)
+    /// The server can't draw right now. Safe to retry later.
+    case unavailable(String)
     /// No connection, or the request didn't complete. Safe to retry later.
     case network(String)
     /// Anything the contract doesn't name, such as a 500, or an answer the app can't read.
@@ -48,7 +58,8 @@ public enum NotesError: Error, Equatable, Sendable {
         case .unauthorized(let message), .noChat(let message), .badPath(let message), .notFound(let message),
              .exists(let message, _), .conflict(let message, _), .deleted(let message), .tooBig(let message),
              .inUse(let message, _), .notEmpty(let message, _, _), .notANote(let message), .noPreview(let message),
-             .unreadable(let message), .noText(let message), .noPDF(let message), .network(let message), .server(_, let message):
+             .unreadable(let message), .noText(let message), .noPDF(let message), .noChart(let message), .badChart(let message),
+             .noDashboard(let message), .noExport(let message), .unavailable(let message), .network(let message), .server(_, let message):
             message
         }
     }
