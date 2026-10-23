@@ -203,6 +203,12 @@ public struct NotesAPIClient: Sendable {
         return NotesDocumentText(path: dto.path, version: dto.version, pages: dto.pages.map { .init(number: $0.n, text: $0.text) })
     }
     
+    /// The server's PDF of a Word, Excel or PowerPoint file, to read in the app. `.noPDF` for other kinds, `.tooBig`
+    /// over the limits, `.unreadable` when the conversion failed.
+    public func pdf(roomID: String, path: String) async throws(NotesError) -> Data {
+        try await send(request(url(roomID: roomID, "pdf", query: [("path", path)]))).0
+    }
+    
     public func graph(roomID: String) async throws(NotesError) -> NotesGraph {
         let dto: GraphDTO = try await json(request(url(roomID: roomID, "graph")))
         let edges = dto.edges.compactMap { $0.count == 2 ? NotesGraph.Edge(from: $0[0], to: $0[1]) : nil }
@@ -336,6 +342,7 @@ public struct NotesAPIClient: Sendable {
         case "no_preview": return .noPreview(message)
         case "unreadable": return .unreadable(message)
         case "no_text": return .noText(message)
+        case "no_pdf": return .noPDF(message)
         case "in_use": return .inUse(message, usedBy: dto?.usedBy ?? [])
         case "not_empty": return .notEmpty(message, files: dto?.files ?? 0, folders: dto?.folders ?? 0)
         default: return status == 401 ? .unauthorized(message) : .server(status: status, message: message)

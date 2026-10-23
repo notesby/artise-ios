@@ -190,3 +190,10 @@
 "a11y_notes_find" = "Find in document";
 "a11y_notes_find_next" = "Next match";
 "a11y_notes_find_previous" = "Previous match";
+"screen_notes_card_draft" = "Draft";
+"screen_notes_card_created" = "New document";
+"screen_notes_card_changed" = "Updated";
+"a11y_notes_card_open" = "Open %@";
+"screen_notes_office_hint" = "Use “Open with” to see this file in another app.";
+"a11y_notes_open_with" = "Open with";
+"screen_notes_table_cut" = "Only the start of this file is shown. Use “Open with” to see all of it.";

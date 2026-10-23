@@ -81,9 +81,9 @@
 
 /* What's new (change with ArtiseWhatsNew.edition) */
 "screen_artise_whats_new_title" = "What's new";
-"screen_artise_whats_new_1" = "A PDF Ari sends shows its first page in the chat, and a tap opens the notes’ own copy: documents in the viewer, notes in the editor.";
-"screen_artise_whats_new_2" = "Find words inside a document or a note while you read or write it: “camion” finds “camión”.";
-"screen_artise_whats_new_3" = "The reactions Ari asks for come first in the reaction bar, with your most-used emojis next, and holding a message opens its actions faster.";
+"screen_artise_whats_new_1" = "When Ari makes or changes a document for you, it shows as a card under the message, with a preview and “Draft” when it is one. Tap it to read it.";
+"screen_artise_whats_new_2" = "Word, Excel and PowerPoint files and tables (.csv) open right in the app, and “Open with” still hands the file to another app.";
+"screen_artise_whats_new_3" = "Find words in a note while you read it, not just in the editor: every match is marked and the next one is a tap away.";
 "screen_artise_whats_new_done" = "Got it";
 
 /* Settings → Notification hours */

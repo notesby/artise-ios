@@ -48,6 +48,8 @@ final class FakeNotesServer: NotesHTTPTransport {
         var previews: [String: (png: Data, etag: String)] = [:]
         /// What `GET /text` answers for a PDF, page by page; one without an entry is "too big".
         var texts: [String: [String]] = [:]
+        /// What `GET /pdf` answers for an Office file; one without an entry couldn't be converted.
+        var pdfs: [String: Data] = [:]
         var versionCounter = 0
         var treeCounter = 0
         var requests: [Recorded] = []
@@ -123,6 +125,10 @@ final class FakeNotesServer: NotesHTTPTransport {
     
     func setPreview(_ path: String, png: Data, etag: String) {
         state.withLock { $0.previews[path] = (png, etag) }
+    }
+    
+    func setPDF(_ path: String, pdf: Data) {
+        state.withLock { $0.pdfs[path] = pdf }
     }
     
     func setText(_ path: String, pages: [String]) {
@@ -289,6 +295,17 @@ final class FakeNotesServer: NotesHTTPTransport {
                 return (413, ["error": "too_big", "message": "Too big"], [:])
             }
             return (415, ["error": "no_text", "message": "No text for this kind"], [:])
+        case ("GET", "pdf"):
+            guard state.files[path] != nil else {
+                return (404, ["error": "not_found", "message": "No such file"], [:])
+            }
+            if let pdf = state.pdfs[path] {
+                return (200, pdf, ["Content-Type": "application/pdf"])
+            }
+            if NoteDocumentKind.of(path) == .office {
+                return (422, ["error": "unreadable", "message": "Couldn't convert it"], [:])
+            }
+            return (415, ["error": "no_pdf", "message": "Not an Office file"], [:])
         case ("GET", "links"):
             let name = path.split(separator: "/").last.map(String.init) ?? path
             let backlinks = state.files.filter { $0.value.isNote && $0.value.content.contains(name) }.keys.sorted()

@@ -216,3 +216,79 @@ struct NotesPreviewsTests {
         }
     }
 }
+
+/// A Word, Excel or PowerPoint file read in the app through the server's PDF of it, and card previews.
+struct NotesOfficePDFTests {
+    let room = FakeNotesServer.roomID
+    let server = FakeNotesServer()
+    let directory = makeTemporaryDirectory()
+    
+    func makeEngine() -> NotesSyncEngine {
+        let tokens = CountingTokenProvider()
+        let api = NotesAPIClient(transport: server, tokenSource: OpenIDNotesTokenSource { await tokens.next() })
+        return NotesSyncEngine(api: api, directory: directory.appendingPathComponent("store"), cipher: ReversingCipher(),
+                               files: NotesFileOptions(directory: directory.appendingPathComponent("files")))
+    }
+    
+    /// The conversion is fetched once per version and kept on the phone.
+    @Test
+    func theConversionIsFetchedOncePerVersion() async throws {
+        server.put("Ventas/Octubre.xlsx", "xlsx", isNote: false)
+        server.setPDF("Ventas/Octubre.xlsx", pdf: Data("%PDF-1".utf8))
+        let engine = makeEngine()
+        try await engine.sync(roomID: room)
+        
+        let url = try await engine.officePDF(roomID: room, path: "Ventas/Octubre.xlsx")
+        _ = try await engine.officePDF(roomID: room, path: "Ventas/Octubre.xlsx")
+        
+        #expect(try Data(contentsOf: url) == Data("%PDF-1".utf8))
+        let requests = server.requests(to: "pdf")
+        #expect(requests.count == 1)
+        #expect(requests.first?.url.absoluteString == "https://chat.artise.co/api/notes/v1/chats/\(FakeNotesServer.encodedRoom)/pdf?path=Ventas%2FOctubre.xlsx")
+        
+        server.put("Ventas/Octubre.xlsx", "xlsx v2", isNote: false)
+        server.setPDF("Ventas/Octubre.xlsx", pdf: Data("%PDF-2".utf8))
+        try await engine.sync(roomID: room)
+        let changed = try await engine.officePDF(roomID: room, path: "Ventas/Octubre.xlsx")
+        #expect(try Data(contentsOf: changed) == Data("%PDF-2".utf8))
+        #expect(server.requests(to: "pdf").count == 2)
+    }
+    
+    /// No conversion (it failed, or the file isn't an Office file) is its own answer, not a generic error.
+    @Test
+    func noConversionIsSaidPlainly() async throws {
+        server.put("roto.docx", "docx", isNote: false)
+        server.put("Mole.md", "# Mole")
+        let engine = makeEngine()
+        try await engine.sync(roomID: room)
+        
+        await #expect(throws: NotesError.unreadable("Couldn't convert it")) {
+            try await engine.officePDF(roomID: room, path: "roto.docx")
+        }
+        await #expect(throws: NotesError.noPDF("Not an Office file")) {
+            try await engine.officePDF(roomID: room, path: "Mole.md")
+        }
+    }
+    
+    /// A card names the version it's about: its preview is kept under that version even before the chat's notes are
+    /// on the phone, and a newer version asks again.
+    @Test
+    func aCardsVersionKeysItsPreview() async throws {
+        server.put("Factura.pdf", "%PDF", isNote: false)
+        server.setPreview("Factura.pdf", png: Data("png-1".utf8), etag: "\"p1\"")
+        let engine = makeEngine()
+        
+        _ = try await engine.preview(roomID: room, path: "Factura.pdf", size: 512, version: "v1")
+        _ = try await engine.preview(roomID: room, path: "Factura.pdf", size: 512, version: "v1")
+        #expect(server.requests(to: "preview").count == 1)
+        
+        server.setPreview("Factura.pdf", png: Data("png-2".utf8), etag: "\"p2\"")
+        let newer = try await engine.preview(roomID: room, path: "Factura.pdf", size: 512, version: "v2")
+        guard case .image(let url) = newer else {
+            Issue.record("Expected a picture")
+            return
+        }
+        #expect(try Data(contentsOf: url) == Data("png-2".utf8))
+        #expect(server.requests(to: "preview").count == 2)
+    }
+}

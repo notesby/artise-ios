@@ -134,7 +134,7 @@ struct NotesMediaScreen: View {
         let icon: KeyPath<CompoundIcons, Image> = isImage ? \.image : \.files
         let description = usedBy + " · " + ByteCountFormatter.string(fromByteCount: file.size, countStyle: .file)
         Group {
-            if isImage || ArtiseNoteDocument.isPDF(file.path) {
+            if isImage || ArtiseNoteDocument.hasPicture(file.path) {
                 // A small picture of the photo, or of the PDF's first page.
                 ListRow(label: .avatar(title: NotesFolderEntries.fileName(file.path),
                                        description: description,
@@ -166,8 +166,8 @@ struct NotesMediaScreen: View {
     }
     
     private func open(_ path: String) {
-        if ArtiseNoteDocument.isPDF(path) {
-            route = .pdf(roomID: roomID, path: path)
+        if let next = ArtiseNoteDocument.route(roomID: roomID, path: path) {
+            route = next
             return
         }
         let repository = service.repository

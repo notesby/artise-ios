@@ -189,3 +189,10 @@
 "a11y_notes_find" = "Buscar no documento";
 "a11y_notes_find_next" = "Próximo resultado";
 "a11y_notes_find_previous" = "Resultado anterior";
+"screen_notes_card_draft" = "Rascunho";
+"screen_notes_card_created" = "Documento novo";
+"screen_notes_card_changed" = "Atualizado";
+"a11y_notes_card_open" = "Abrir %@";
+"screen_notes_office_hint" = "Use “Abrir com” para ver este arquivo em outro app.";
+"a11y_notes_open_with" = "Abrir com";
+"screen_notes_table_cut" = "Só o começo deste arquivo é mostrado. Use “Abrir com” para vê-lo inteiro.";

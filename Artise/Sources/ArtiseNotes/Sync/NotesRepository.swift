@@ -77,6 +77,11 @@ public protocol NotesRepository: Sendable {
     /// A small picture of a PDF's first page or a photo (or a text file's first lines) for lists, kept on the phone
     /// per file version: one request each, none for a file the server said has no preview (`nil`).
     func preview(roomID: String, path: String, size: Int) async throws -> NotePreview?
+    /// The same, for a version named elsewhere (a document card in the chat) rather than the phone's listing.
+    func preview(roomID: String, path: String, size: Int, version: String?) async throws -> NotePreview?
+    /// The server's PDF of an Office file, kept on the phone per file version. `.noPDF` (or `.unreadable`) when there
+    /// isn't one: the viewer then says to use "Open with".
+    func officePDF(roomID: String, path: String) async throws -> URL
     /// A document's text page by page, for search; kept by path and version while the app runs (needs a connection).
     func documentText(roomID: String, path: String) async throws -> NotesDocumentText
     func retryUpload(roomID: String, path: String) async throws

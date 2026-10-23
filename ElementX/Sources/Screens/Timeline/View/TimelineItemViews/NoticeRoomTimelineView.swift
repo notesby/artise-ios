@@ -10,26 +10,36 @@ import Compound
 import SwiftUI
 
 struct NoticeRoomTimelineView: View, TextBasedRoomTimelineViewProtocol {
+    // Artise: the room, for the document cards.
+    @Environment(\.timelineContext) private var context
     let timelineItem: NoticeRoomTimelineItem
     
     var body: some View {
         TimelineStyler(timelineItem: timelineItem) {
             // Spacing: 6 = label spacing - formatted text padding
             
-            Label {
-                if let attributedString = timelineItem.content.formattedBody {
-                    FormattedBodyText(attributedString: attributedString,
-                                      trailingReservedSize: timelineItem.trailingReservedSize)
-                } else {
-                    FormattedBodyText(text: timelineItem.content.body,
-                                      trailingReservedSize: timelineItem.trailingReservedSize)
+            VStack(alignment: .leading, spacing: 8) {
+                Label {
+                    if let attributedString = timelineItem.content.formattedBody {
+                        FormattedBodyText(attributedString: attributedString,
+                                          trailingReservedSize: timelineItem.trailingReservedSize)
+                    } else {
+                        FormattedBodyText(text: timelineItem.content.body,
+                                          trailingReservedSize: timelineItem.trailingReservedSize)
+                    }
+                } icon: {
+                    CompoundIcon(\.info, size: .small, relativeTo: .compound.bodyLG)
+                        .foregroundColor(.compound.iconSecondary)
                 }
-            } icon: {
-                CompoundIcon(\.info, size: .small, relativeTo: .compound.bodyLG)
-                    .foregroundColor(.compound.iconSecondary)
+                .labelStyle(.custom(spacing: 6.0, alignment: .top))
+                .padding(.leading, 4) // Trailing padding is provided by FormattedBodyText
+                
+                // Artise: the documents a routine's report is about, as cards to open.
+                if let documents = timelineItem.properties.artiseFields?.documents, !documents.isEmpty, let roomID = context?.viewState.roomID {
+                    ArtiseDocumentCardsView(roomID: roomID, cards: documents)
+                        .padding(.bottom, 16)
+                }
             }
-            .labelStyle(.custom(spacing: 6.0, alignment: .top))
-            .padding(.leading, 4) // Trailing padding is provided by FormattedBodyText
         }
     }
 }

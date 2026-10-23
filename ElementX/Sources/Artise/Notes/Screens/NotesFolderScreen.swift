@@ -170,11 +170,11 @@ struct NotesFolderScreen: View {
                     kind: .navigationLink { route = .folder(roomID: roomID, path: path) })
         case .note(let name, let path, let hasLocalEdits):
             ListRow(label: .default(title: name, description: hasLocalEdits ? ArtiseNotesL10n.unsent : previews[path], icon: \.document),
-                    kind: .navigationLink { route = .note(roomID: roomID, path: path) })
+                    kind: .navigationLink { route = NoteDocumentKind.of(path) == .table ? .table(roomID: roomID, path: path) : .note(roomID: roomID, path: path) })
         case .file(let name, let path, let isImage, let size):
             let description = ByteCountFormatter.string(fromByteCount: size, countStyle: .file)
-            if isImage || ArtiseNoteDocument.isPDF(path) {
-                // A small picture of the photo, or of the PDF's first page.
+            if isImage || ArtiseNoteDocument.hasPicture(path) {
+                // A small picture of the photo, or of the document's first page.
                 ListRow(label: .avatar(title: name,
                                        description: description,
                                        icon: NotePreviewThumbnail(service: service, roomID: roomID, path: path,
@@ -222,11 +222,11 @@ struct NotesFolderScreen: View {
         hasLoaded = hasLoaded || !entries.isEmpty
     }
     
-    /// Opens a PDF in the viewer, and a photo or other file in Quick Look, downloading it first when it isn't on the
-    /// phone yet.
+    /// Opens a document where it reads best (a PDF or Office file in the viewer, a CSV as a table), and a photo or
+    /// other file in Quick Look, downloading it first when it isn't on the phone yet.
     private func open(_ path: String) {
-        if ArtiseNoteDocument.isPDF(path) {
-            route = .pdf(roomID: roomID, path: path)
+        if let next = ArtiseNoteDocument.route(roomID: roomID, path: path) {
+            route = next
             return
         }
         let repository = service.repository

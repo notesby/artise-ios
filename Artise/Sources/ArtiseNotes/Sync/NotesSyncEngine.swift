@@ -456,7 +456,7 @@ public final class NotesSyncEngine: NotesRepository {
         case .server:
             // Something went wrong on the server's side with this one (a 5xx, a proxy limit, an unreadable answer).
             return .retry
-        case .noChat, .badPath, .notFound, .tooBig, .inUse, .notEmpty, .notANote, .noPreview, .unreadable, .noText:
+        case .noChat, .badPath, .notFound, .tooBig, .inUse, .notEmpty, .notANote, .noPreview, .unreadable, .noText, .noPDF:
             // Retrying won't help.
             try await mark(.rejected, message: error.message)
             return .needsChoice

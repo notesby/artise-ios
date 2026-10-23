@@ -644,7 +644,9 @@ nonisolated struct RoomTimelineItemFactory: RoomTimelineItemFactoryProtocol {
     // Artise: the fields Ari adds for the apps. Only Ari's messages carry them, and Ari's are never our own, so
     // our own messages skip reading the event's JSON.
     private func artiseFields(_ eventItemProxy: EventTimelineItemProxy, isOutgoing: Bool) -> ArtiseMessageFields? {
-        isOutgoing ? nil : ArtiseMessageFields.read(eventJSON: eventItemProxy.debugInfo.originalJSON)
+        guard !isOutgoing else { return nil }
+        let debugInfo = eventItemProxy.debugInfo
+        return ArtiseMessageFields.read(eventJSON: debugInfo.originalJSON, latestEditJSON: debugInfo.latestEditJSON)
     }
     
     // MARK: - Message events content
