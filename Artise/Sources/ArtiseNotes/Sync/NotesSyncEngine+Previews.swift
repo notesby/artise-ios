@@ -14,7 +14,14 @@ public extension NotesSyncEngine {
     /// server has no preview for (an Office file, one it can't read) is remembered as such per version, so lists
     /// never ask about it again. A file that isn't there fails with `.notFound`.
     func preview(roomID: String, path: String, size: Int) async throws -> NotePreview? {
-        let version = try await store.chat(roomID)?.files[path]?.version ?? ""
+        try await preview(roomID: roomID, path: path, size: size, version: nil)
+    }
+    
+    /// `version` comes from a document card when there is one: the chat's notes may not be on the phone yet, and a
+    /// file kept under no version would never show its newer pictures.
+    func preview(roomID: String, path: String, size: Int, version: String?) async throws -> NotePreview? {
+        let known = try await store.chat(roomID)?.files[path]?.version
+        let version = version ?? known ?? ""
         let names = PreviewNames(directory: files.cacheDirectory, roomID: roomID, path: path, version: version, size: size)
         let manager = FileManager.default
         if manager.fileExists(atPath: names.picture.path) {
@@ -29,9 +36,9 @@ public extension NotesSyncEngine {
             return nil
         }
         try manager.createDirectory(at: files.cacheDirectory, withIntermediateDirectories: true)
-        let known = Self.readETag(names.etag)
+        let lastETag = Self.readETag(names.etag)
         do {
-            switch try await api.preview(roomID: roomID, path: path, size: size, etag: known?.etag) {
+            switch try await api.preview(roomID: roomID, path: path, size: size, etag: lastETag?.etag) {
             case .image(let data, let etag):
                 try data.write(to: names.picture, options: .atomic)
                 Self.writeETag(names.etag, etag: etag, version: version)
@@ -40,13 +47,13 @@ public extension NotesSyncEngine {
                 return .text(text)
             case .notModified:
                 // The picture of the version we had is still right: it's kept under the new version's name.
-                let previous = names.withVersion(known?.version ?? "").picture
+                let previous = names.withVersion(lastETag?.version ?? "").picture
                 guard manager.fileExists(atPath: previous.path) else {
                     try? manager.removeItem(at: names.etag)
-                    return try await preview(roomID: roomID, path: path, size: size)
+                    return try await preview(roomID: roomID, path: path, size: size, version: version)
                 }
                 try manager.copyItem(at: previous, to: names.picture)
-                Self.writeETag(names.etag, etag: known?.etag, version: version)
+                Self.writeETag(names.etag, etag: lastETag?.etag, version: version)
             }
         } catch NotesError.noPreview, NotesError.unreadable {
             try? Data().write(to: names.none, options: .atomic)
@@ -66,6 +73,21 @@ public extension NotesSyncEngine {
         let text = try await api.text(roomID: roomID, path: path)
         texts.withLock { $0[key] = text }
         return text
+    }
+    
+    func officePDF(roomID: String, path: String) async throws -> URL {
+        let version = try await store.chat(roomID)?.files[path]?.version ?? ""
+        let url = files.cacheDirectory.appendingPathComponent("converted-" + Self.stableHash(roomID + "/" + path) + "-" + version + ".pdf")
+        let manager = FileManager.default
+        if !version.isEmpty, manager.fileExists(atPath: url.path) {
+            try? manager.setAttributes([.modificationDate: now()], ofItemAtPath: url.path)
+            return url
+        }
+        let data = try await api.pdf(roomID: roomID, path: path)
+        try manager.createDirectory(at: files.cacheDirectory, withIntermediateDirectories: true)
+        try data.write(to: url, options: .atomic)
+        trimCache()
+        return url
     }
     
     // MARK: - Internals

@@ -25,7 +25,8 @@ struct NoteEmbedView: View {
     @State private var failed = false
     @State private var previewURL: URL?
     @State private var showsCancelUpload = false
-    @State private var showsPDF = false
+    /// A PDF, Office file or CSV, opened in its viewer.
+    @State private var showsDocument = false
     
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -39,9 +40,9 @@ struct NoteEmbedView: View {
             }
         }
         .quickLookPreview($previewURL)
-        .fullScreenCover(isPresented: $showsPDF) {
+        .fullScreenCover(isPresented: $showsDocument) {
             if let path {
-                NotePDFSheet(service: service, roomID: roomID, path: path) { showsPDF = false }
+                ArtiseNoteDocumentView(service: service, roomID: roomID, path: path) { showsDocument = false }
             }
         }
         .task(id: path) { await loadPhoto() }
@@ -157,11 +158,11 @@ struct NoteEmbedView: View {
         failed = image == nil
     }
     
-    /// Opens a PDF in the viewer, anything else in Quick Look, downloading it first if it isn't on the phone yet.
+    /// Opens a document in its viewer, anything else in Quick Look, downloading it first if it isn't on the phone yet.
     private func open() {
         guard let path, !isLoading else { return }
-        if ArtiseNoteDocument.isPDF(path) {
-            showsPDF = true
+        if ArtiseNoteDocument.route(roomID: roomID, path: path) != nil {
+            showsDocument = true
             return
         }
         isLoading = true

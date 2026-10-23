@@ -10,6 +10,7 @@ import QuickLook
 import SwiftUI
 
 /// One note, read from the phone's copy. Checklist items tick with a tap; links lead to other notes or the web.
+/// Find works on the words as they read: every match marked, the current one scrolled into view.
 struct NoteScreen: View {
     let service: ArtiseNotesService
     let roomID: String
@@ -32,8 +33,85 @@ struct NoteScreen: View {
     @State private var uploads: [String: UploadStatus] = [:]
     @State private var hasLoaded = false
     @State private var route: NotesRoute?
+    @State private var isSearching = false
+    @State private var query = ""
+    @State private var matches: [NoteReadingMatch] = []
+    @State private var cursor = SearchCursor(count: 0)
     
     var body: some View {
+        VStack(spacing: 0) {
+            if isSearching {
+                NoteSearchBar(query: $query, status: searchStatus, onNext: { cursor.next() }, onPrevious: { cursor.previous() }) {
+                    isSearching = false
+                    query = ""
+                }
+            }
+            ScrollViewReader { proxy in
+                reading
+                    .onChange(of: currentMatch) { _, match in
+                        guard let match else { return }
+                        withAnimation { proxy.scrollTo(match.slot, anchor: .center) }
+                    }
+            }
+        }
+        .environment(\.noteFindMarks, NoteFindMarks(matches: matches, current: currentMatch))
+        .background(.compound.bgCanvasDefault)
+        .onAppear { ArtiseAnalyticsClient.shared.screen(.note) }
+        .navigationTitle(NotesFolderEntries.noteName(path))
+        .navigationBarTitleDisplayMode(.inline)
+        .navigationDestination(item: $route) { route in
+            NotesDestination(service: service, route: route)
+        }
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button { isSearching.toggle() } label: {
+                    CompoundIcon(\.search)
+                }
+                .accessibilityLabel(ArtiseNotesL10n.text("a11y_notes_find"))
+                .disabled(file?.content == nil)
+            }
+            ToolbarItem(placement: .primaryAction) {
+                Button(L10n.actionEdit) { isEditing = true }
+                    .disabled(hasLoaded && file?.content == nil && !startsEditing)
+            }
+            ToolbarItem(placement: .primaryAction) {
+                Menu {
+                    Button { route = .noteHistory(roomID: roomID, path: path) } label: {
+                        Label(ArtiseNotesL10n.text("screen_notes_history_menu"), icon: \.history)
+                    }
+                } label: {
+                    CompoundIcon(\.overflowHorizontal)
+                }
+                .accessibilityLabel(ArtiseNotesL10n.text("screen_notes_more"))
+            }
+        }
+        .onChange(of: query) { _, _ in findMatches(keepingPosition: false) }
+        .onChange(of: document) { _, _ in findMatches(keepingPosition: true) }
+    }
+    
+    private var currentMatch: NoteReadingMatch? {
+        cursor.index.flatMap { matches.indices.contains($0) ? matches[$0] : nil }
+    }
+    
+    private var searchStatus: NoteSearchStatus {
+        if let position = cursor.position {
+            return .found(position: position, total: cursor.count)
+        }
+        return query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? .idle : .none
+    }
+    
+    /// Searched again when the words change (from the first match) or the note does (a sync while reading: near the
+    /// same match).
+    private func findMatches(keepingPosition: Bool) {
+        let previous = keepingPosition ? cursor.index ?? 0 : 0
+        matches = NoteReadingFind.matches(for: query, in: document.blocks)
+        cursor = SearchCursor(count: matches.count)
+        for _ in 0..<min(previous, max(0, matches.count - 1)) {
+            cursor.next()
+        }
+    }
+    
+    private var reading: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 if file?.hasLocalEdits == true {
@@ -58,30 +136,7 @@ struct NoteScreen: View {
             }
             .padding(16)
         }
-        .background(.compound.bgCanvasDefault)
-        .onAppear { ArtiseAnalyticsClient.shared.screen(.note) }
-        .navigationTitle(NotesFolderEntries.noteName(path))
-        .navigationBarTitleDisplayMode(.inline)
         .refreshable { _ = try? await service.repository.sync(roomID: roomID) }
-        .navigationDestination(item: $route) { route in
-            NotesDestination(service: service, route: route)
-        }
-        .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                Button(L10n.actionEdit) { isEditing = true }
-                    .disabled(hasLoaded && file?.content == nil && !startsEditing)
-            }
-            ToolbarItem(placement: .primaryAction) {
-                Menu {
-                    Button { route = .noteHistory(roomID: roomID, path: path) } label: {
-                        Label(ArtiseNotesL10n.text("screen_notes_history_menu"), icon: \.history)
-                    }
-                } label: {
-                    CompoundIcon(\.overflowHorizontal)
-                }
-                .accessibilityLabel(ArtiseNotesL10n.text("screen_notes_more"))
-            }
-        }
         .alert(missingTarget.map { String(format: ArtiseNotesL10n.text("screen_notes_missing_note_create"), $0) } ?? "",
                isPresented: Binding(get: { missingTarget != nil }, set: {
                    if !$0 {
@@ -179,10 +234,11 @@ struct NoteScreen: View {
         }
     }
     
-    /// A linked PDF (`[[factura.pdf]]`) opens in the viewer, a photo or other file in Quick Look, downloaded first if needed.
+    /// A linked document (`[[factura.pdf]]`, `[[ventas.xlsx]]`) opens in the viewer, a photo or other file in Quick
+    /// Look, downloaded first if needed.
     private func openFile(_ path: String) {
-        if ArtiseNoteDocument.isPDF(path) {
-            route = .pdf(roomID: roomID, path: path)
+        if let next = ArtiseNoteDocument.route(roomID: roomID, path: path) {
+            route = next
             return
         }
         let repository = service.repository

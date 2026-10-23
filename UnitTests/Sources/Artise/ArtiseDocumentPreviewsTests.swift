@@ -61,19 +61,24 @@ struct ArtiseDocumentPreviewsTests {
         #expect(without.properties.artiseFields?.notePath == nil)
     }
     
-    /// Where each kind of file opens: notes in the editor, PDFs in the viewer, photos as themselves, the rest as a download.
+    /// Where each kind of file opens: notes in their reading view, PDFs in the viewer, CSVs as a table, Office files
+    /// as the server's PDF; photos and anything else in Quick Look, or from the chat, in their folder.
     @Test
     func filesOpenByTheirKind() {
-        #expect(ArtiseNoteDocument.kind(of: "Recetas/Mole.md") == .note)
-        #expect(ArtiseNoteDocument.kind(of: "notas.TXT") == .note)
-        #expect(ArtiseNoteDocument.kind(of: "docs/Factura.pdf") == .pdf)
-        #expect(ArtiseNoteDocument.kind(of: "attachments/luna.JPG") == .photo)
-        #expect(ArtiseNoteDocument.kind(of: "Contrato.docx") == .file)
-        #expect(ArtiseNoteDocument.kind(of: "Ventas.xlsx") == .file)
-        #expect(ArtiseNoteDocument.kind(of: "sin-extension") == .file)
-        #expect(ArtiseNoteDocument.kind(of: "carpeta.v2/archivo") == .file)
-        #expect(ArtiseNoteDocument.isPDF("a.pdf"))
-        #expect(!ArtiseNoteDocument.isPDF("a.pdf.docx"))
+        let room = "!r:artise.co"
+        #expect(ArtiseNoteDocument.route(roomID: room, path: "Recetas/Mole.md") == .note(roomID: room, path: "Recetas/Mole.md"))
+        #expect(ArtiseNoteDocument.route(roomID: room, path: "notas.TXT") == .note(roomID: room, path: "notas.TXT"))
+        #expect(ArtiseNoteDocument.route(roomID: room, path: "docs/Factura.pdf") == .pdf(roomID: room, path: "docs/Factura.pdf"))
+        #expect(ArtiseNoteDocument.route(roomID: room, path: "lista.csv") == .table(roomID: room, path: "lista.csv"))
+        #expect(ArtiseNoteDocument.route(roomID: room, path: "Contrato.docx") == .office(roomID: room, path: "Contrato.docx"))
+        #expect(ArtiseNoteDocument.route(roomID: room, path: "Ventas.xlsx") == .office(roomID: room, path: "Ventas.xlsx"))
+        #expect(ArtiseNoteDocument.route(roomID: room, path: "attachments/luna.JPG") == nil)
+        #expect(ArtiseNoteDocument.route(roomID: room, path: "nota de voz.m4a") == nil)
+        #expect(ArtiseNoteDocument.route(roomID: room, path: "sin-extension") == nil)
+        #expect(ArtiseNoteDocument.hasPicture("a.pdf"))
+        #expect(ArtiseNoteDocument.hasPicture("a.pptx"))
+        #expect(ArtiseNoteDocument.hasPicture("luna.jpg"))
+        #expect(!ArtiseNoteDocument.hasPicture("a.csv"))
     }
     
     private func buildFileItem(thumbnail: MediaSource?, notePath: String? = nil) throws -> FileRoomTimelineItem? {

@@ -10,38 +10,38 @@ import PDFKit
 import QuickLook
 import SwiftUI
 
-/// What a file in the notes opens in, by its name: notes in the editor, PDFs in the viewer, photos as themselves,
-/// anything else (an Office file) as a download.
+/// Where a file in the notes opens, by its kind: a note in its reading view, a PDF in the viewer, a CSV as a table,
+/// an Office file as the server's PDF of it. Photos and anything else open in Quick Look (`nil`).
 nonisolated enum ArtiseNoteDocument {
-    enum Kind: Equatable {
-        case note
-        case pdf
-        case photo
-        case file
+    static func route(roomID: String, path: String) -> NotesRoute? {
+        switch NoteDocumentKind.of(path) {
+        case .note: .note(roomID: roomID, path: path)
+        case .pdf: .pdf(roomID: roomID, path: path)
+        case .table: .table(roomID: roomID, path: path)
+        case .office: .office(roomID: roomID, path: path)
+        case .image, .other: nil
+        }
     }
     
-    static let noteExtensions: Set = ["md", "txt"]
-    
-    static func kind(of path: String) -> Kind {
-        let name = NotesFolderEntries.fileName(path)
-        guard let dot = name.lastIndex(of: "."), dot != name.startIndex else { return .file }
-        let ext = name[name.index(after: dot)...].lowercased()
-        if noteExtensions.contains(ext) {
-            return .note
-        }
-        if ext == "pdf" {
-            return .pdf
-        }
-        return NotesFolderEntries.isImage(path) ? .photo : .file
+    /// Files a list shows a small picture of: photos, PDFs and Office files (the server draws their first page).
+    static func hasPicture(_ path: String) -> Bool {
+        [.image, .pdf, .office].contains(NoteDocumentKind.of(path))
     }
     
-    static func isPDF(_ path: String) -> Bool {
-        kind(of: path) == .pdf
+    /// The icon for a kind of file, on cards and where a file has no picture (as on Android).
+    static func icon(_ kind: NoteDocumentKind) -> KeyPath<CompoundIcons, Image> {
+        switch kind {
+        case .note: \.document
+        case .table: \.grid
+        case .image: \.image
+        case .pdf, .office, .other: \.attachment
+        }
     }
 }
 
-/// A file Ari posted from the notes, opened from the chat: the notes' own copy, updated first so it's the current
-/// one. A note opens in the editor, a PDF in the viewer, a photo or any other file in Quick Look.
+/// A document Ari posted or made, opened from the chat: the notes' own copy, updated first so it's the current one.
+/// It opens where it would from the notes list; a file the app can't read opens in its folder, where "Open with"
+/// hands it to another app.
 struct ArtiseNoteDocumentView: View {
     let service: ArtiseNotesService
     let roomID: String
@@ -53,8 +53,8 @@ struct ArtiseNoteDocumentView: View {
     
     private enum Stage: Equatable {
         case loading
-        case editor
-        case pdf
+        case screen(NotesRoute)
+        case folder
         case quickLook
         case unavailable
     }
@@ -62,12 +62,14 @@ struct ArtiseNoteDocumentView: View {
     var body: some View {
         Group {
             switch stage {
-            case .editor:
-                NoteEditorScreen(service: service, roomID: roomID, path: path, onDone: onClose)
-            case .pdf:
+            case .screen(.pdf(let roomID, let path)):
                 NotePDFSheet(service: service, roomID: roomID, path: path, onClose: onClose)
+            case .screen(let route):
+                closable { NotesDestination(service: service, route: route) }
+            case .folder:
+                closable { NotesFolderScreen(service: service, roomID: roomID, folder: NotesFolderEntries.parentFolder(of: path), title: nil) }
             case .loading, .quickLook, .unavailable:
-                ElementNavigationStack {
+                closable {
                     Group {
                         if stage == .unavailable {
                             Text(ArtiseNotesL10n.text("screen_notes_attachment_unavailable"))
@@ -83,14 +85,6 @@ struct ArtiseNoteDocumentView: View {
                     .background(.compound.bgCanvasDefault)
                     .navigationTitle(NotesFolderEntries.fileName(path))
                     .navigationBarTitleDisplayMode(.inline)
-                    .toolbar {
-                        ToolbarItem(placement: .cancellationAction) {
-                            Button(action: onClose) {
-                                CompoundIcon(\.close)
-                            }
-                            .accessibilityLabel(L10n.actionClose)
-                        }
-                    }
                 }
                 .quickLookPreview($previewURL)
                 .onChange(of: previewURL) { _, url in
@@ -104,23 +98,42 @@ struct ArtiseNoteDocumentView: View {
         .task { await open() }
     }
     
+    /// A screen in its own navigation, with a close button.
+    private func closable(@ViewBuilder _ content: () -> some View) -> some View {
+        ElementNavigationStack {
+            content()
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button(action: onClose) {
+                            CompoundIcon(\.close)
+                        }
+                        .accessibilityLabel(L10n.actionClose)
+                    }
+                }
+        }
+    }
+    
     private func open() async {
         let repository = service.repository
         // The latest copy first; offline, the phone's copy is what there is.
         _ = try? await repository.sync(roomID: roomID)
-        switch ArtiseNoteDocument.kind(of: path) {
-        case .note:
-            let file = try? await repository.file(roomID: roomID, path: path)
-            stage = file?.content != nil ? .editor : .unavailable
-        case .pdf:
-            stage = .pdf
-        case .photo, .file:
-            if let url = try? await repository.attachment(roomID: roomID, path: path) {
-                previewURL = url
-                stage = .quickLook
-            } else {
+        if let route = ArtiseNoteDocument.route(roomID: roomID, path: path) {
+            if case .note = route, await (try? repository.file(roomID: roomID, path: path))?.content == nil {
                 stage = .unavailable
+            } else {
+                stage = .screen(route)
             }
+            return
+        }
+        guard NoteDocumentKind.of(path) == .image else {
+            stage = .folder
+            return
+        }
+        if let url = try? await repository.attachment(roomID: roomID, path: path) {
+            previewURL = url
+            stage = .quickLook
+        } else {
+            stage = .unavailable
         }
     }
 }
@@ -148,15 +161,27 @@ struct NotePDFSheet: View {
 }
 
 /// A PDF from the notes, page by page, from the phone's copy (downloaded first when it isn't there yet), with a
-/// search field that finds words as they're typed and turns to the page of each match.
+/// search field that finds words as they're typed and turns to the page of each match. An Office file shows the
+/// server's PDF of it the same way; "Open with" always hands over the file itself.
 struct NotePDFScreen: View {
+    enum Source {
+        case file
+        /// A Word, Excel or PowerPoint file, read through the server's conversion.
+        case office
+    }
+    
     let service: ArtiseNotesService
     let roomID: String
     let path: String
+    var source = Source.file
     
     @State private var document: PDFDocument?
     @State private var search: NotePDFSearchModel?
     @State private var failed = false
+    /// An Office file the server has no PDF of: its icon and a hint to use "Open with". Not an error.
+    @State private var noConversion = false
+    /// The file itself, for "Open with".
+    @State private var original: URL?
     @State private var isSearching = false
     @State private var query = ""
     
@@ -184,6 +209,8 @@ struct NotePDFScreen: View {
                             highlights: search?.selections ?? [],
                             current: search?.currentSelection,
                             page: search?.currentPage)
+            } else if noConversion {
+                NoteOfficeHint(kind: NoteDocumentKind.of(path))
             } else if failed {
                 Text(ArtiseNotesL10n.text("screen_notes_attachment_unavailable"))
                     .font(.compound.bodyLG)
@@ -200,12 +227,21 @@ struct NotePDFScreen: View {
         .navigationTitle(NotesFolderEntries.fileName(path))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                Button { isSearching.toggle() } label: {
-                    CompoundIcon(\.search)
+            if let original {
+                ToolbarItem(placement: .primaryAction) {
+                    ShareLink(item: original) {
+                        CompoundIcon(\.shareIos)
+                    }
+                    .accessibilityLabel(ArtiseNotesL10n.text("a11y_notes_open_with"))
                 }
-                .accessibilityLabel(ArtiseNotesL10n.text("a11y_notes_find"))
-                .disabled(document == nil)
+            }
+            if document != nil {
+                ToolbarItem(placement: .primaryAction) {
+                    Button { isSearching.toggle() } label: {
+                        CompoundIcon(\.search)
+                    }
+                    .accessibilityLabel(ArtiseNotesL10n.text("a11y_notes_find"))
+                }
             }
         }
         .onChange(of: query) { _, query in
@@ -216,8 +252,25 @@ struct NotePDFScreen: View {
     
     private func load() async {
         let repository = service.repository
-        guard let url = try? await repository.attachment(roomID: roomID, path: path), let loaded = PDFDocument(url: url) else {
-            failed = true
+        let pdfURL: URL?
+        switch source {
+        case .file:
+            pdfURL = try? await repository.attachment(roomID: roomID, path: path)
+            original = pdfURL
+        case .office:
+            do {
+                pdfURL = try await repository.officePDF(roomID: roomID, path: path)
+            } catch NotesError.network {
+                pdfURL = nil
+            } catch {
+                // Not converted (it failed, or an older server): the hint, and "Open with" for the file.
+                noConversion = true
+                pdfURL = nil
+            }
+            original = try? await repository.attachment(roomID: roomID, path: path)
+        }
+        guard let pdfURL, let loaded = PDFDocument(url: pdfURL) else {
+            failed = !noConversion
             return
         }
         document = loaded
@@ -316,7 +369,7 @@ final class NotePDFSearchModel {
             }
             guard !Task.isCancelled else { return }
             for selection in found {
-                selection.color = UIColor.systemYellow.withAlphaComponent(0.4)
+                selection.color = NoteFindHighlight.match
             }
             selections = found
             matches = []
@@ -359,7 +412,7 @@ final class NotePDFSearchModel {
     /// The current match stands out from the others.
     private func markCurrent() {
         for (index, selection) in selections.enumerated() {
-            selection.color = UIColor.systemYellow.withAlphaComponent(index == cursor.index ? 0.8 : 0.4)
+            selection.color = index == cursor.index ? NoteFindHighlight.current : NoteFindHighlight.match
         }
     }
     

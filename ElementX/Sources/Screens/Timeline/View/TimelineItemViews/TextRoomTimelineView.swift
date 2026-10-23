@@ -42,6 +42,12 @@ struct TextRoomTimelineView: View, TextBasedRoomTimelineViewProtocol {
                         .padding(.bottom, 16)
                 }
                 
+                // Artise: the documents Ari's turn made or changed, as cards to open.
+                if let documents = timelineItem.properties.artiseFields?.documents, !documents.isEmpty, let roomID = context?.viewState.roomID {
+                    ArtiseDocumentCardsView(roomID: roomID, cards: documents)
+                        .padding(.bottom, 16)
+                }
+                
                 if context?.viewState.linkPreviewsEnabled ?? false, !linkMetadata.keys.isEmpty {
                     VStack(spacing: 8) {
                         ForEach(linkMetadata.keys, id: \.absoluteString) { url in

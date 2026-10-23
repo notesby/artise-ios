@@ -21,6 +21,10 @@ enum NotesRoute: Hashable {
     case media(roomID: String)
     /// A PDF, page by page.
     case pdf(roomID: String, path: String)
+    /// A CSV's text.
+    case table(roomID: String, path: String)
+    /// A Word, Excel or PowerPoint file, as the server's PDF of it.
+    case office(roomID: String, path: String)
     /// The chat's notes as a map.
     case map(roomID: String)
     /// Every change to the chat's notes.
@@ -98,6 +102,10 @@ struct NotesDestination: View {
             NotesMediaScreen(service: service, roomID: roomID)
         case .pdf(let roomID, let path):
             NotePDFScreen(service: service, roomID: roomID, path: path)
+        case .table(let roomID, let path):
+            NoteTableScreen(service: service, roomID: roomID, path: path)
+        case .office(let roomID, let path):
+            NotePDFScreen(service: service, roomID: roomID, path: path, source: .office)
         case .map(let roomID):
             NotesMapScreen(service: service, roomID: roomID)
         case .changes(let roomID):
