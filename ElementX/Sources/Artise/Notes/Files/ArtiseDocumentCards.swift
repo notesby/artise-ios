@@ -92,7 +92,7 @@ struct ArtiseDocumentCard: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         } else {
             CompoundIcon(ArtiseNoteDocument.icon(card.kind), size: .custom(40), relativeTo: .compound.headingLGBold)
-                .foregroundStyle(.compound.iconSecondary)
+                .foregroundStyle(.compound.iconTertiary)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
     }
@@ -116,11 +116,11 @@ struct ArtiseDocumentCard: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             if card.isDraft {
                 Text(ArtiseNotesL10n.text("screen_notes_card_draft"))
-                    .font(.compound.bodySMSemibold)
-                    .foregroundStyle(.compound.textSecondary)
+                    .font(.compound.bodyXSSemibold)
+                    .foregroundStyle(.compound.textOnSolidPrimary)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 2)
-                    .background(.compound.bgSubtleSecondary, in: Capsule())
+                    .background(.compound.bgActionPrimaryRest, in: Capsule())
             }
         }
     }

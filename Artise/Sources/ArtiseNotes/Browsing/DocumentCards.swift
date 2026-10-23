@@ -57,29 +57,33 @@ public struct DocumentCard: Hashable, Sendable {
     public let change: Change?
     public let isDraft: Bool
     
+    /// Without a title, the file's name as it is, extension included, as on Android.
     public init(path: String, version: String? = nil, title: String? = nil, change: Change? = nil, isDraft: Bool = false) {
         self.path = path
         self.version = version
         kind = NoteDocumentKind.of(path)
-        self.title = title ?? (kind == .note ? NotesFolderEntries.noteName(path) : NotesFolderEntries.fileName(path))
+        self.title = title ?? NotesFolderEntries.fileName(path)
         self.change = change
         self.isDraft = isDraft
     }
 }
 
 /// Reads `co.artise.documents` from Ari's message (family-wiki's docs/notes-api.md): the documents its turn made or
-/// changed. Ari turns its progress message into the reply with an edit, so the latest edit's `m.new_content` comes
-/// first. Anything odd in the list is left out, never a crash.
+/// changed. Ari turns its progress message into the reply with an edit, so the latest edit comes first (its
+/// `m.new_content`, else its own content); when it lists none, the original's count. Anything odd in the list is
+/// left out, never a crash. The same reading as Android's `DocumentCards`.
 public enum DocumentCards {
     public static let key = "co.artise.documents"
     public static let maxCards = 4
     
     public static func read(originalJSON: String?, latestEditJSON: String?) -> [DocumentCard] {
-        if let edited = content(latestEditJSON).flatMap({ $0["m.new_content"] as? [String: Any] }), let list = edited[key] {
-            return cards(list)
-        }
-        if let list = content(originalJSON)?[key] {
-            return cards(list)
+        for json in [latestEditJSON, originalJSON] {
+            guard let content = content(json) else { continue }
+            let list = (content["m.new_content"] as? [String: Any])?[key] ?? content[key]
+            let found = list.map(cards) ?? []
+            if !found.isEmpty {
+                return found
+            }
         }
         return []
     }
@@ -89,7 +93,8 @@ public enum DocumentCards {
         var seen = Set<String>()
         var result: [DocumentCard] = []
         for case let entry as [String: Any] in entries {
-            guard let path = entry["path"] as? String, !path.isEmpty, seen.insert(path).inserted else { continue }
+            let path = ((entry["path"] as? String) ?? "").trimmingCharacters(in: CharacterSet.whitespacesAndNewlines.union(["/"]))
+            guard !path.isEmpty, seen.insert(path).inserted else { continue }
             let title = (entry["title"] as? String).flatMap { $0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : $0 }
             result.append(DocumentCard(path: path,
                                        version: (entry["version"] as? String).flatMap { $0.isEmpty ? nil : $0 },

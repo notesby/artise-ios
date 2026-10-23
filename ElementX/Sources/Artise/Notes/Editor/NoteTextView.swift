@@ -126,7 +126,7 @@ nonisolated enum NotePreviewStyle {
             let nsRange = NSRange(location: range.lowerBound, length: range.count)
             guard NSMaxRange(nsRange) <= storage.length else { continue }
             let isCurrent = range == current
-            storage.addAttribute(.backgroundColor, value: UIColor.systemYellow.withAlphaComponent(isCurrent ? 0.7 : 0.3), range: nsRange)
+            storage.addAttribute(.backgroundColor, value: isCurrent ? NoteFindHighlight.current : NoteFindHighlight.match, range: nsRange)
         }
         storage.endEditing()
     }

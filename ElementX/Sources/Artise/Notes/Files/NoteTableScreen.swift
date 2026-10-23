@@ -159,14 +159,18 @@ struct NoteTableFind {
     }
 }
 
-/// Marks what a search found in a run of text, as the editor does: every match lightly, the current one strongly.
+/// Marks what a search found in a run of text: every match light yellow, the current one strong amber. The same
+/// colours as Android and as everywhere find shows (reading view, editor, PDF, CSV), readable in both themes.
 enum NoteFindHighlight {
+    static let match = UIColor(red: 1, green: 0xD5 / 255, blue: 0x4F / 255, alpha: 0.4)
+    static let current = UIColor(red: 1, green: 0xB3 / 255, blue: 0, alpha: 0.8)
+    
     static func apply(to text: AttributedString, ranges: [Range<Int>], current: Range<Int>?) -> AttributedString {
         guard !ranges.isEmpty else { return text }
         var result = text
         for range in ranges {
             guard let marked = Range(NSRange(location: range.lowerBound, length: range.count), in: result) else { continue }
-            result[marked].backgroundColor = Color(UIColor.systemYellow.withAlphaComponent(range == current ? 0.7 : 0.3))
+            result[marked].backgroundColor = Color(range == current ? Self.current : Self.match)
         }
         return result
     }

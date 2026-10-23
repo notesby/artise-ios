@@ -44,6 +44,12 @@ struct DocumentCardsTests {
         // An edit without documents leaves the original's.
         let plainEdit = #"{"content":{"m.new_content":{"body":"Listo"}}}"#
         #expect(DocumentCards.read(originalJSON: original, latestEditJSON: plainEdit).map(\.path) == ["viejo.md"])
+        // An edit that lists none leaves the original's too.
+        let emptyEdit = #"{"content":{"m.new_content":{"body":"Listo","co.artise.documents":[]}}}"#
+        #expect(DocumentCards.read(originalJSON: original, latestEditJSON: emptyEdit).map(\.path) == ["viejo.md"])
+        // The field on the edit's own content counts as well.
+        let flatEdit = #"{"content":{"body":"Listo","co.artise.documents":[{"path":"/plano.md "}]}}"#
+        #expect(DocumentCards.read(originalJSON: original, latestEditJSON: flatEdit).map(\.path) == ["plano.md"])
         // A progress message that only gets them in its edit.
         #expect(DocumentCards.read(originalJSON: #"{"content":{"body":"Pensando…"}}"#, latestEditJSON: edit).map(\.path) == ["nuevo.md"])
     }
@@ -60,7 +66,7 @@ struct DocumentCardsTests {
         
         #expect(cards.map(\.path) == ["a.md", "b.pdf", "c.csv", "d.jpg"])
         #expect(cards[0] == DocumentCard(path: "a.md"))
-        #expect(cards[0].title == "a")
+        #expect(cards[0].title == "a.md")
         #expect(DocumentCards.read(originalJSON: event(#"{"path":"a.md"}"#), latestEditJSON: nil).isEmpty)
         #expect(DocumentCards.read(originalJSON: "not json co.artise.documents", latestEditJSON: nil).isEmpty)
         #expect(DocumentCards.read(originalJSON: nil, latestEditJSON: nil).isEmpty)

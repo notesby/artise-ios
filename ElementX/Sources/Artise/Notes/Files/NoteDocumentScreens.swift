@@ -28,12 +28,13 @@ nonisolated enum ArtiseNoteDocument {
         [.image, .pdf, .office].contains(NoteDocumentKind.of(path))
     }
     
-    /// The icon for a kind of file, on cards and where a file has no picture.
+    /// The icon for a kind of file, on cards and where a file has no picture (as on Android).
     static func icon(_ kind: NoteDocumentKind) -> KeyPath<CompoundIcons, Image> {
         switch kind {
-        case .note, .table: \.document
+        case .note: \.document
+        case .table: \.grid
         case .image: \.image
-        case .pdf, .office, .other: \.files
+        case .pdf, .office, .other: \.attachment
         }
     }
 }
@@ -368,7 +369,7 @@ final class NotePDFSearchModel {
             }
             guard !Task.isCancelled else { return }
             for selection in found {
-                selection.color = UIColor.systemYellow.withAlphaComponent(0.4)
+                selection.color = NoteFindHighlight.match
             }
             selections = found
             matches = []
@@ -411,7 +412,7 @@ final class NotePDFSearchModel {
     /// The current match stands out from the others.
     private func markCurrent() {
         for (index, selection) in selections.enumerated() {
-            selection.color = UIColor.systemYellow.withAlphaComponent(index == cursor.index ? 0.8 : 0.4)
+            selection.color = index == cursor.index ? NoteFindHighlight.current : NoteFindHighlight.match
         }
     }
     
