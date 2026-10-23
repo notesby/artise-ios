@@ -161,9 +161,14 @@ struct NoteTableFind {
 
 /// Marks what a search found in a run of text: every match light yellow, the current one strong amber. The same
 /// colours as Android and as everywhere find shows (reading view, editor, PDF, CSV), readable in both themes.
-enum NoteFindHighlight {
-    static let match = UIColor(red: 1, green: 0xD5 / 255, blue: 0x4F / 255, alpha: 0.4)
-    static let current = UIColor(red: 1, green: 0xB3 / 255, blue: 0, alpha: 0.8)
+nonisolated enum NoteFindHighlight {
+    static var match: UIColor {
+        UIColor(red: 1, green: 0xD5 / 255, blue: 0x4F / 255, alpha: 0.4)
+    }
+    
+    static var current: UIColor {
+        UIColor(red: 1, green: 0xB3 / 255, blue: 0, alpha: 0.8)
+    }
     
     static func apply(to text: AttributedString, ranges: [Range<Int>], current: Range<Int>?) -> AttributedString {
         guard !ranges.isEmpty else { return text }
