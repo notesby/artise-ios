@@ -11,21 +11,25 @@ import QuickLook
 import SwiftUI
 
 /// Where a file in the notes opens, by its kind: a note in its reading view, a PDF in the viewer, a CSV as a table,
-/// an Office file as the server's PDF of it. Photos and anything else open in Quick Look (`nil`).
+/// an Office file as the server's PDF of it, a chart or dashboard as the server draws it. Photos and anything else open
+/// in Quick Look (`nil`). The kind is the server's when it said (a dashboard is a `.md`), else the name's.
 nonisolated enum ArtiseNoteDocument {
-    static func route(roomID: String, path: String) -> NotesRoute? {
-        switch NoteDocumentKind.of(path) {
+    static func route(roomID: String, path: String, kind: NoteDocumentKind? = nil) -> NotesRoute? {
+        switch kind ?? NoteDocumentKind.of(path) {
         case .note: .note(roomID: roomID, path: path)
         case .pdf: .pdf(roomID: roomID, path: path)
         case .table: .table(roomID: roomID, path: path)
         case .office: .office(roomID: roomID, path: path)
+        case .chart: .chart(roomID: roomID, path: path)
+        case .dashboard: .dashboard(roomID: roomID, path: path)
         case .image, .other: nil
         }
     }
     
-    /// Files a list shows a small picture of: photos, PDFs and Office files (the server draws their first page).
-    static func hasPicture(_ path: String) -> Bool {
-        [.image, .pdf, .office].contains(NoteDocumentKind.of(path))
+    /// Files a list shows a small picture of: photos, PDFs and Office files (the server draws their first page), and
+    /// charts and dashboards.
+    static func hasPicture(_ path: String, kind: NoteDocumentKind? = nil) -> Bool {
+        [.image, .pdf, .office, .chart, .dashboard].contains(kind ?? NoteDocumentKind.of(path))
     }
     
     /// The icon for a kind of file, on cards and where a file has no picture (as on Android).
@@ -34,6 +38,8 @@ nonisolated enum ArtiseNoteDocument {
         case .note: \.document
         case .table: \.grid
         case .image: \.image
+        case .chart: \.chart
+        case .dashboard: \.polls
         case .pdf, .office, .other: \.attachment
         }
     }
@@ -46,6 +52,8 @@ struct ArtiseNoteDocumentView: View {
     let service: ArtiseNotesService
     let roomID: String
     let path: String
+    /// What the card or message said it is, for a file the phone doesn't list yet.
+    var kind: NoteDocumentKind?
     let onClose: () -> Void
     
     @State private var stage = Stage.loading
@@ -117,8 +125,9 @@ struct ArtiseNoteDocumentView: View {
         let repository = service.repository
         // The latest copy first; offline, the phone's copy is what there is.
         _ = try? await repository.sync(roomID: roomID)
-        if let route = ArtiseNoteDocument.route(roomID: roomID, path: path) {
-            if case .note = route, await (try? repository.file(roomID: roomID, path: path))?.content == nil {
+        let file = try? await repository.file(roomID: roomID, path: path)
+        if let route = ArtiseNoteDocument.route(roomID: roomID, path: path, kind: kind ?? file?.kind) {
+            if case .note = route, file?.content == nil {
                 stage = .unavailable
             } else {
                 stage = .screen(route)

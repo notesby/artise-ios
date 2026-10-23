@@ -25,6 +25,12 @@ enum NotesRoute: Hashable {
     case table(roomID: String, path: String)
     /// A Word, Excel or PowerPoint file, as the server's PDF of it.
     case office(roomID: String, path: String)
+    /// A chart, as the server draws it.
+    case chart(roomID: String, path: String)
+    /// A dashboard: its text and charts as one page the server draws.
+    case dashboard(roomID: String, path: String)
+    /// A dashboard just created: it opens with the editor on its layout.
+    case newDashboard(roomID: String, path: String)
     /// The chat's notes as a map.
     case map(roomID: String)
     /// Every change to the chat's notes.
@@ -106,6 +112,12 @@ struct NotesDestination: View {
             NoteTableScreen(service: service, roomID: roomID, path: path)
         case .office(let roomID, let path):
             NotePDFScreen(service: service, roomID: roomID, path: path, source: .office)
+        case .chart(let roomID, let path):
+            NoteChartScreen(service: service, roomID: roomID, path: path)
+        case .dashboard(let roomID, let path):
+            NoteDashboardScreen(service: service, roomID: roomID, path: path)
+        case .newDashboard(let roomID, let path):
+            NoteDashboardScreen(service: service, roomID: roomID, path: path, startsEditing: true)
         case .map(let roomID):
             NotesMapScreen(service: service, roomID: roomID)
         case .changes(let roomID):

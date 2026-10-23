@@ -81,9 +81,9 @@
 
 /* What's new (change with ArtiseWhatsNew.edition) */
 "screen_artise_whats_new_title" = "Novedades";
-"screen_artise_whats_new_1" = "Cuando Ari crea o cambia un documento para ti, aparece como tarjeta bajo el mensaje, con una vista previa y «Borrador» si lo es. Tócala para leerlo.";
-"screen_artise_whats_new_2" = "Los archivos de Word, Excel y PowerPoint y las tablas (.csv) se abren en la app, y «Abrir con» sigue pasando el archivo a otra app.";
-"screen_artise_whats_new_3" = "Busca palabras en una nota mientras la lees, no solo en el editor: cada resultado se marca y el siguiente está a un toque.";
+"screen_artise_whats_new_1" = "Las gráficas y tableros de Ari aparecen como tarjetas en el chat, dibujados como están hoy. Abre uno para verlo completo o compártelo como imagen o PDF.";
+"screen_artise_whats_new_2" = "Crea tus propias gráficas: escribe los números o haz que se lean de tus registros, y mira cómo cambia la gráfica mientras editas.";
+"screen_artise_whats_new_3" = "Los tableros juntan varias gráficas y texto en una página: ordénalos, elige sus colores y pide a Ari un enlace para compartir.";
 "screen_artise_whats_new_done" = "Entendido";
 
 /* Settings → Notification hours */

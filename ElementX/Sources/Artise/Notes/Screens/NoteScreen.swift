@@ -29,6 +29,8 @@ struct NoteScreen: View {
     @State private var paths: [String] = []
     @State private var index = PageIndex.empty
     @State private var notePaths: Set<String> = []
+    /// Charts and dashboards among them, which open as the server draws them.
+    @State private var kinds: [String: NoteDocumentKind] = [:]
     @State private var sizes: [String: Int64] = [:]
     @State private var uploads: [String: UploadStatus] = [:]
     @State private var hasLoaded = false
@@ -72,7 +74,10 @@ struct NoteScreen: View {
             }
             ToolbarItem(placement: .primaryAction) {
                 Button(L10n.actionEdit) { isEditing = true }
-                    .disabled(hasLoaded && file?.content == nil && !startsEditing)
+                    .disabled((hasLoaded && file?.content == nil && !startsEditing) || file?.isReadOnly == true)
+            }
+            ToolbarItem(placement: .primaryAction) {
+                NoteShareMenu(service: service, roomID: roomID, path: path, title: file?.title ?? NotesFolderEntries.noteName(path), formats: [.pdf])
             }
             ToolbarItem(placement: .primaryAction) {
                 Menu {
@@ -180,6 +185,7 @@ struct NoteScreen: View {
         let files = await (try? repository.files(roomID: roomID)) ?? []
         paths = files.map(\.path)
         notePaths = Set(files.filter(\.isNote).map(\.path))
+        kinds = Dictionary(files.map { ($0.path, $0.kind) }, uniquingKeysWith: { first, _ in first })
         sizes = Dictionary(files.map { ($0.path, $0.size) }, uniquingKeysWith: { first, _ in first })
         uploads = await (try? repository.uploads(roomID: roomID)) ?? [:]
         index = await PageIndex(paths: paths, pages: (try? repository.pages(roomID: roomID)) ?? [])
@@ -215,7 +221,9 @@ struct NoteScreen: View {
     }
     
     private func open(_ resolved: String) {
-        if notePaths.contains(resolved) {
+        if let kind = kinds[resolved], kind.isDrawn {
+            route = ArtiseNoteDocument.route(roomID: roomID, path: resolved, kind: kind)
+        } else if notePaths.contains(resolved) {
             route = .note(roomID: roomID, path: resolved)
         } else {
             openFile(resolved)

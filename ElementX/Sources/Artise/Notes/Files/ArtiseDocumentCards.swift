@@ -16,6 +16,13 @@ struct ArtiseDocumentCardsView: View {
     let roomID: String
     let cards: [DocumentCard]
     
+    /// Ari's picture of a chart (an `m.image` whose `co.artise.note` is a `.chart`) as that chart's card, when the
+    /// workspace has notes; `nil` keeps the picture.
+    static func chartCard(_ fields: ArtiseMessageFields?) -> DocumentCard? {
+        guard ArtiseNotes.shared.isAvailable, let path = fields?.notePath, NoteDocumentKind.of(path) == .chart else { return nil }
+        return DocumentCard(path: path, kind: .chart)
+    }
+    
     var body: some View {
         if let service = ArtiseNotes.shared.service {
             VStack(spacing: 8) {
@@ -39,10 +46,12 @@ struct ArtiseDocumentCard: View {
     @Environment(\.displayScale) private var displayScale
     @State private var image: UIImage?
     @State private var text: String?
+    /// A chart's or dashboard's own title from the notes, when the card didn't bring one.
+    @State private var listedTitle: String?
     
     var body: some View {
         Button {
-            ArtiseNotes.shared.openDocument(roomID: roomID, path: card.path)
+            ArtiseNotes.shared.openDocument(roomID: roomID, path: card.path, kind: card.kind)
         } label: {
             VStack(spacing: 0) {
                 preview
@@ -64,14 +73,19 @@ struct ArtiseDocumentCard: View {
         }
         .buttonStyle(.plain)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(String(format: ArtiseNotesL10n.text("a11y_notes_card_open"), card.title))
+        .accessibilityLabel(String(format: ArtiseNotesL10n.text("a11y_notes_card_open"), title))
         .accessibilityAddTraits(.isButton)
         .task(id: card.version ?? card.path) { await load() }
     }
     
     @ViewBuilder
     private var preview: some View {
-        if let image {
+        if card.kind.isDrawn {
+            // A chart or dashboard as the server draws it now, in this screen's light or dark.
+            NoteDrawingImage(service: service, roomID: roomID, path: card.path, size: 512, fill: true,
+                             icon: ArtiseNoteDocument.icon(card.kind), iconSize: 40)
+                .frame(maxWidth: .infinity, maxHeight: Self.previewHeight, alignment: .top)
+        } else if let image {
             // The start of the page: filled, from the top.
             Image(uiImage: image)
                 .resizable()
@@ -102,7 +116,7 @@ struct ArtiseDocumentCard: View {
             CompoundIcon(ArtiseNoteDocument.icon(card.kind))
                 .foregroundStyle(.compound.iconSecondary)
             VStack(alignment: .leading, spacing: 2) {
-                Text(card.title)
+                Text(title)
                     .font(.compound.bodyMDSemibold)
                     .foregroundStyle(.compound.textPrimary)
                     .lineLimit(1)
@@ -125,9 +139,17 @@ struct ArtiseDocumentCard: View {
         }
     }
     
-    /// The server's preview (512 px, kept per version); a kind it has none for keeps its icon.
+    private var title: String {
+        listedTitle ?? card.title
+    }
+    
+    /// The server's preview (512 px, kept per version); a kind it has none for keeps its icon. A chart or dashboard
+    /// draws itself, and takes its title from the notes when the card has only its file name.
     private func load() async {
-        guard card.kind != .other,
+        if card.kind.isDrawn, card.title == NotesFolderEntries.fileName(card.path) {
+            listedTitle = await (try? service.repository.file(roomID: roomID, path: card.path))?.title
+        }
+        guard card.kind != .other, !card.kind.isDrawn,
               let preview = try? await service.repository.preview(roomID: roomID, path: card.path, size: 512, version: card.version) else { return }
         switch preview {
         case .image(let url):
