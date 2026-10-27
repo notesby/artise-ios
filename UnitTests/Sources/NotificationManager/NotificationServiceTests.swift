@@ -45,7 +45,8 @@ final class NotificationServiceTests {
                                                             deviceDisplayName: UIDevice.current.name,
                                                             profileTag: appSettings.pusherProfileTag,
                                                             lang: Bundle.app.preferredLocalizations.first ?? "en",
-                                                            append: false)
+                                                            // Artise: always appended, so workspaces on the same server keep each other's pusher.
+                                                            append: true)
         #expect(clientProxy.setPusherWithReceivedInvocations == [expectedConfiguration])
     }
     
