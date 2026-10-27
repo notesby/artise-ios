@@ -192,3 +192,29 @@ struct ArtiseWorkspacesSettingsRow: View {
         }
     }
 }
+
+extension View {
+    /// With several workspaces on this phone, whose screen this is: the workspace's name under the title (iOS 26 and up).
+    @ViewBuilder
+    func artiseWorkspaceSubtitle() -> some View {
+        if #available(iOS 26, *) {
+            modifier(ArtiseWorkspaceSubtitle())
+        } else {
+            self
+        }
+    }
+}
+
+@available(iOS 26, *)
+private struct ArtiseWorkspaceSubtitle: ViewModifier {
+    private let switcher = ArtiseWorkspaceSwitcher.shared
+    private let workspaces = ArtiseWorkspaces.shared
+    
+    func body(content: Content) -> some View {
+        if !switcher.isLastWorkspace, let name = workspaces.current?.displayName {
+            content.navigationSubtitle(name)
+        } else {
+            content
+        }
+    }
+}

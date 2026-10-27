@@ -159,6 +159,32 @@ struct NotesFilesTests {
         #expect(try await engine.cachedAttachment(roomID: room, path: "b.pdf") != nil)
     }
     
+    /// With several workspaces, one limit counts all their copies: another workspace's older file goes first.
+    @Test
+    func theCacheLimitCountsEveryWorkspace() async throws {
+        let root = directory.appendingPathComponent("caches")
+        let other = root.appendingPathComponent("other-workspace")
+        try FileManager.default.createDirectory(at: other, withIntermediateDirectories: true)
+        let otherFile = other.appendingPathComponent("old.pdf")
+        try Data(repeating: 1, count: 600).write(to: otherFile)
+        try FileManager.default.setAttributes([.modificationDate: Date.distantPast], ofItemAtPath: otherFile.path)
+        
+        server.put("a.pdf", String(repeating: "a", count: 600), isNote: false)
+        let tokens = CountingTokenProvider()
+        server.setValidTokens(["token-1", "token-2"])
+        let api = NotesAPIClient(transport: server, tokenSource: OpenIDNotesTokenSource { await tokens.next() })
+        let options = NotesFileOptions(cacheDirectory: root.appendingPathComponent("this-workspace"),
+                                       pendingDirectory: directory.appendingPathComponent("pending"),
+                                       cacheLimit: 1000,
+                                       sharedCacheRoot: root)
+        let engine = NotesSyncEngine(api: api, directory: directory.appendingPathComponent("store"), cipher: ReversingCipher(), files: options)
+        try await engine.sync(roomID: room)
+        _ = try await engine.attachment(roomID: room, path: "a.pdf")
+        
+        #expect(!FileManager.default.fileExists(atPath: otherFile.path))
+        #expect(try await engine.cachedAttachment(roomID: room, path: "a.pdf") != nil)
+    }
+    
     /// On Wi-Fi, embedded photos download after a sync; documents and big photos wait to be opened.
     @Test
     func photosPrefetchOnlyWhenAllowed() async throws {

@@ -41,7 +41,9 @@ final class ArtiseNotesService {
         let files = NotesFileOptions(cacheDirectory: Self.cacheDirectory(for: userID),
                                      pendingDirectory: Self.directory(for: userID).appending(path: "pending"),
                                      convertPhoto: { NotesPhotoConverter.toJPEG($0, contentType: $1) },
-                                     canPrefetch: { NotesPrefetchPolicy.shared.canPrefetch })
+                                     canPrefetch: { NotesPrefetchPolicy.shared.canPrefetch },
+                                     // One limit for every workspace on this phone, as on Android.
+                                     sharedCacheRoot: Self.cacheRoot)
         // Each workspace runs its own notes API, at the address its workspace file gives.
         repository = NotesSyncEngine(api: NotesAPIClient(baseURL: notesAPIURL, tokenSource: tokenSource),
                                      directory: Self.directory(for: userID),
@@ -61,8 +63,10 @@ final class ArtiseNotesService {
     }
     
     /// Where an account's downloaded photos and files are kept; iOS may clear it when space runs low.
+    nonisolated static let cacheRoot = URL.cachesDirectory.appending(path: "ArtiseNotes")
+    
     nonisolated static func cacheDirectory(for userID: String) -> URL {
-        URL.cachesDirectory.appending(path: "ArtiseNotes").appending(path: directory(for: userID).lastPathComponent)
+        cacheRoot.appending(path: directory(for: userID).lastPathComponent)
     }
     
     /// Forgets an account's notes on this phone: the files, the downloads, then the key that could read them.
