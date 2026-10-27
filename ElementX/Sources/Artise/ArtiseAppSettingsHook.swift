@@ -8,7 +8,8 @@ import ArtiseCore
 import Foundation
 
 /// Signs in to any Artise workspace (artise.co by default), points every link at Artise instead of Element, and uses
-/// Artise's MapTiler key. "Your workspace" (`ArtiseWorkspaceScreenCoordinator`) replaces Element's server picker.
+/// Artise's MapTiler key. "Your workspace" (`ArtiseWorkspaceScreenCoordinator`) replaces Element's server picker,
+/// and every signed-in workspace stays live (`ArtiseWorkspaceSwitcher`).
 struct ArtiseAppSettingsHook: AppSettingsHookProtocol {
     func configure(_ appSettings: AppSettings) -> AppSettings {
         appSettings.override(accountProviders: [.managed(serverName: ArtiseConfiguration.serverName,
@@ -40,6 +41,9 @@ struct ArtiseAppSettingsHook: AppSettingsHookProtocol {
                                                                           apiKey: Secrets.mapLibreAPIKey,
                                                                           lightStyleID: ArtiseConfiguration.Maps.lightStyleID,
                                                                           darkStyleID: ArtiseConfiguration.Maps.darkStyleID))
+        // Every workspace on this phone stays signed in and notifies; Artise's switcher replaces Element's announcement.
+        appSettings.multiAccountEnabled = true
+        appSettings.hasSeenMultiAccountAnnouncement = true
         return appSettings
     }
 }

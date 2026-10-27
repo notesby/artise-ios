@@ -163,6 +163,14 @@ final class UserSessionManager: UserSessionManagerProtocol {
         liveLocationManager.remove(userID: userID)
     }
     
+    func select(userID: String) {
+        guard let index = accounts.index(forKey: userID), index != 0 else { return }
+        appSettings.userSettings(for: userID).account.lastSelectedDate = .now
+        let userSession = accounts.values[index]
+        accounts.remove(at: index)
+        accounts.updateValue(userSession, forKey: userID, insertingAt: 0)
+    }
+    
     func reset() {
         for userID in accounts.keys {
             notificationManager.remove(userID: userID)

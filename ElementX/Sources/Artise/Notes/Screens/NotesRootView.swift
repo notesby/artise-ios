@@ -52,6 +52,7 @@ struct NotesRootView: View {
     var body: some View {
         ElementNavigationStack {
             start
+                .artiseWorkspaceSubtitle()
                 .toolbar {
                     ToolbarItem(placement: .cancellationAction) {
                         Button(action: onClose) {

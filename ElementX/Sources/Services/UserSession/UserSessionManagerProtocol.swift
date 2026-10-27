@@ -45,6 +45,8 @@ protocol UserSessionManagerProtocol: AnyObject {
     func add(_ userSession: UserSessionProtocol)
     /// Deletes an account's credentials and data, and forgets its session.
     func remove(userID: String)
+    /// Artise: makes a signed in account the active one, as the most recently selected.
+    func select(userID: String)
     /// Deletes every account's credentials and data.
     func reset()
     

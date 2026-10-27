@@ -132,3 +132,7 @@
 "screen_artise_notes_background_footer" = "Keeps notes up to date before you open them. Opening Notes always updates them, and Low Data Mode waits for that.";
 "timeline_reaction_approve" = "Approve";
 "timeline_reaction_decline" = "Decline";
+"screen_artise_workspaces_title" = "Your workspaces";
+"screen_artise_workspaces_add" = "Add a workspace";
+"screen_artise_id_already_open" = "Already open";
+"screen_workspace_error_already_open" = "%@ is already open on this phone. Switch to it from your workspaces.";

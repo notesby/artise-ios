@@ -24,16 +24,21 @@ public struct NotesFileOptions: Sendable {
     public let canPrefetch: @Sendable () -> Bool
     /// How much the downloaded copies may take.
     public let cacheLimit: Int64
+    /// The folder holding every account's `cacheDirectory`, so the limit counts all workspaces on this phone together;
+    /// `nil` counts only this one.
+    public let sharedCacheRoot: URL?
     
     public init(cacheDirectory: URL, pendingDirectory: URL,
                 convertPhoto: @escaping @Sendable (Data, String) -> Data? = { _, _ in nil },
                 canPrefetch: @escaping @Sendable () -> Bool = { false },
-                cacheLimit: Int64 = NotesFileOptions.maxCacheBytes) {
+                cacheLimit: Int64 = NotesFileOptions.maxCacheBytes,
+                sharedCacheRoot: URL? = nil) {
         self.cacheDirectory = cacheDirectory
         self.pendingDirectory = pendingDirectory
         self.convertPhoto = convertPhoto
         self.canPrefetch = canPrefetch
         self.cacheLimit = cacheLimit
+        self.sharedCacheRoot = sharedCacheRoot
     }
     
     init(directory: URL) {
@@ -526,11 +531,16 @@ extension NotesSyncEngine {
         }
     }
     
-    /// Keeps the phone's copies under the cache limit (300 MB), removing the least recently used first.
+    /// Keeps the phone's copies under the cache limit (300 MB, across every workspace with `sharedCacheRoot`),
+    /// removing the least recently used first, whichever workspace they belong to.
     func trimCache() {
         let manager = FileManager.default
         let keys: [URLResourceKey] = [.contentModificationDateKey, .fileSizeKey]
-        guard let urls = try? manager.contentsOfDirectory(at: files.cacheDirectory, includingPropertiesForKeys: keys) else { return }
+        let directories = files.sharedCacheRoot
+            .flatMap { try? manager.contentsOfDirectory(at: $0, includingPropertiesForKeys: [.isDirectoryKey]) }?
+            .filter { (try? $0.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) == true }
+            ?? [files.cacheDirectory]
+        let urls = directories.flatMap { (try? manager.contentsOfDirectory(at: $0, includingPropertiesForKeys: keys)) ?? [] }
         let cached = urls.compactMap { url -> (url: URL, date: Date, size: Int64)? in
             guard let values = try? url.resourceValues(forKeys: Set(keys)) else { return nil }
             return (url, values.contentModificationDate ?? .distantPast, Int64(values.fileSize ?? 0))

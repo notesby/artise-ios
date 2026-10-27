@@ -115,6 +115,11 @@ final class ArtiseStartScreenModel {
     
     func open(_ workspace: ArtiseIDWorkspace) {
         guard !isWorking else { return }
+        // Already signed in on this phone: show its chats instead of signing in again.
+        if let userID = openUserID(workspace) {
+            ArtiseWorkspaceSwitcher.shared.switchTo(userID)
+            return
+        }
         errorMessage = nil
         Task {
             isWorking = true
@@ -137,6 +142,20 @@ final class ArtiseStartScreenModel {
         actions.send(.loginWithQR)
     }
     
+    /// The account already signed in to `workspace` on this phone, if any.
+    func openUserID(_ workspace: ArtiseIDWorkspace) -> String? {
+        ArtiseWorkspaceSwitcher.shared.openUserID(serverName: workspace.serverName)
+    }
+    
+    /// Adding a workspace from the chats: closing goes back to them.
+    var canCancel: Bool {
+        ArtiseWorkspaceSwitcher.shared.isAdding
+    }
+    
+    func cancel() {
+        ArtiseWorkspaceSwitcher.shared.cancelAdding()
+    }
+    
     /// Back to the sign-in buttons, forgetting this Artise ID account's tokens.
     func showProviders() {
         ArtiseIDSession.shared.forget()
@@ -151,7 +170,7 @@ final class ArtiseStartScreenModel {
         switch workspaces.count {
         case 0:
             phase = .noWorkspaces
-        case 1:
+        case 1 where openUserID(workspaces[0]) == nil:
             phase = .workspaces(workspaces)
             await openWorkspace(workspaces[0])
         default:
@@ -195,6 +214,20 @@ struct ArtiseStartScreen: View {
         }
         .introspect(.window, on: .supportedVersions) { window in
             model.window = window
+        }
+        .overlay(alignment: .topLeading) {
+            if model.canCancel {
+                Button(action: model.cancel) {
+                    CompoundIcon(\.close)
+                        .foregroundStyle(.compound.iconPrimary)
+                        .padding(12)
+                        .background(.compound.bgSubtleSecondary, in: Circle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(L10n.actionClose)
+                .padding(.horizontal, 16)
+                .padding(.top, 8)
+            }
         }
     }
     
@@ -286,15 +319,22 @@ struct ArtiseStartScreen: View {
                 .multilineTextAlignment(.center)
             ForEach(workspaces) { workspace in
                 Button { model.open(workspace) } label: {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(workspace.name)
-                            .font(.compound.bodyLGSemibold)
-                            .foregroundStyle(.compound.textPrimary)
-                        Text(workspace.serverName)
-                            .font(.compound.bodySM)
-                            .foregroundStyle(.compound.textSecondary)
+                    HStack(spacing: 12) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(workspace.name)
+                                .font(.compound.bodyLGSemibold)
+                                .foregroundStyle(.compound.textPrimary)
+                            Text(workspace.serverName)
+                                .font(.compound.bodySM)
+                                .foregroundStyle(.compound.textSecondary)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        if model.openUserID(workspace) != nil {
+                            Text(ArtiseWorkspacesL10n.text("screen_artise_id_already_open"))
+                                .font(.compound.bodySMSemibold)
+                                .foregroundStyle(.compound.textSecondary)
+                        }
                     }
-                    .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(16)
                     .background(.compound.bgSubtleSecondary, in: RoundedRectangle(cornerRadius: 12))
                 }
