@@ -116,7 +116,6 @@ struct ArtiseQuickReactionsTests {
                                               pinnedEventIDs: [],
                                               isViewSourceEnabled: true,
                                               areThreadsEnabled: true,
-                                              isMultiSelectEnabled: false,
                                               timelineKind: .live,
                                               emojiProvider: emojiProvider)
             .makeActions()
