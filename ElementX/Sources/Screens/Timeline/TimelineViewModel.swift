@@ -47,6 +47,9 @@ class TimelineViewModel: TimelineViewModelType, TimelineViewModelProtocol {
     private var paginateBackwardsTask: Task<Void, Never>?
     private var paginateForwardsTask: Task<Void, Never>?
     
+    // Artise: Xcode 26.5's optimizer crashes on this init in release builds (CopyPropagation, OSSA lifetime);
+    // Element builds with Xcode 27. Remove once CI has Xcode 27.
+    @_optimize(none)
     init(roomProxy: JoinedRoomProxyProtocol,
          focussedEventID: String? = nil,
          timelineController: TimelineControllerProtocol,
