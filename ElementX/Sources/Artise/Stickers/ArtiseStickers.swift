@@ -177,7 +177,7 @@ final class ArtiseStickerService {
     /// Sends a sticker as an `m.sticker`, encrypted in encrypted chats; a starter sticker is uploaded first if needed.
     func send(_ sticker: Sticker, roomID: String) async throws {
         let url = try await repository.mxcURL(for: sticker)
-        try await room(roomID).sendRaw(eventType: StickerMessage.eventType, content: StickerMessage.content(sticker, mxcURL: url))
+        try await room(roomID).sendRaw(eventType: StickerMessage.eventType, content: StickerMessage.content(sticker, mxcURL: url), requestConfigOverride: nil)
     }
     
     /// Uploads a picture and sends it as a sticker, without keeping it in the person's stickers.
@@ -186,7 +186,7 @@ final class ArtiseStickerService {
         let url = try await account.upload(data: picture.data, mimeType: picture.mimeType)
         let sticker = Sticker(id: "", description: StickerMessage.defaultDescription, source: .uploaded(mxcURL: url),
                               width: picture.width, height: picture.height, mimeType: picture.mimeType, size: picture.data.count)
-        try await room.sendRaw(eventType: StickerMessage.eventType, content: StickerMessage.content(sticker, mxcURL: url))
+        try await room.sendRaw(eventType: StickerMessage.eventType, content: StickerMessage.content(sticker, mxcURL: url), requestConfigOverride: nil)
     }
     
     private func room(_ roomID: String) async throws(ArtiseStickerServiceError) -> any RoomProtocol {

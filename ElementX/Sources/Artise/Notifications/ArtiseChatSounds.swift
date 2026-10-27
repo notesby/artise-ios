@@ -22,7 +22,7 @@ nonisolated enum ArtiseChatSounds {
     static let maxBytes = 10 * 1024 * 1024
     
     private static var soundsDirectory: URL {
-        NotificationToneManager.libraryLocation.deletingLastPathComponent()
+        URL.customTonesDirectory.deletingLastPathComponent() // Library/Sounds, which iOS searches for notification sounds.
     }
     
     static func choose(_ tone: NotificationTone, userID: String, roomID: String) throws {
