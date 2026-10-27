@@ -11,6 +11,5 @@ import Foundation
 nonisolated extension AppHooks {
     func setUp() {
         registerAppSettingsHook(ArtiseAppSettingsHook())
-        registerUserSessionHook(ArtiseUserSessionHook())
     }
 }

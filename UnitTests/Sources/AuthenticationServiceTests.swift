@@ -8,6 +8,7 @@
 
 @testable import ElementX
 import Foundation
+import MatrixRustSDK
 import MatrixRustSDKMocks
 import Testing
 
@@ -15,7 +16,7 @@ import Testing
 struct AuthenticationServiceTests {
     var client: ClientSDKMock!
     var encryption: EncryptionSDKMock!
-    var userSessionStore: UserSessionStoreMock!
+    var userSessionManager: UserSessionManagerMock!
     var encryptionKeyProvider: MockEncryptionKeyProvider!
     var service: AuthenticationService!
     
@@ -36,9 +37,8 @@ struct AuthenticationServiceTests {
         switch await service.login(username: "alice", password: "12345678", initialDeviceName: nil, deviceID: nil) {
         case .success:
             #expect(client.loginUsernamePasswordInitialDeviceNameDeviceIdCallsCount == 1)
-            #expect(userSessionStore.userSessionForSessionDirectoriesPassphraseCallsCount == 1)
-            #expect(userSessionStore.userSessionForSessionDirectoriesPassphraseReceivedArguments?.passphrase ==
-                encryptionKeyProvider.generateKey().base64EncodedString())
+            #expect(userSessionManager.userSessionForSessionDirectoriesPassphraseCallsCount == 1)
+            #expect(userSessionManager.userSessionForSessionDirectoriesPassphraseReceivedArguments?.passphrase == encryptionKeyProvider.generateKey())
         case .failure(let error):
             Issue.record("Unexpected failure: \(error)")
         }
@@ -76,6 +76,18 @@ struct AuthenticationServiceTests {
         #expect(service.flow == .login)
         #expect(service.homeserver.value == .init(accountProvider: .managed(serverName: "matrix.org", baseURL: "https://matrix-client.matrix.org"),
                                                   loginMode: .unknown))
+    }
+    
+    @Test(arguments: [("matrix.org", AuthenticationFlow.login, OAuthPrompt.consent),
+                      ("matrix.org", .register, .create),
+                      ("company.com", .register, .consent)])
+    mutating func oAuthPrompt(serverName: String, flow: AuthenticationFlow, expectedPrompt: OAuthPrompt) async throws {
+        try await setup(serverNameOrBaseURL: serverName)
+        try await service.configure(for: serverName, flow: flow).get()
+        
+        _ = try await service.urlForOAuthLogin(loginHint: nil).get()
+        
+        #expect(client.urlForOauthOauthConfigurationPromptLoginHintDeviceIdAdditionalScopesReceivedArguments?.prompt == expectedPrompt)
     }
     
     @Test
@@ -139,14 +151,14 @@ struct AuthenticationServiceTests {
         encryption = EncryptionSDKMock()
         client.encryptionReturnValue = encryption
         
-        userSessionStore = UserSessionStoreMock(.init())
+        userSessionManager = UserSessionManagerMock(.init())
         encryptionKeyProvider = MockEncryptionKeyProvider()
         
         let classicAppManager = ClassicAppManagerMock(.init(accounts: classicAppAccounts,
                                                             availableSecrets: availableSecrets,
                                                             secretsBundle: SecretsBundleWithUserIdSDKMock()))
         
-        service = AuthenticationService(userSessionStore: userSessionStore,
+        service = AuthenticationService(userSessionManager: userSessionManager,
                                         encryptionKeyProvider: encryptionKeyProvider,
                                         classicAppManager: classicAppManager,
                                         clientFactory: clientFactory,

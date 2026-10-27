@@ -41,7 +41,7 @@ struct ArtiseQuickReactionsTests {
     /// The emojis this person uses most come before the usual four, most used first, and after Ari's.
     @Test
     func mostUsedEmojisComeBeforeTheUsualOnes() throws {
-        let emojiProvider = EmojiProvider(appSettings: .volatile())
+        let emojiProvider = EmojiProvider(userSettings: .mock())
         emojiProvider.markEmojiAsFrequentlyUsed("🔥")
         emojiProvider.markEmojiAsFrequentlyUsed("🙏")
         emojiProvider.markEmojiAsFrequentlyUsed("🙏")
@@ -97,7 +97,7 @@ struct ArtiseQuickReactionsTests {
         return factory.buildTimelineItem(for: EventTimelineItemProxy(item: event, uniqueID: .init("0")), isDM: false) as? TextRoomTimelineItem
     }
     
-    private func makeActions(fields: ArtiseMessageFields?, emojiProvider: EmojiProviderProtocol = EmojiProvider(appSettings: .volatile())) -> TimelineItemMenuActions? {
+    private func makeActions(fields: ArtiseMessageFields?, emojiProvider: EmojiProviderProtocol = EmojiProvider(userSettings: .mock())) -> TimelineItemMenuActions? {
         var properties = RoomTimelineItemProperties()
         properties.artiseFields = fields
         let item = TextRoomTimelineItem(id: .randomEvent,
@@ -116,7 +116,6 @@ struct ArtiseQuickReactionsTests {
                                               pinnedEventIDs: [],
                                               isViewSourceEnabled: true,
                                               areThreadsEnabled: true,
-                                              isMultiSelectEnabled: false,
                                               timelineKind: .live,
                                               emojiProvider: emojiProvider)
             .makeActions()
