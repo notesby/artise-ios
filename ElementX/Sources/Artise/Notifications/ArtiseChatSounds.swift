@@ -14,8 +14,8 @@ import UniformTypeIdentifiers
 /// Library/Sounds, where the notification extension finds it by name.
 nonisolated enum ArtiseChatSounds {
     static let store = ChatSoundStore(suiteName: AppSettings.suiteName)
-    /// Only its library is used (picked files, conversion); the app-wide tone stays Element's setting.
-    static let toneManager = NotificationToneManager(appSettings: .volatile())
+    /// Only its library is used (picked files, conversion), so its settings are throwaway: each account's tone stays Element's.
+    static let toneManager = NotificationToneManager(userSettings: AppSettings.volatile().userSettings(for: "@artise:chat-sounds"))
     /// The longest sound iOS plays for a notification; longer files are cut.
     static let maxSeconds = NotificationToneManager.artiseMaxSeconds
     /// Bigger files are refused.
