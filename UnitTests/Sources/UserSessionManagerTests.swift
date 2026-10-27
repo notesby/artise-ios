@@ -314,6 +314,38 @@ struct UserSessionManagerTests {
         try await deferredFailure.fulfill()
     }
     
+    /// Artise: picking another workspace in the switcher makes its account the active one and remembers that across launches.
+    @Test
+    func selectingAnAccountMakesItTheActiveOne() {
+        let manager = makeManager(userIDs: ["@alice:matrix.org", "@bob:matrix.org"])
+        let alice = makeUserSession(userID: "@alice:matrix.org")
+        let bob = makeUserSession(userID: "@bob:matrix.org")
+        manager.add(alice)
+        manager.add(bob)
+        
+        manager.select(userID: "@bob:matrix.org")
+        #expect(manager.userIDs == ["@bob:matrix.org", "@alice:matrix.org"])
+        #expect((manager.activeSession as? UserSessionMock) === bob)
+        
+        manager.select(userID: "@alice:matrix.org")
+        #expect(manager.userIDs == ["@alice:matrix.org", "@bob:matrix.org"])
+        #expect((manager.activeSession as? UserSessionMock) === alice)
+        #expect(manager.sessionsPublisher.value.map(\.clientProxy.userID) == ["@alice:matrix.org", "@bob:matrix.org"])
+        
+        let relaunched = makeManager(userIDs: ["@bob:matrix.org", "@alice:matrix.org"])
+        #expect(relaunched.userIDs == ["@alice:matrix.org", "@bob:matrix.org"])
+    }
+    
+    /// Artise: selecting an unknown account, or the active one, changes nothing.
+    @Test
+    func selectingTheActiveOrAnUnknownAccountChangesNothing() {
+        let manager = makeManager(userIDs: ["@alice:matrix.org", "@bob:matrix.org"])
+        manager.select(userID: "@alice:matrix.org")
+        manager.select(userID: "@carol:matrix.org")
+        
+        #expect(manager.userIDs == ["@alice:matrix.org", "@bob:matrix.org"])
+    }
+    
     // MARK: - Helpers
     
     private func makeManager(userIDs: [String]) -> UserSessionManager {

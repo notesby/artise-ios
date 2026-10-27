@@ -15309,6 +15309,37 @@ nonisolated class UserSessionManagerMock: UserSessionManagerProtocol, @unchecked
         removeUserIDReceivedInvocationsLock.withLock { removeUserIDUnderlyingReceivedInvocations.append(userID) }
         removeUserIDClosure?(userID)
     }
+    //MARK: - select
+
+    private let selectUserIDCallsCountLock = NSLock()
+    private nonisolated(unsafe) var selectUserIDUnderlyingCallsCount = 0
+    var selectUserIDCallsCount: Int {
+        get { selectUserIDCallsCountLock.withLock { selectUserIDUnderlyingCallsCount } }
+        set { selectUserIDCallsCountLock.withLock { selectUserIDUnderlyingCallsCount = newValue } }
+    }
+    var selectUserIDCalled: Bool {
+        return selectUserIDCallsCount > 0
+    }
+    private let selectUserIDReceivedUserIDLock = NSLock()
+    private nonisolated(unsafe) var selectUserIDUnderlyingReceivedUserID: String?
+    var selectUserIDReceivedUserID: String? {
+        get { selectUserIDReceivedUserIDLock.withLock { selectUserIDUnderlyingReceivedUserID } }
+        set { selectUserIDReceivedUserIDLock.withLock { selectUserIDUnderlyingReceivedUserID = newValue } }
+    }
+    private let selectUserIDReceivedInvocationsLock = NSLock()
+    private nonisolated(unsafe) var selectUserIDUnderlyingReceivedInvocations: [String] = []
+    var selectUserIDReceivedInvocations: [String] {
+        get { selectUserIDReceivedInvocationsLock.withLock { selectUserIDUnderlyingReceivedInvocations } }
+        set { selectUserIDReceivedInvocationsLock.withLock { selectUserIDUnderlyingReceivedInvocations = newValue } }
+    }
+    nonisolated(unsafe) var selectUserIDClosure: ((String) -> Void)?
+
+    func select(userID: String) {
+        selectUserIDCallsCountLock.withLock { selectUserIDUnderlyingCallsCount += 1 }
+        selectUserIDReceivedUserID = userID
+        selectUserIDReceivedInvocationsLock.withLock { selectUserIDUnderlyingReceivedInvocations.append(userID) }
+        selectUserIDClosure?(userID)
+    }
     //MARK: - reset
 
     private let resetCallsCountLock = NSLock()

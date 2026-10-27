@@ -121,18 +121,27 @@ final class ArtiseWorkspaces {
         }
     }
     
-    /// The account signed out: forget its workspace's look on this phone.
-    func signOut(userID: String) {
+    /// Any signed-in account's workspace, as remembered on this phone (the workspace switcher's names and logos).
+    func workspace(userID: String) -> ResolvedWorkspace? {
+        WorkspaceHosts.serverName(userID: userID).flatMap(store.workspace(serverName:))
+    }
+    
+    /// The account signed out: forget its workspace's look on this phone, and Artise ID with the last workspace.
+    func signOut(userID: String, isLastAccount: Bool) {
         if let serverName = WorkspaceHosts.serverName(userID: userID) {
             store.remove(serverName: serverName)
         }
         ArtiseNotificationHoursScreen.store.remove(userID: userID)
         ArtiseChatSounds.removeAll(userID: userID)
-        current = nil
-        userSession = nil
-        foregroundObserver = nil
-        // Artise signs in to one workspace at a time, so this was the last one.
-        ArtiseIDSession.shared.forget()
+        if self.userID == userID {
+            current = nil
+            userSession = nil
+            foregroundObserver = nil
+        }
+        // The other workspaces still use Artise ID to add one again from its list.
+        if isLastAccount {
+            ArtiseIDSession.shared.forget()
+        }
     }
     
     /// The signed-in account, for settings kept per workspace (quiet hours).

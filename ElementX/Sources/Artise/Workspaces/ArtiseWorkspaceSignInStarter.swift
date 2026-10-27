@@ -21,6 +21,11 @@ struct ArtiseWorkspaceSignInStarter {
     let appSettings: AppSettings
     
     func start(_ workspace: ResolvedWorkspace, address: WorkspaceAddress, window: UIWindow?) async -> Outcome {
+        // Already signed in on this phone (adding a workspace): a second session on the same account would clash.
+        guard ArtiseWorkspaceSwitcher.shared.openUserID(serverName: workspace.serverName) == nil else {
+            return .failed(message: String(format: ArtiseWorkspacesL10n.text("screen_workspace_error_already_open"),
+                                           workspace.displayName ?? workspace.serverName))
+        }
         guard await configure(for: workspace) else {
             MXLog.error("Sign-in isn't available for workspace server \(workspace.serverName)")
             return .failed(message: String(format: ArtiseWorkspacesL10n.text("screen_workspace_error_sign_in_unavailable"),

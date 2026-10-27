@@ -70,14 +70,16 @@ struct HomeScreen: View {
                     .buttonStyle(.borderless)
                 
                 if #available(iOS 26, *) {
-                    // Artise: the workspace's logo before its name.
-                    if context.viewState.selectedSpaceFilter == nil {
-                        ArtiseHomeWorkspaceLogo()
+                    // Artise: the workspace's logo before its name; a tap opens the workspace switcher.
+                    ArtiseWorkspaceTitleButton(isEnabled: context.viewState.selectedSpaceFilter == nil) {
+                        if context.viewState.selectedSpaceFilter == nil {
+                            ArtiseHomeWorkspaceLogo()
+                        }
+                        Text(title)
+                            .font(isInSidebar ? .compound.bodyLGSemibold : .compound.headingLGBold)
+                            .foregroundStyle(.compound.textPrimary)
+                            .minimumScaleFactor(isInSidebar ? 1 : 0.6) // Allow scaling down to bodyLG if needed.
                     }
-                    Text(title)
-                        .font(isInSidebar ? .compound.bodyLGSemibold : .compound.headingLGBold)
-                        .foregroundStyle(.compound.textPrimary)
-                        .minimumScaleFactor(isInSidebar ? 1 : 0.6) // Allow scaling down to bodyLG if needed.
                 }
             }
         }

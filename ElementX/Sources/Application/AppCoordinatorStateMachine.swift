@@ -24,6 +24,9 @@ class AppCoordinatorStateMachine {
         /// User session started
         case signedIn
         
+        /// Artise: signing in to another workspace, with the signed in ones kept.
+        case addingAccount
+        
         /// Processing a sign out request
         case signingOut(isSoft: Bool, disableAppLock: Bool)
     }
@@ -48,6 +51,13 @@ class AppCoordinatorStateMachine {
         case showSoftLogout
         /// Signing out completed.
         case completedSigningOut
+        /// Artise: signing out completed and other accounts are still signed in.
+        case completedSigningOutWithOtherAccounts
+        
+        /// Artise: sign in to another workspace.
+        case addAccount
+        /// Artise: back to the chats without adding a workspace.
+        case cancelAddingAccount
         
         /// Request cache clearing.
         case clearCache
@@ -75,6 +85,12 @@ class AppCoordinatorStateMachine {
         stateMachine.addRoutes(event: .completedSigningOut, transitions: [.signingOut(isSoft: false, disableAppLock: false) => .signedOut,
                                                                           .signingOut(isSoft: false, disableAppLock: true) => .signedOut])
         stateMachine.addRoutes(event: .showSoftLogout, transitions: [.signingOut(isSoft: true, disableAppLock: false) => .softLogout])
+        stateMachine.addRoutes(event: .completedSigningOutWithOtherAccounts, transitions: [.signingOut(isSoft: false, disableAppLock: false) => .restoringSession,
+                                                                                           .signingOut(isSoft: false, disableAppLock: true) => .restoringSession])
+        
+        stateMachine.addRoutes(event: .addAccount, transitions: [.signedIn => .addingAccount])
+        stateMachine.addRoutes(event: .cancelAddingAccount, transitions: [.addingAccount => .signedIn])
+        stateMachine.addRoutes(event: .createdUserSession, transitions: [.addingAccount => .signedIn])
         
         stateMachine.addRoutes(event: .clearCache, transitions: [.signedIn => .initial])
         

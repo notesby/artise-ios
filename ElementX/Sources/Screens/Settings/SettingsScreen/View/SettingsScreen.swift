@@ -18,7 +18,8 @@ struct SettingsScreen: View {
             userSection
             
             if context.viewState.showAddAccountButton {
-                addAccountSection
+                // Artise: the workspaces on this phone and adding one, instead of Element's "Add account".
+                ArtiseWorkspacesSettingsRow()
             }
             
             accountSettingsSection

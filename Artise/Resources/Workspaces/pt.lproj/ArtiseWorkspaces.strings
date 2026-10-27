@@ -132,3 +132,7 @@
 "screen_artise_notes_background_footer" = "Mantém as notas em dia antes de você abri-las. Ao abrir Notas, elas sempre são atualizadas, e o modo de pouco uso de dados espera por isso.";
 "timeline_reaction_approve" = "Aprovar";
 "timeline_reaction_decline" = "Recusar";
+"screen_artise_workspaces_title" = "Seus espaços de trabalho";
+"screen_artise_workspaces_add" = "Adicionar um espaço de trabalho";
+"screen_artise_id_already_open" = "Já aberto";
+"screen_workspace_error_already_open" = "%@ já está aberto neste celular. Mude para ele nos seus espaços de trabalho.";

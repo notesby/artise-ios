@@ -169,6 +169,7 @@ class AppCoordinator: AppCoordinatorProtocol, AuthenticationFlowCoordinatorDeleg
         observeApplicationState()
         observeUserSessionChanges()
         observeAppLockChanges()
+        setUpArtiseWorkspaceSwitcher()
         
         registerBackgroundAppRefresh()
         registerSearchBackfill()
@@ -436,10 +437,13 @@ class AppCoordinator: AppCoordinatorProtocol, AuthenticationFlowCoordinatorDeleg
         }
         
         if let userSession {
-            guard receiverID == userSession.clientProxy.userID else {
-                // TODO: Switch to the receiver's account and open the room (element-hq/element-meta#3328).
-                MXLog.info("Ignoring a notification tap for \(receiverID), it isn't the active account.")
-                return
+            if receiverID != userSession.clientProxy.userID {
+                // Artise: another workspace's notification opens that workspace, then its chat below.
+                guard userSessionManager.session(for: receiverID) != nil else {
+                    MXLog.info("Ignoring a notification tap for \(receiverID), its account isn't live yet.")
+                    return
+                }
+                showAccount(receiverID)
             }
         } else {
             storedAppRouteReceiverID = receiverID
@@ -731,6 +735,23 @@ class AppCoordinator: AppCoordinatorProtocol, AuthenticationFlowCoordinatorDeleg
                 presentSplashScreen(isSoftLogout: true, disableAppLock: disableAppLock)
             case (.signedIn, .clearCache, .initial):
                 clearCache()
+                
+            // Artise: more than one workspace on this phone (ArtiseWorkspaceSwitcher).
+            case (.signingOut(_, let disableAppLock), .completedSigningOutWithOtherAccounts, .restoringSession):
+                navigationRootCoordinator.setRootCoordinator(SplashScreenCoordinator())
+                restoreUserSessions()
+                if disableAppLock {
+                    appLockFlowCoordinator.appLockService.disable()
+                }
+            case (.signedIn, .addAccount, .addingAccount):
+                startAddingAccount()
+            case (.addingAccount, .cancelAddingAccount, .signedIn):
+                authenticationFlowCoordinator = nil
+                ArtiseWorkspaceSwitcher.shared.setAdding(false)
+                setupUserSession(isNewLogin: false)
+            case (.addingAccount, .createdUserSession, .signedIn):
+                ArtiseWorkspaceSwitcher.shared.setAdding(false)
+                setupUserSession(isNewLogin: true)
             default:
                 fatalError("Unknown transition: \(context)")
             }
@@ -821,10 +842,11 @@ class AppCoordinator: AppCoordinatorProtocol, AuthenticationFlowCoordinatorDeleg
         }
         
         if let storedAppRouteReceiverID, storedAppRouteReceiverID != userSession.clientProxy.userID {
-            // TODO: Switch to the receiver's account and open the room (element-hq/element-meta#3328).
-            MXLog.info("Dropping a notification tap for \(storedAppRouteReceiverID), it isn't the active account.")
-            storedAppRoute = nil
-            storedRoomsToAwait = nil
+            // Artise: the tap was for another workspace: it opens once that account is live.
+            let route = storedAppRoute.take()
+            let roomsToAwait = storedRoomsToAwait
+            await showAccountOnceLive(storedAppRouteReceiverID, route: route, roomsToAwait: roomsToAwait)
+            return
         }
         
         if let storedRoomsToAwait {
@@ -981,6 +1003,14 @@ class AppCoordinator: AppCoordinatorProtocol, AuthenticationFlowCoordinatorDeleg
             }
             
             userSession.userSettings.account.reset()
+            
+            // Artise: other workspaces stay signed in, so the next one opens instead of the sign-in screen.
+            if !userSessionManager.userIDs.isEmpty {
+                stateMachine.processEvent(.completedSigningOutWithOtherAccounts)
+                hideLoadingIndicator()
+                return
+            }
+            
             appHooks.remoteSettingsHook.reset(appSettings)
             
             // Reset analytics
@@ -991,6 +1021,83 @@ class AppCoordinator: AppCoordinatorProtocol, AuthenticationFlowCoordinatorDeleg
             
             hideLoadingIndicator()
         }
+    }
+    
+    // MARK: - Artise: workspaces
+    
+    private func setUpArtiseWorkspaceSwitcher() {
+        ArtiseWorkspaceSwitcher.shared.setUp { [weak self] userID in
+            self?.showAccount(userID)
+        } add: { [weak self] in
+            guard let self, stateMachine.state == .signedIn else { return }
+            stateMachine.processEvent(.addAccount)
+        } cancelAdding: { [weak self] in
+            guard let self, stateMachine.state == .addingAccount else { return }
+            stateMachine.processEvent(.cancelAddingAccount)
+        }
+        
+        userSessionManager.sessionsPublisher
+            .sink { [weak self] _ in
+                guard let self else { return }
+                ArtiseWorkspaceSwitcher.shared.update(userIDs: userSessionManager.userIDs,
+                                                      currentUserID: userSession?.clientProxy.userID)
+            }
+            .store(in: &cancellables)
+    }
+    
+    /// Keeps the chats on screen and shows the Artise ID list (or "Your workspace") to sign in to another workspace.
+    private func startAddingAccount() {
+        windowManager.closeAllSecondaryWindows()
+        userSessionFlowCoordinator?.stop()
+        tearDownUserSession()
+        ArtiseWorkspaceSwitcher.shared.setAdding(true)
+        startAuthentication()
+    }
+    
+    /// Shows another signed in account's chats, then `route`. Waits for the account's session when it isn't live yet.
+    private func showAccount(_ userID: String, route: AppRoute? = nil, roomsToAwait: Set<String>? = nil) {
+        guard userSessionManager.session(for: userID) != nil else {
+            Task { await showAccountOnceLive(userID, route: route, roomsToAwait: roomsToAwait) }
+            return
+        }
+        
+        switch stateMachine.state {
+        case .addingAccount:
+            // Picked a workspace that's already open while adding one.
+            userSessionManager.select(userID: userID)
+            configureActiveSession()
+            stateMachine.processEvent(.cancelAddingAccount)
+        case .signedIn where userID == userSession?.clientProxy.userID:
+            if let route {
+                handleAppRoute(route, windowType: nil)
+            }
+        case .signedIn:
+            MXLog.info("Showing the account \(userID)")
+            windowManager.closeAllSecondaryWindows()
+            userSessionFlowCoordinator?.stop()
+            tearDownUserSession()
+            userSessionManager.select(userID: userID)
+            configureActiveSession()
+            storedAppRoute = route
+            storedRoomsToAwait = roomsToAwait
+            setupUserSession(isNewLogin: false)
+        default:
+            MXLog.info("Not showing the account \(userID) in the state \(stateMachine.state)")
+        }
+    }
+    
+    /// Accounts are restored one after the other at launch, so a tap can come before its account is live.
+    private func showAccountOnceLive(_ userID: String, route: AppRoute?, roomsToAwait: Set<String>?) async {
+        var attempts = 0
+        while userSessionManager.session(for: userID) == nil, attempts < 60 {
+            attempts += 1
+            try? await Task.sleep(for: .milliseconds(500))
+        }
+        guard userSessionManager.session(for: userID) != nil else {
+            MXLog.error("The account \(userID) didn't become live, staying on the active account.")
+            return
+        }
+        showAccount(userID, route: route, roomsToAwait: roomsToAwait)
     }
     
     private func tearDownUserSession() {

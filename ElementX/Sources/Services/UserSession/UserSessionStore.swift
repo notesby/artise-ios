@@ -103,9 +103,10 @@ class UserSessionStore: UserSessionStoreProtocol {
     func logout(userSession: UserSessionProtocol) {
         let userID = userSession.clientProxy.userID
         // Artise: the account's notes and its workspace's look on this phone go with it.
+        let restorationTokens = keychainController.restorationTokens()
         ArtiseNotes.shared.signOut(userID: userID)
-        ArtiseWorkspaces.shared.signOut(userID: userID)
-        let credentials = keychainController.restorationTokens().first { $0.userID == userID }
+        ArtiseWorkspaces.shared.signOut(userID: userID, isLastAccount: restorationTokens.allSatisfy { $0.userID == userID })
+        let credentials = restorationTokens.first { $0.userID == userID }
         keychainController.removeRestorationTokenForUsername(userID)
         
         if let credentials {
