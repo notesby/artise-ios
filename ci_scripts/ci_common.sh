@@ -31,12 +31,9 @@ setup_github_actions_translations_environment() {
 
 xcode_select_for_github_actions() {
     # We need to select it globally for our custom tools to use the same Xcode version.
-    # Artise: GitHub's macos-26 image names its Xcode 27 builds differently from Element's xcode-27 runners.
-    ls -d /Applications/Xcode*.app
-    local xcode
-    xcode=$(ls -d /Applications/Xcode_27*.app 2>/dev/null | sort -V | tail -n 1)
-    sudo xcode-select -s "${xcode:-/Applications/Xcode_27.app}"
-    xcodebuild -version
+    # Artise: Element builds with Xcode 27 on its own xcode-27 runners; GitHub's macos-26 image has no Xcode 27,
+    # so we stay on the Xcode and simulator (CI.defaultOSVersion) our builds used before.
+    sudo xcode-select -s /Applications/Xcode_26.5.0.app
 }
 
 generate_what_to_test_notes() {

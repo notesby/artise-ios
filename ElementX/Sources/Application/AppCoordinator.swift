@@ -1028,6 +1028,8 @@ class AppCoordinator: AppCoordinatorProtocol, AuthenticationFlowCoordinatorDeleg
         elementCallService.setUserSession(userSession)
         Task {
             await resumeClientServices()
+            // Artise: the workspace, notes and stickers follow the account on screen.
+            await ArtiseActiveSession.didChange(to: userSession)
         }
     }
     

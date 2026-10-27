@@ -194,9 +194,10 @@ final class ArtiseNotes {
     }
 }
 
-/// Starts and stops the workspace, notes, stickers and link previews with the account's session.
-nonisolated struct ArtiseUserSessionHook: UserSessionHookProtocol {
-    func configure(with userSession: UserSessionProtocol?) async {
+/// Moves the workspace, notes, stickers and link previews to the account on screen. Called by `AppCoordinator`
+/// whenever the active account changes, as every Artise service follows the workspace the person is looking at.
+enum ArtiseActiveSession {
+    static func didChange(to userSession: UserSessionProtocol?) async {
         await ArtiseWorkspaces.shared.configure(with: userSession)
         await ArtiseRecoveryKeys.shared.configure(with: userSession)
         await ArtiseNotes.shared.configure(with: userSession)

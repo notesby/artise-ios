@@ -20,7 +20,8 @@ struct CI: ParsableCommand {
                                                         ReleaseToGitHub.self
                                                     ])
     
-    static let defaultOSVersion = "27.0"
+    // Artise: 26.5, the simulator GitHub's macos-26 image has with Xcode 26.5 (see ci_common.sh).
+    static let defaultOSVersion = "26.5"
     static let testOutputDirectory = "test_output"
     
     /// Reads the `MARKETING_VERSION` from `project.yml`.
