@@ -16,7 +16,6 @@ import Version
 
 nonisolated struct NotificationContentBuilder {
     let messageEventStringBuilder: RoomMessageEventStringBuilder
-    let notificationSoundName: UNNotificationSoundName
     let userSession: NSEUserSessionProtocol
     
     /// Process the given notification item proxy
@@ -34,6 +33,7 @@ nonisolated struct NotificationContentBuilder {
         switch notificationItem.event {
         case .timeline(let event):
             notificationContent.eventID = event.eventId()
+            notificationContent.eventDate = Date(timeIntervalSince1970: TimeInterval(event.timestamp()) / 1000)
         case .invite, .none:
             notificationContent.eventID = nil
         }
@@ -50,7 +50,7 @@ nonisolated struct NotificationContentBuilder {
         notificationContent.threadIdentifier = threadIdentifier.replacingOccurrences(of: "@", with: "")
         
         MXLog.info("isNoisy: \(notificationItem.isNoisy)")
-        notificationContent.sound = notificationItem.isNoisy ? .init(named: notificationSoundName) : nil
+        notificationContent.sound = notificationItem.isNoisy ? userSession.userSettings.account.notificationSound : nil
         // Artise: a chat's own sound, chosen on this phone (ChatSoundStore). Ari's reminders keep the app's sound.
         let artiseLevel = ArtiseAutomationLevel(rawEvent: (notificationItem as? NotificationItemProxy)?.notificationItem.rawEvent)
         if notificationItem.isNoisy, artiseLevel?.isReminder != true {
@@ -64,7 +64,7 @@ nonisolated struct NotificationContentBuilder {
             }
         }
         // Artise: Ari's important and critical posts are Time Sensitive; critical ones always make a sound.
-        notificationContent.applyArtiseAutomationLevel(artiseLevel, sound: .init(named: notificationSoundName))
+        notificationContent.applyArtiseAutomationLevel(artiseLevel, sound: userSession.userSettings.account.notificationSound)
         // Artise: outside the workspace's notification hours, no sound and no screen wake; reminders and allowed mentions still ring.
         notificationContent.applyArtiseNotificationHours(NotificationHoursStore(suiteName: AppSettings.suiteName).load(userID: notificationItem.receiverID),
                                                          isMention: notificationItem.hasMention, isReminder: artiseLevel?.isReminder == true)
