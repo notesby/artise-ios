@@ -21,7 +21,6 @@
 "screen_workspace_invite_error_expired" = "Este enlace de invitación ya no funciona. Pide uno nuevo.";
 "screen_workspace_invite_error_unreachable" = "No se puede abrir la invitación ahora. Revisa tu conexión e inténtalo de nuevo.";
 "screen_workspace_invite_already_member" = "Ya estás en %1$@.";
-"screen_workspace_invite_sign_out_first" = "Iniciaste sesión en %1$@. Para unirte a %2$@, primero cierra sesión y luego abre de nuevo el enlace de invitación.";
 
 "screen_artise_id_title" = "Artise";
 "screen_artise_id_subtitle" = "Inicia sesión una vez y elige tu espacio de trabajo.";

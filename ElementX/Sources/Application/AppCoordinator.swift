@@ -291,9 +291,18 @@ class AppCoordinator: AppCoordinatorProtocol, AuthenticationFlowCoordinatorDeleg
         if isExternalURL, ArtiseStickers.shared.handleURL(url) {
             return true
         }
-        // Artise: invite links (join.artise.co) open their join page, then sign-in to that workspace.
-        if ArtiseWorkspaces.shared.handleURL(url, isSignedIn: userSession != nil, showSignIn: { [weak self] in
-            self?.authenticationFlowCoordinator?.artiseShowWorkspaceSignIn()
+        // Artise: invite links (join.artise.co) open their join page, then sign-in to that workspace, added next to
+        // the workspaces already open.
+        if ArtiseWorkspaces.shared.handleURL(url, userIDs: { [weak self] in
+            self?.userSessionManager.userIDs ?? []
+        }, showAccount: { [weak self] userID in
+            self?.showAccount(userID)
+        }, showSignIn: { [weak self] in
+            guard let self else { return }
+            if stateMachine.state == .signedIn {
+                stateMachine.processEvent(.addAccount)
+            }
+            authenticationFlowCoordinator?.artiseShowWorkspaceSignIn()
         }) {
             return true
         }
