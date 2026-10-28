@@ -109,6 +109,23 @@ final class ArtiseIDSession {
         await withAccessToken { accessToken in await self.client.security(accessToken: accessToken) }
     }
     
+    /// Joins `workspace` from `invite` with the kept tokens, refreshed if needed, with no page; `nil` without usable
+    /// tokens, or when Artise ID refuses them twice (the join page instead, which signs in to Artise ID again).
+    func join(_ invite: InviteLink, workspace: WorkspaceInfo, using workspaceClient: WorkspaceClient) async -> InviteAppJoin? {
+        let result = await withAccessToken { accessToken -> Result<InviteAppJoin, ArtiseIDError> in
+            let joined = await workspaceClient.joinFromApp(invite, workspace: workspace, accessToken: accessToken)
+            return joined == .tokenRefused ? .failure(.unauthorized) : .success(joined)
+        }
+        switch result {
+        case .success(let joined):
+            return joined
+        case .failure(.refused), .failure(.unauthorized), nil:
+            return nil
+        case .failure:
+            return .unreachable
+        }
+    }
+    
     /// Called when the person signs out of their last workspace, or picks another way to sign in.
     func forget() {
         isSignedIn = false

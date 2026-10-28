@@ -21,6 +21,7 @@
 "screen_workspace_invite_error_expired" = "Este link de convite não funciona mais. Peça um novo.";
 "screen_workspace_invite_error_unreachable" = "Não foi possível abrir o convite agora. Confira sua conexão e tente de novo.";
 "screen_workspace_invite_already_member" = "Você já está em %1$@.";
+"screen_workspace_invite_email_unverified" = "Seu e-mail do Artise ID ainda não foi verificado. Abra o e-mail que o Artise ID enviou e depois abra o link do convite de novo.";
 
 "screen_artise_id_title" = "Artise";
 "screen_artise_id_subtitle" = "Entre uma vez e escolha seu espaço de trabalho.";

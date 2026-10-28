@@ -143,6 +143,17 @@ public actor WorkspaceClient {
         }
     }
     
+    /// Joins `workspace` from `invite` for the person the Artise ID `accessToken` belongs to, with no page.
+    public func joinFromApp(_ invite: InviteLink, workspace: WorkspaceInfo, accessToken: String) async -> InviteAppJoin {
+        guard let url = invite.appJoinURL(for: workspace) else { return .notOffered }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        guard let (body, response) = try? await transport.send(request) else { return .unreachable }
+        return InviteAppJoin.result(statusCode: response.statusCode, body: body)
+    }
+    
     /// The workspace file, or `nil` when it can't be read. Never a reason to stop signing in.
     public func file(serverName: String) async -> WorkspaceFile? {
         if let cached = files[serverName], cached.expiry > now() {

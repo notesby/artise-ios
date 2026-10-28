@@ -21,6 +21,7 @@
 "screen_workspace_invite_error_expired" = "This invite link doesn’t work anymore. Ask for a new one.";
 "screen_workspace_invite_error_unreachable" = "Can’t open the invite right now. Check your connection and try again.";
 "screen_workspace_invite_already_member" = "You’re already in %1$@.";
+"screen_workspace_invite_email_unverified" = "Your Artise ID email isn’t verified yet. Open the email Artise ID sent you, then open the invite link again.";
 
 "screen_artise_id_title" = "Artise";
 "screen_artise_id_subtitle" = "Sign in once and pick your workspace.";

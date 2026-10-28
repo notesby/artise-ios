@@ -38,6 +38,7 @@ enum ArtiseWorkspacePresenter {
         }
         browserDelegate = delegate
         browser.delegate = delegate
+        MXLog.info("Opening a page in the app's browser over \(type(of: presenter))")
         presenter.present(browser, animated: true)
     }
     
@@ -60,7 +61,17 @@ enum ArtiseWorkspacePresenter {
         }
         
         func safariViewControllerDidFinish(_ controller: SFSafariViewController) {
+            MXLog.info("The app's browser was closed with Done")
             onClose()
+        }
+        
+        // The page itself isn't logged: join pages carry the invite's code.
+        func safariViewController(_ controller: SFSafariViewController, initialLoadDidRedirectTo URL: URL) {
+            MXLog.info("The app's browser was redirected to \(URL.host() ?? "?")")
+        }
+        
+        func safariViewControllerWillOpenInBrowser(_ controller: SFSafariViewController) {
+            MXLog.info("The app's browser is handing the page to Safari")
         }
     }
 }

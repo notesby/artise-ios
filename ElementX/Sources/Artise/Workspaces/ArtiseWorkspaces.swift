@@ -231,6 +231,7 @@ final class ArtiseWorkspaces {
                    showAccount: @escaping (String) -> Void,
                    showSignIn: @escaping () -> Void) -> Bool {
         guard let invite = InviteLink(url: url) else { return false }
+        MXLog.info("Opening an invite link to \(invite.slug)")
         Task {
             switch await client.lookup(slug: invite.slug) {
             case .found(let workspace):
@@ -242,9 +243,7 @@ final class ArtiseWorkspaces {
                         showAccount(userID)
                     }
                 } else {
-                    ArtiseWorkspacePresenter.openInBrowser(invite.joinPageURL(for: workspace)) { [weak self] in
-                        self?.inviteFinished(slug: invite.slug, showSignIn: showSignIn)
-                    }
+                    await join(invite, workspace: workspace, showSignIn: showSignIn)
                 }
             case .suspended:
                 ArtiseWorkspacePresenter.alert(ArtiseWorkspacesL10n.text("screen_workspace_error_paused"))
@@ -257,6 +256,29 @@ final class ArtiseWorkspaces {
             }
         }
         return true
+    }
+    
+    /// Signed in to Artise ID on this phone: joins with it, then sign-in to the workspace (Continue with Artise) finds
+    /// the account. Otherwise, or when the workspace's server can't join from the app, the join page.
+    private func join(_ invite: InviteLink, workspace: WorkspaceInfo, showSignIn: @escaping () -> Void) async {
+        let joined = await ArtiseIDSession.shared.join(invite, workspace: workspace, using: client)
+        MXLog.info("Joining \(invite.slug) from the app: \(joined.map { "\($0)" } ?? "no Artise ID session")")
+        switch joined {
+        case .joined:
+            inviteFinished(slug: invite.slug, showSignIn: showSignIn)
+        case .emailUnverified:
+            ArtiseWorkspacePresenter.alert(ArtiseWorkspacesL10n.text("screen_workspace_invite_email_unverified"))
+        case .inviteExpired:
+            ArtiseWorkspacePresenter.alert(ArtiseWorkspacesL10n.text("screen_workspace_invite_error_expired"))
+        case .slow:
+            ArtiseWorkspacePresenter.alert(ArtiseWorkspacesL10n.text("screen_workspace_error_rate_limited"))
+        case .unreachable:
+            ArtiseWorkspacePresenter.alert(ArtiseWorkspacesL10n.text("screen_workspace_invite_error_unreachable"))
+        case .notOffered, .tokenRefused, nil:
+            ArtiseWorkspacePresenter.openInBrowser(invite.joinPageURL(for: workspace)) { [weak self] in
+                self?.inviteFinished(slug: invite.slug, showSignIn: showSignIn)
+            }
+        }
     }
     
     /// The account among `userIDs` that's signed in to `serverName`, if any.
