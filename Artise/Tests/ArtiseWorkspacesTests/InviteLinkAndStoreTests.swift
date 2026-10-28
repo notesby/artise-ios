@@ -50,6 +50,45 @@ struct InviteLinkAndStoreTests {
         #expect(link.joinPageURL(for: withoutJoin) == link.url)
     }
     
+    /// Joining from the app posts the Artise ID token to `{join_url}/{code}/app`, and reads each answer.
+    @Test
+    func joinFromTheApp() async throws {
+        let link = try #require(invite("https://join.artise.co/acme/Ab3xYz9"))
+        let workspace = WorkspaceInfo(slug: "acme", name: "Acme", serverName: "acme.artise.co", homeserverURL: nil, isActive: true,
+                                      joinURL: URL(string: "https://chat.acme.artise.co/join"))
+        let url = "https://chat.acme.artise.co/join/Ab3xYz9/app"
+        let cases: [(FakeTransport.Answer, InviteAppJoin)] = [
+            (.init(status: 201, body: #"{"user_id":"@ana:acme.artise.co","username":"ana","name":"Ana"}"#), .joined),
+            (.init(status: 200, body: #"{"user_id":"@ana:acme.artise.co","username":"ana","already":true}"#), .joined),
+            (.init(status: 401, body: #"{"error":"token"}"#), .tokenRefused),
+            (.init(status: 403, body: #"{"error":"email_unverified"}"#), .emailUnverified),
+            (.init(status: 404, body: #"{"error":"invite"}"#), .inviteExpired),
+            (.init(status: 404, body: #"{"error":"unavailable"}"#), .notOffered),
+            (.init(status: 429, body: #"{"error":"slow"}"#), .slow),
+            (.init(status: 500, body: #"{"error":"failed"}"#), .unreachable)
+        ]
+        for (answer, expected) in cases {
+            let transport = FakeTransport([url: answer])
+            let result = await WorkspaceClient(transport: transport).joinFromApp(link, workspace: workspace, accessToken: "tok")
+            #expect(result == expected, "\(answer.status) \(answer.body)")
+            let request = try #require(transport.requests.first)
+            #expect(request.httpMethod == "POST")
+            #expect(request.value(forHTTPHeaderField: "Authorization") == "Bearer tok")
+        }
+    }
+    
+    /// Before the directory sends `join_url` there's nowhere to join from the app: the page instead, with no request.
+    @Test
+    func joinFromTheAppNeedsTheJoinURL() async throws {
+        let link = try #require(invite("https://join.artise.co/acme/Ab3xYz9"))
+        let workspace = WorkspaceInfo(slug: "acme", name: "Acme", serverName: "acme.artise.co", homeserverURL: nil, isActive: true, joinURL: nil)
+        let transport = FakeTransport([:])
+        #expect(await WorkspaceClient(transport: transport).joinFromApp(link, workspace: workspace, accessToken: "tok") == .notOffered)
+        #expect(transport.requested.isEmpty)
+        #expect(await WorkspaceClient(transport: FakeTransport([:])).joinFromApp(link, workspace: WorkspaceInfo(slug: "acme", name: "Acme", serverName: "acme.artise.co", homeserverURL: nil, isActive: true,
+                                                                                                                joinURL: URL(string: "https://chat.acme.artise.co/join")), accessToken: "tok") == .unreachable)
+    }
+    
     /// The directory's `join_url` is read when present.
     @Test
     func joinURLFromDirectory() {
