@@ -222,15 +222,25 @@ final class ArtiseWorkspaces {
     
     // MARK: - Invite links
     
-    /// Opens `https://join.artise.co/{slug}/{code}`: the workspace's join page in the app, then sign-in to it.
-    /// Returns `false` for other links. `showSignIn` opens "Your workspace" when nobody is signed in.
-    func handleURL(_ url: URL, isSignedIn: Bool, showSignIn: @escaping () -> Void) -> Bool {
+    /// Opens `https://join.artise.co/{slug}/{code}`: the workspace's join page in the app, then sign-in to it, next to
+    /// any workspace already open. Returns `false` for other links. `userIDs` are the accounts signed in on this phone,
+    /// `showAccount` shows one's chats, and `showSignIn` opens "Your workspace" (adding a
+    /// workspace when one is open).
+    func handleURL(_ url: URL,
+                   userIDs: @escaping () -> [String],
+                   showAccount: @escaping (String) -> Void,
+                   showSignIn: @escaping () -> Void) -> Bool {
         guard let invite = InviteLink(url: url) else { return false }
         Task {
             switch await client.lookup(slug: invite.slug) {
             case .found(let workspace):
-                if isSignedIn {
-                    ArtiseWorkspacePresenter.alert(alreadySignedInMessage(joining: workspace))
+                if let userID = Self.userID(in: userIDs(), serverName: workspace.serverName) {
+                    // Already in it on this phone: its chats, and a word when they're on screen already.
+                    if workspace.serverName == current?.serverName {
+                        ArtiseWorkspacePresenter.alert(String(format: ArtiseWorkspacesL10n.text("screen_workspace_invite_already_member"), workspace.name))
+                    } else {
+                        showAccount(userID)
+                    }
                 } else {
                     ArtiseWorkspacePresenter.openInBrowser(invite.joinPageURL(for: workspace)) { [weak self] in
                         self?.inviteFinished(slug: invite.slug, showSignIn: showSignIn)
@@ -249,19 +259,16 @@ final class ArtiseWorkspaces {
         return true
     }
     
+    /// The account among `userIDs` that's signed in to `serverName`, if any.
+    static func userID(in userIDs: [String], serverName: String) -> String? {
+        userIDs.first { WorkspaceHosts.serverName(userID: $0) == serverName.lowercased() }
+    }
+    
     private func inviteFinished(slug: String, showSignIn: () -> Void) {
         store.lastAddress = slug
         pendingInviteAddress = slug
         inviteSubject.send(slug)
         showSignIn()
-    }
-    
-    private func alreadySignedInMessage(joining workspace: WorkspaceInfo) -> String {
-        if workspace.serverName == current?.serverName {
-            return String(format: ArtiseWorkspacesL10n.text("screen_workspace_invite_already_member"), workspace.name)
-        }
-        let currentName = current?.displayName ?? current?.serverName ?? ArtiseConfiguration.serverName
-        return String(format: ArtiseWorkspacesL10n.text("screen_workspace_invite_sign_out_first"), currentName, workspace.name)
     }
 }
 

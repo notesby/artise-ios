@@ -32,6 +32,16 @@ struct ArtiseWorkspaceSwitcherTests {
         #expect(switcher.isLastWorkspace)
     }
     
+    /// An invite link to a workspace already on this phone opens that account; any other adds the workspace.
+    @Test
+    func invitesFindTheAccountAlreadyInTheWorkspace() {
+        let userIDs = ["@ana:sol.example.org", "@ana:familia.example.org"]
+        
+        #expect(ArtiseWorkspaces.userID(in: userIDs, serverName: "Familia.example.org") == "@ana:familia.example.org")
+        #expect(ArtiseWorkspaces.userID(in: userIDs, serverName: "tienda.example.org") == nil)
+        #expect(ArtiseWorkspaces.userID(in: [], serverName: "sol.example.org") == nil)
+    }
+    
     /// Picking the workspace on screen does nothing; another one, or any while adding, asks the app to switch.
     @Test
     func switchesOnlyToAnotherWorkspace() {
