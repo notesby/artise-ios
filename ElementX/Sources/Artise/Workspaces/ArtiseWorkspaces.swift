@@ -261,7 +261,7 @@ final class ArtiseWorkspaces {
     /// Signed in to Artise ID on this phone: joins with it, then sign-in to the workspace (Continue with Artise) finds
     /// the account. Otherwise, or when the workspace's server can't join from the app, the join page.
     private func join(_ invite: InviteLink, workspace: WorkspaceInfo, showSignIn: @escaping () -> Void) async {
-        let joined = await ArtiseIDSession.shared.join(invite, workspace: workspace)
+        let joined = await ArtiseIDSession.shared.join(invite, workspace: workspace, using: client)
         MXLog.info("Joining \(invite.slug) from the app: \(joined.map { "\($0)" } ?? "no Artise ID session")")
         switch joined {
         case .joined:
